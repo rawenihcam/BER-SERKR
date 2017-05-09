@@ -76,11 +76,21 @@ WSGI_APPLICATION = 'mysite.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'postgres',
+        'USER': 'postgres',
+        'PASSWORD': '3105480wW!',
     }
 }
-
+# In the flexible environment, you connect to CloudSQL using a unix socket.
+# Locally, you can use the CloudSQL proxy to proxy a localhost connection
+# to the instance
+DATABASES['default']['HOST'] = '/cloudsql/ber-serkr:us-east1:ber-serkr-dev'
+if os.getenv('GAE_INSTANCE'):
+    pass
+else:
+    DATABASES['default']['HOST'] = '127.0.0.1'
+# [END dbconfig]
 
 # Password validation
 # https://docs.djangoproject.com/en/1.11/ref/settings/#auth-password-validators
