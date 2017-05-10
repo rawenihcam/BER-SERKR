@@ -25,14 +25,14 @@ SECRET_KEY = '^ii&cfpgjuy9qr%4omsc-6-^b6qnjbe9*(8#)@a0cbn7(pu$g6'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
 
 INSTALLED_APPS = [
     'polls.apps.PollsConfig',
-	'django.contrib.admin',
+    'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -79,7 +79,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'postgres',
         'USER': 'postgres',
-        'PASSWORD': '3105480wW!',
+        'PASSWORD': 'b3r-s3rkr',
     }
 }
 # In the flexible environment, you connect to CloudSQL using a unix socket.
@@ -127,5 +127,6 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
+# 'http://storage.googleapis.com/ber-serkr/static/'
 
-STATIC_URL = 'http://storage.googleapis.com/ber-serkr/static/'
+STATIC_URL = '/static/'
