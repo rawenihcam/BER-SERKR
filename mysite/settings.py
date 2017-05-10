@@ -79,7 +79,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'postgres',
         'USER': 'postgres',
-        'PASSWORD': '3105480wW!',
+        'PASSWORD': 'b3r-s3rkr',
     }
 }
 # In the flexible environment, you connect to CloudSQL using a unix socket.
