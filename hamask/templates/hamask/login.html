@@ -1,0 +1,7 @@
+<h1>BER-SERKR</h1>
+
+<form action="/login/" method="post">
+    {% csrf_token %}
+    {{ form }}
+    <input type="submit" value="Submit" />
+</form>
