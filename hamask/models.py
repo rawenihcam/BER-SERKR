@@ -13,7 +13,7 @@ class Lifter (models.Model):
         ('METRC', 'Metric'),
     )
     measurement_system = models.CharField (max_length=30, choices=measurement_system_choices, default='METRC')
-    age = models.PositiveIntegerField (max_length=3, blank=True)
+    age = models.PositiveIntegerField (blank=True)
     sex_choices = (('MALE', 'Male'), ('FEML', 'Female'),)
     sex = models.CharField (max_length=30, choices=sex_choices, blank=True)
     
@@ -21,24 +21,20 @@ class Lifter (models.Model):
         return self.first_name + ' ' + self.last_name
     
 class Exercise (models.Model):
-    lifter = models.ForeignKey (Lifter, on_delete=models.CASCADE)
+    lifter = models.ForeignKey (Lifter, on_delete=models.CASCADE, blank=True, null=True, editable=False)
     name = models.CharField (max_length=60)
     has_stats = models.BooleanField (default=True)
     
     def __str__(self):
         return self.name
-        
-class Lifter_Stats (models.Model):
-    lifter = models.ForeignKey (Lifter, on_delete=models.CASCADE)
-    exercise = models.ForeignKey (Exercise, on_delete=models.PROTECT)
-    entry_date = models.DateField (default=date.today)
-    reps = models.PositiveIntegerField (max_length=4, blank=True)
-    weight = models.PositiveIntegerField (max_length=4, blank=True)
-    time = models.PositiveIntegerField (max_length=4, blank=True)
 
+class Rep_Scheme (models.Model):
+    code = models.CharField (max_length=30)
+    name = models.CharField (max_length=60)
+    
 class Program (models.Model):
     lifter = models.ForeignKey (Lifter, on_delete=models.CASCADE)
-    #rep_scheme
+    rep_scheme = models.ForeignKey (Rep_Scheme, on_delete=models.SET_NULL, blank=True, null=True)
     name = models.CharField (max_length=60)
     start_date = models.DateField (blank=True)
     is_current = models.BooleanField (default=False)
@@ -72,13 +68,39 @@ class Workout (models.Model):
         
 class Workout_Exercise (models.Model):
     workout = models.ForeignKey (Workout, on_delete=models.CASCADE)
-    exercise = models.ForeignKey (Exercise, on_delete=models.PROTECT)
-    #rep_scheme
-    sets = models.PositiveIntegerField (max_length=4, blank=True)
-    reps = models.PositiveIntegerField (max_length=4, blank=True)
-    weight = models.PositiveIntegerField (max_length=4, blank=True)
-    percentage = models.PositiveIntegerField (max_length=3, blank=True)
-    rpe = models.PositiveIntegerField (max_length=2, blank=True)
-    time = models.PositiveIntegerField (max_length=4, blank=True)
+    exercise = models.ForeignKey (Exercise, on_delete=models.PROTECT)    
+    rep_scheme = models.ForeignKey (Rep_Scheme, on_delete=models.PROTECT)
+    sets = models.PositiveIntegerField (blank=True)
+    reps = models.PositiveIntegerField (blank=True)
+    weight = models.PositiveIntegerField (blank=True)
+    percentage = models.PositiveIntegerField (blank=True)
+    rpe = models.PositiveIntegerField (blank=True)
+    time = models.PositiveIntegerField (blank=True)
     is_amrap = models.BooleanField (default=False)
     notes = models.TextField (blank=True)
+    
+class Workout_Log (models.Model):
+    workout = models.ForeignKey (Workout, on_delete=models.SET_NULL, blank=True, null=True)
+    workout_date = models.DateField ()
+    notes = models.TextField (blank=True)
+    
+class Workout_Exercise_Log (models.Model):
+    Workout_Log = models.ForeignKey (Workout_Log, on_delete=models.CASCADE)
+    Workout_Exercise = models.ForeignKey (Workout_Exercise, on_delete=models.SET_NULL, blank=True, null=True)
+    sets = models.PositiveIntegerField (blank=True)
+    reps = models.PositiveIntegerField (blank=True)
+    weight = models.PositiveIntegerField (blank=True)
+    percentage = models.PositiveIntegerField (blank=True)
+    rpe = models.PositiveIntegerField (blank=True)
+    time = models.PositiveIntegerField (blank=True)
+    is_amrap = models.BooleanField (default=False)
+    notes = models.TextField (blank=True)
+    
+class Lifter_Stats (models.Model):
+    lifter = models.ForeignKey (Lifter, on_delete=models.CASCADE)
+    exercise = models.ForeignKey (Exercise, on_delete=models.PROTECT)
+    workout_exercise_log = models.ForeignKey (Workout_Exercise_Log, on_delete=models.SET_NULL, blank=True, null=True)
+    entry_date = models.DateField (default=datetime.date.today)
+    reps = models.PositiveIntegerField (blank=True)
+    weight = models.PositiveIntegerField (blank=True)
+    time = models.PositiveIntegerField (blank=True)
