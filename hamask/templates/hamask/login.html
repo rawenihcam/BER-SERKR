@@ -1,7 +1,15 @@
+{% load static %}
+
+{% include 'material/includes/material_css.html' %}
+<script src="{% static 'material/js/jquery-2.2.0.js' %}"></script>
+{% include 'material/includes/material_js.html' %}
+    
+{% load material_form %}    
+
 <h1>BER-SERKR</h1>
 
-<form action="/login/" method="post">
+<form action="/login/" method="post" class="viewform">
     {% csrf_token %}
     {{ form }}
-    <input type="submit" value="Submit" />
+    <button type="submit" name="_submit" class="btn btn-primary btn-lg">Login</button>
 </form>

@@ -27,3 +27,12 @@ def index(request):
             return render (request, 'hamask/login.html', {'form': form})
         else:
             return render (request, 'hamask/index.html')
+            
+def programs(request):
+    return render (request, 'hamask/programs.html')
+    
+def logs(request):
+    return render (request, 'hamask/logs.html')
+    
+def stats(request):
+    return render (request, 'hamask/stats.html')
