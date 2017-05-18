@@ -1,0 +1,36 @@
+{% extends 'hamask/base.html' %}
+
+{% block content %}
+<h1 class="page-header">Stats</h1>
+<h2 class="sub-header">Your maxes</h2>
+{% if maxes %}
+	<ul>
+    {% for question in latest_question_list %}
+		<li><a href="{% url 'polls:detail' question.id %}">{{ question.question_text }}</a></li>
+    {% endfor %}
+	</ul>
+    <div class="table-responsive">
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Exercise</th>
+                <th>Weight</th>
+                <th>Date</th>
+            </tr>
+        </thead>
+        
+        <tbody>
+        {% for max in maxes %}
+            <tr>
+              <td>{{ max.exercise }}</td>
+              <td>{{ max.weight }}</td>
+              <td>{{ max.entry_date }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    </div>
+{% else %}
+	<p>No maxes.</p>
+{% endif %}
+{% endblock %}

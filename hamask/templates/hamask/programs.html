@@ -1,0 +1,11 @@
+{% extends 'hamask/base.html' %}
+
+{% block content %}
+<h1>PROGRAMS</h1>
+
+<ul>
+    <li><a href="{% url 'hamask:programs' %}">Programs</a></li>
+    <li><a href="{% url 'hamask:logs' %}">Training Logs</a></li>
+    <li><a href="{% url 'hamask:stats' %}">Stats</a></li>
+</ul>
+{% endblock %}
