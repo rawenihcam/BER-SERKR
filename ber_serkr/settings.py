@@ -31,9 +31,6 @@ ALLOWED_HOSTS = ['*']
 # Application definition
 
 INSTALLED_APPS = [
-    'material',
-    #'material.frontend',
-    #'material.admin',
     'hamask.apps.HamaskConfig',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -133,4 +130,4 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
 
 STATIC_ROOT = 'static/'
-STATIC_URL = 'http://storage.googleapis.com/ber-serkr/static/' #'/static/' #
+STATIC_URL =  '/static/' #'http://storage.googleapis.com/ber-serkr/static/'

@@ -6,6 +6,7 @@ from django.urls import reverse
 from django.views import generic
 
 from .forms import LoginForm
+from .models import Lifter, Lifter_Stats
 
 # Create your views here.
 def index(request):
@@ -18,6 +19,7 @@ def index(request):
             
             if user is not None:
                 login (request, user)
+                request.session['lifter'] = Lifter.objects.get(email=email).id
             
             return HttpResponseRedirect (reverse ('hamask:index'))
     else:
@@ -34,5 +36,6 @@ def programs(request):
 def logs(request):
     return render (request, 'hamask/logs.html')
     
-def stats(request):
-    return render (request, 'hamask/stats.html')
+def stats(request):    
+    maxes = Lifter_Stats.objects.filter(lifter__exact=request.session['lifter']).filter(reps__exact=1)
+    return render (request, 'hamask/stats.html', {'maxes': maxes})

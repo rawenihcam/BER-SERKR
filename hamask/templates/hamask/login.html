@@ -1,15 +1,30 @@
 {% load static %}
 
-{% include 'material/includes/material_css.html' %}
-<script src="{% static 'material/js/jquery-2.2.0.js' %}"></script>
-{% include 'material/includes/material_js.html' %}
-    
-{% load material_form %}    
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+        <title>BER-SERKR LOGIN</title>
 
-<h1>BER-SERKR</h1>
-
-<form action="/login/" method="post" class="viewform">
-    {% csrf_token %}
-    {{ form }}
-    <button type="submit" name="_submit" class="btn btn-primary btn-lg">Login</button>
-</form>
+        <!-- Bootstrap -->
+        <link href="{% static 'hamask/css/bootstrap.min.css' %}" rel="stylesheet">
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+        <script src="{% static 'hamask/js/bootstrap.min.js' %}"></script>
+        
+        <!-- Custom -->
+        <link href="{% static 'hamask/css/custom.css' %}" rel="stylesheet">
+    </head>
+    <body>
+        <div class="container">
+        <form action="/login/" method="post" class="form-signin">
+            {% csrf_token %}
+            <h2 class="form-signin-heading">Please login</h2>
+            {{ form }}
+            <button type="submit" name="_submit" class="btn btn-large btn-primary">Login</button>
+        </form>
+        </div>
+    </body>
+</html>

@@ -1,9 +1,6 @@
-{% load static %}
+{% extends 'hamask/base.html' %}
 
-{% include 'material/includes/material_css.html' %}
-<script src="{% static 'material/js/jquery-2.2.0.js' %}"></script>
-{% include 'material/includes/material_js.html' %}
-
+{% block content %}
 <h1>LOGS</h1>
 
 <ul>
@@ -11,3 +8,4 @@
     <li><a href="{% url 'hamask:logs' %}">Training Logs</a></li>
     <li><a href="{% url 'hamask:stats' %}">Stats</a></li>
 </ul>
+{% endblock %}
