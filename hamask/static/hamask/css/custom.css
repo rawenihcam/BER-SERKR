@@ -15,3 +15,12 @@ h1.page-header {
 button.head {
     float: right;
 }
+
+a.head {
+    float: right;
+}
+
+/* Forms */
+div.input-group {
+    width: 100%;
+}

@@ -1,15 +1,11 @@
 {% extends 'hamask/base.html' %}
 
 {% block content %}
-<button type="button" class="head btn btn-success">Add</button><h1 class="page-header">Stats</h1>
+<a href="{% url 'hamask:stat' %}" class="head btn btn-success">Add</a>
+<h1 class="page-header">Stats</h1>
     
 <h2 class="sub-header">Your maxes</h2>
 {% if maxes %}
-	<ul>
-    {% for question in latest_question_list %}
-		<li><a href="{% url 'polls:detail' question.id %}">{{ question.question_text }}</a></li>
-    {% endfor %}
-	</ul>
     <div class="table-responsive">
     <table class="table table-striped">
         <thead>

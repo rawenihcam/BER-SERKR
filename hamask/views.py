@@ -5,7 +5,7 @@ from django.template import loader
 from django.urls import reverse
 from django.views import generic
 
-from .forms import LoginForm
+from .forms import *
 from .models import Lifter, Lifter_Stats
 
 # Create your views here.
@@ -36,9 +36,26 @@ def programs(request):
 def logs(request):
     return render (request, 'hamask/logs.html')
     
-def stats(request):    
+def stats(request):
     maxes = Lifter_Stats.objects.filter(lifter__exact=request.session['lifter']
             ).filter(reps__exact=1
-            ).filter(exercise__name__in=['Squat', 'Bench', 'Deadlift']
+            ).filter(exercise__name__in=['Squat', 'Bench Press', 'Deadlift']
             ).order_by('-entry_date')[:3]
     return render (request, 'hamask/stats.html', {'maxes': maxes})
+    
+def stat(request):
+    if request.method == 'POST':
+        form = StatForm (request.POST)
+        
+        if form.is_valid():
+            stat = Lifter_Stats (lifter=Lifter.objects.get(pk=request.session['lifter'])
+                    , exercise=Exercise.objects.get(pk=request.POST['exercise'])
+                    , weight=request.POST['weight']
+                    , reps=request.POST['reps'])
+                    
+            stat.save()
+            
+            return HttpResponseRedirect (reverse ('hamask:stats'))
+    else:
+        form = StatForm()
+        return render (request, 'hamask/stat.html', {'form': form})

@@ -11,7 +11,9 @@
 
         <!-- Bootstrap -->
         <link href="{% static 'hamask/css/bootstrap.min.css' %}" rel="stylesheet">
+        <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
         <script src="{% static 'hamask/js/bootstrap.min.js' %}"></script>
         
         <!-- Custom -->
@@ -41,6 +43,7 @@
           </div>
         </nav>
         
+        <!-- Content -->
         <div class="block-content container-fluid">
         <div class="row">
             <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
@@ -49,5 +52,12 @@
             </div>
         </div>
         </div>
+        
+        <!-- Global JS -->
+        <script type="text/javascript">
+            $(document).ready(function(){
+                $('input[type=number], input[type=text], select').addClass('form-control');
+            })
+        </script>
     </body>
 </html>

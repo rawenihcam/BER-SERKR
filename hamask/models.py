@@ -101,6 +101,9 @@ class Lifter_Stats (models.Model):
     exercise = models.ForeignKey (Exercise, on_delete=models.PROTECT)
     workout_exercise_log = models.ForeignKey (Workout_Exercise_Log, on_delete=models.SET_NULL, blank=True, null=True)
     entry_date = models.DateField (default=datetime.date.today)
-    reps = models.PositiveIntegerField (blank=True)
-    weight = models.PositiveIntegerField (blank=True)
-    time = models.PositiveIntegerField (blank=True)
+    reps = models.PositiveIntegerField (blank=True, null=True)
+    weight = models.PositiveIntegerField (blank=True, null=True)
+    time = models.PositiveIntegerField (blank=True, null=True)
+    
+    def __str__(self):
+        return str(self.weight)
