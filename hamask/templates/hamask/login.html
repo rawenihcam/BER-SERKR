@@ -19,9 +19,9 @@
     </head>
     <body>
         <div class="container">
-        <form action="/login/" method="post" class="form-signin">
+        <form action="/login/" method="post">
             {% csrf_token %}
-            <h2 class="form-signin-heading">Please login</h2>
+            <h2 class="sub-header">Please login</h2>
             {{ form }}
             <button type="submit" name="_submit" class="btn btn-large btn-primary">Login</button>
         </form>

@@ -1,0 +1,72 @@
+{% extends 'hamask/base.html' %}
+
+{% block content %}
+<h1 class="page-header">Log your recent PRs</h1>
+    
+<form action="stats/stat/" method="post">
+    {% csrf_token %}
+    
+    {{ form.non_field_errors }}
+    <div class="row">
+        <!-- Exercise -->
+        <div class="col-sm-12 col-md-4 col-lg-3">
+            {{ form.exercise.errors }}
+            {{ form.exercise.label_tag }}
+            <div class="input-group">
+                {{ form.exercise }}
+            </div>
+        </div> 
+        
+        <!-- Date -->
+        <div class="col-sm-12 col-md-4 col-lg-3">
+            {{ form.entry_date.errors }}
+            {{ form.entry_date.label_tag }}
+            <div class="input-group">
+                {{ form.entry_date }}
+            </div>
+        </div>   
+    </div>
+    
+    <br/>
+    <div class="row">
+        <!-- Weight -->
+        <div class="col-sm-12 col-md-4 col-lg-3">
+            {{ form.weight.errors }}
+            {{ form.weight.label_tag }}
+            <div class="input-group">
+                {{ form.weight }}
+            </div>
+        </div>
+        
+        <!-- Reps -->
+        <div class="col-sm-12 col-md-4 col-lg-3">
+            {{ form.reps.errors }}
+            {{ form.reps.label_tag }}
+            <div class="input-group">
+                {{ form.reps }}
+            </div>
+        </div>
+    </div>
+    
+    <br/>
+    <!-- Buttons -->
+    <div class="row">
+        <div class="col-sm-12">
+            {% if form.id.data %}
+                <button type="submit" name="delete" class="btn btn-danger"><i class="fa fa-trash"></i>&nbsp;DELETE</button>
+            {% endif %}
+            <button type="submit" name="saveadd" class="btn btn-primary"><i class="fa fa-plus"></i>&nbsp;SAVE AND ADD</button>
+            <button type="submit" name="save" value="save" class="btn btn-primary"><i class="fa fa-save"></i>&nbsp;SAVE</button>
+        </div>
+    </div>
+</form>
+
+<!-- Scripts -->
+<script>
+    $( function() {
+        $( "#id_entry_date" ).datepicker({
+          dateFormat: "yy-mm-dd"
+        });
+    });
+</script>
+{% endblock %}

@@ -19,6 +19,24 @@ class Lifter (models.Model):
     
     def __str__(self):
         return self.first_name + ' ' + self.last_name
+        
+    def get_maxes(self):
+        s = Lifter_Stats.objects.filter(lifter__exact=self.id
+                ).filter(reps__exact=1
+                ).filter(exercise__name__exact='Squat'
+                ).order_by('-entry_date', '-weight')[:1]
+        b = Lifter_Stats.objects.filter(lifter__exact=self.id
+                ).filter(reps__exact=1
+                ).filter(exercise__name__exact='Bench Press'
+                ).order_by('-entry_date', '-weight')[:1]
+        d = Lifter_Stats.objects.filter(lifter__exact=self.id
+                ).filter(reps__exact=1
+                ).filter(exercise__name__exact='Deadlift'
+                ).order_by('-entry_date', '-weight')[:1]
+            
+        maxes = s.union (b, d, all=True)
+        
+        return maxes
     
 class Exercise (models.Model):
     lifter = models.ForeignKey (Lifter, on_delete=models.CASCADE, blank=True, null=True, editable=False)
@@ -101,6 +119,9 @@ class Lifter_Stats (models.Model):
     exercise = models.ForeignKey (Exercise, on_delete=models.PROTECT)
     workout_exercise_log = models.ForeignKey (Workout_Exercise_Log, on_delete=models.SET_NULL, blank=True, null=True)
     entry_date = models.DateField (default=datetime.date.today)
-    reps = models.PositiveIntegerField (blank=True)
-    weight = models.PositiveIntegerField (blank=True)
-    time = models.PositiveIntegerField (blank=True)
+    reps = models.PositiveIntegerField (blank=True, null=True)
+    weight = models.PositiveIntegerField (blank=True, null=True)
+    time = models.PositiveIntegerField (blank=True, null=True)
+    
+    def __str__(self):
+        return str(self.weight)

@@ -1,4 +1,34 @@
 /* Base CSS */
+div.block-content {
+    padding-top: 51px;
+}
+
 div.main {
-    padding-top: 30px;
+    padding-top: 20px;
+}
+
+h1.page-header {
+    margin: 0px 0px 20px 0px;
+}
+
+/* Buttons */
+button.head {
+    float: right;
+}
+
+a.head {
+    float: right;
+}
+
+button.left {
+    float: left;
+}
+
+button.right {
+    float: right;
+}
+
+/* Forms */
+div.input-group {
+    width: 100%;
 }
