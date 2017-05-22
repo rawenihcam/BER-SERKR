@@ -20,6 +20,14 @@ a.head {
     float: right;
 }
 
+button.left {
+    float: left;
+}
+
+button.right {
+    float: right;
+}
+
 /* Forms */
 div.input-group {
     width: 100%;

@@ -9,6 +9,7 @@ urlpatterns = [
 	url(r'^programs/(?P<pk>[0-9]+)', views.programs, name='programs'),
 	url(r'^programs/', views.programs, name='programs'),
 	url(r'^logs/', views.logs, name='logs'),
+	url(r'^stats/stat/(?P<lifter_stat>[0-9]+)', views.stat, name='stat'),
 	url(r'^stats/stat/', views.stat, name='stat'),
 	url(r'^stats/', views.stats, name='stats'),
 ]

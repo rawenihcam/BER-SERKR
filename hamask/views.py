@@ -36,26 +36,29 @@ def programs(request):
 def logs(request):
     return render (request, 'hamask/logs.html')
     
-def stats(request):
-    maxes = Lifter_Stats.objects.filter(lifter__exact=request.session['lifter']
-            ).filter(reps__exact=1
-            ).filter(exercise__name__in=['Squat', 'Bench Press', 'Deadlift']
-            ).order_by('-entry_date')[:3]
+def stats(request):            
+    maxes = Lifter.objects.get(pk=request.session['lifter']).get_maxes()
     return render (request, 'hamask/stats.html', {'maxes': maxes})
     
 def stat(request):
     if request.method == 'POST':
-        form = StatForm (request.POST)
-        
-        if form.is_valid():
-            stat = Lifter_Stats (lifter=Lifter.objects.get(pk=request.session['lifter'])
-                    , exercise=Exercise.objects.get(pk=request.POST['exercise'])
-                    , weight=request.POST['weight']
-                    , reps=request.POST['reps'])
-                    
-            stat.save()
+        if 'save' in request.POST or 'saveadd' in request.POST:
+            form = StatForm (request.POST)
             
-            return HttpResponseRedirect (reverse ('hamask:stats'))
+            if form.is_valid():
+                stat = Lifter_Stats (lifter=Lifter.objects.get(pk=request.session['lifter'])
+                        , exercise=Exercise.objects.get(pk=request.POST['exercise'])
+                        , entry_date=request.POST['entry_date']
+                        , weight=request.POST['weight']
+                        , reps=request.POST['reps'])
+                        
+                stat.save()
+                
+                if 'saveadd' in request.POST:
+                    form = StatForm()
+                    return HttpResponseRedirect (reverse ('hamask:stat'), {'form': form})
+                else:
+                    return HttpResponseRedirect (reverse ('hamask:stats'))
     else:
         form = StatForm()
         return render (request, 'hamask/stat.html', {'form': form})
