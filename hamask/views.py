@@ -37,5 +37,8 @@ def logs(request):
     return render (request, 'hamask/logs.html')
     
 def stats(request):    
-    maxes = Lifter_Stats.objects.filter(lifter__exact=request.session['lifter']).filter(reps__exact=1)
+    maxes = Lifter_Stats.objects.filter(lifter__exact=request.session['lifter']
+            ).filter(reps__exact=1
+            ).filter(exercise__name__in=['Squat', 'Bench', 'Deadlift']
+            ).order_by('-entry_date')[:3]
     return render (request, 'hamask/stats.html', {'maxes': maxes})
