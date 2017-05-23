@@ -13,9 +13,6 @@
         <link href="{% static 'hamask/css/bootstrap.min.css' %}" rel="stylesheet">
         <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
         <link href="{% static 'hamask/css/font-awesome.min.css' %}" rel="stylesheet">
-        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
-        <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
-        <script src="{% static 'hamask/js/bootstrap.min.js' %}"></script>
         
         <!-- Custom -->
         <link href="{% static 'hamask/css/custom.css' %}" rel="stylesheet">
@@ -38,23 +35,42 @@
                 <li><a href="{% url 'hamask:programs' %}">Programs</a></li>
                 <li><a href="{% url 'hamask:logs' %}">Logs</a></li>
                 <li><a href="{% url 'hamask:stats' %}">Stats</a></li>
+              </ul>
+              <ul class="nav navbar-nav navbar-right">
                 <li><a href="#">Logout</a></li>
               </ul>
             </div>
           </div>
         </nav>
         
-        <!-- Content -->
-        <div class="block-content container-fluid">
+        
+        <!-- Body -->
+        <div class="container main">
         <div class="row">
-            <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+        <div class="col-sm-12 col-lg-10">
+            {% if messages %}
+                <div class="alert alert-success alert-dismissable fade in" role="alert">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                    MAXXXXX
+                </div>
+            {% endif %}
+        </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-12 col-lg-10">
                 {% block content %}
                 {% endblock %}
             </div>
         </div>
         </div>
         
-        <!-- Global JS -->
+        <!-- Global JS -->        
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+        <script src="{% static 'hamask/js/bootstrap.min.js' %}"></script>
+        
         <script type="text/javascript">
             $(document).ready(function(){
                 $('input[type=number], input[type=text], select').addClass('form-control');
