@@ -13,6 +13,9 @@
         <link href="{% static 'hamask/css/bootstrap.min.css' %}" rel="stylesheet">
         <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
         <link href="{% static 'hamask/css/font-awesome.min.css' %}" rel="stylesheet">
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+        <script src="{% static 'hamask/js/bootstrap.min.js' %}"></script>
         
         <!-- Custom -->
         <link href="{% static 'hamask/css/custom.css' %}" rel="stylesheet">
@@ -53,7 +56,7 @@
                     <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
-                    MAXXXXX
+                    {{ messages }}
                 </div>
             {% endif %}
         </div>
@@ -67,10 +70,6 @@
         </div>
         
         <!-- Global JS -->        
-        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
-        <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
-        <script src="{% static 'hamask/js/bootstrap.min.js' %}"></script>
-        
         <script type="text/javascript">
             $(document).ready(function(){
                 $('input[type=number], input[type=text], select').addClass('form-control');

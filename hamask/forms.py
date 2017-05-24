@@ -9,7 +9,7 @@ class LoginForm (forms.Form):
     password = forms.CharField (widget=forms.PasswordInput)
     
 class StatForm (forms.Form):
-    id = forms.IntegerField(widget=forms.HiddenInput)
+    id = forms.IntegerField(widget=forms.HiddenInput, required=False)
     exercise = forms.ModelChoiceField (queryset=Exercise.objects.all()
                 , empty_label='- Choose -')
     entry_date = forms.DateField (initial=datetime.date.today

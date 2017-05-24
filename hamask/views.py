@@ -7,6 +7,9 @@ from django.views import generic
 
 from .forms import *
 from .models import Lifter, Lifter_Stats
+from .control import *
+
+
 
 # Create your views here.
 def index(request):
@@ -41,6 +44,7 @@ def stats(request):
     return render (request, 'hamask/stats.html', {'maxes': maxes})
     
 def stat(request):
+    success_message = Message ('All changes saved.', 'S')
     if request.method == 'POST':
         if 'save' in request.POST or 'saveadd' in request.POST:
             form = StatForm (request.POST)
@@ -50,7 +54,7 @@ def stat(request):
                         , exercise=Exercise.objects.get(pk=request.POST['exercise'])
                         , entry_date=request.POST['entry_date']
                         , weight=request.POST['weight']
-                        , reps=request.POST['reps'])
+                        , reps=form.cleaned_data['reps'])
                         
                 stat.save()
                 
@@ -58,7 +62,10 @@ def stat(request):
                     form = StatForm()
                     return HttpResponseRedirect (reverse ('hamask:stat'), {'form': form})
                 else:
-                    return HttpResponseRedirect (reverse ('hamask:stats'))
+                    print (success_message)
+                    return HttpResponseRedirect (reverse ('hamask:stats'), {'messages': 'FUCK YOU'})
+            else:
+                return HttpResponseRedirect (reverse ('hamask:stat'), {'form': form})
     else:
         form = StatForm()
         return render (request, 'hamask/stat.html', {'form': form})
