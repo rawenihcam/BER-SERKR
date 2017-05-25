@@ -18,13 +18,15 @@
         </div> 
         
         <!-- Date -->
-        <div class="col-sm-12 col-md-4 col-lg-3">
-            {{ form.entry_date.errors }}
+        <div class="col-sm-12 col-md-4 col-lg-3  {% if form.entry_date.errors %}has-error{% endif %}">           
             {{ form.entry_date.label_tag }}
             <div class="input-group">
                 {{ form.entry_date }}
             </div>
-        </div>   
+            {% if form.entry_date.errors %}
+                <span class="help-block">{% for error in form.entry_date.errors %}{{ error|escape }} {% endfor %}</span>
+            {% endif %}
+        </div>
     </div>
     
     <br/>

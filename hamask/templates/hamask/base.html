@@ -35,12 +35,12 @@
             </div>
             <div id="navbar" class="navbar-collapse collapse">
               <ul class="nav navbar-nav">
-                <li><a href="{% url 'hamask:programs' %}">Programs</a></li>
-                <li><a href="{% url 'hamask:logs' %}">Logs</a></li>
-                <li><a href="{% url 'hamask:stats' %}">Stats</a></li>
+                <li><a href="{% url 'hamask:programs' %}"><i class="fa fa-calendar"></i>&nbsp;Programs</a></li>
+                <li><a href="{% url 'hamask:logs' %}"><i class="fa fa-book"></i>&nbsp;Training Logs</a></li>
+                <li><a href="{% url 'hamask:stats' %}"><i class="fa fa-bar-chart"></i>&nbsp;Stats</a></li>
               </ul>
               <ul class="nav navbar-nav navbar-right">
-                <li><a href="#">Logout</a></li>
+                <li><a href="#"><i class="fa fa-sign-out"></i>&nbsp;Logout</a></li>
               </ul>
             </div>
           </div>
@@ -59,6 +59,14 @@
                     {{ messages }}
                 </div>
             {% endif %}
+            {% if form.non_field_errors %}
+                <div class="alert alert-danger alert-dismissable fade in" role="alert">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                    {{ form.non_field_errors }}
+                </div>
+            {% endif %}
         </div>
         </div>
         <div class="row">
@@ -73,6 +81,7 @@
         <script type="text/javascript">
             $(document).ready(function(){
                 $('input[type=number], input[type=text], select').addClass('form-control');
+                $('label').addClass('control-label');
             })
         </script>
     </body>

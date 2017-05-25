@@ -50,13 +50,14 @@ def stat(request):
             form = StatForm (request.POST)
             
             if form.is_valid():
-                stat = Lifter_Stats (lifter=Lifter.objects.get(pk=request.session['lifter'])
+                """stat = Lifter_Stats (lifter=Lifter.objects.get(pk=request.session['lifter'])
                         , exercise=Exercise.objects.get(pk=request.POST['exercise'])
                         , entry_date=request.POST['entry_date']
                         , weight=request.POST['weight']
-                        , reps=form.cleaned_data['reps'])
+                        , reps=form.cleaned_data['reps'])"""
+                form.save()
                         
-                stat.save()
+                """stat.save()"""
                 
                 if 'saveadd' in request.POST:
                     form = StatForm()
@@ -65,7 +66,7 @@ def stat(request):
                     print (success_message)
                     return HttpResponseRedirect (reverse ('hamask:stats'), {'messages': 'FUCK YOU'})
             else:
-                return HttpResponseRedirect (reverse ('hamask:stat'), {'form': form})
+                return render (request, 'hamask/stat.html', {'form': form})
     else:
         form = StatForm()
         return render (request, 'hamask/stat.html', {'form': form})
