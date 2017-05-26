@@ -10,13 +10,12 @@ class LoginForm (forms.Form):
     password = forms.CharField (widget=forms.PasswordInput)
     
 class StatForm (ModelForm):
-    """id = forms.IntegerField(widget=forms.HiddenInput, required=False)
-    exercise = forms.ModelChoiceField (queryset=Exercise.objects.all()
-                , empty_label='- Choose -')
-    entry_date = forms.DateField (initial=datetime.date.today
-                    , input_formats=['%Y-%m-%d'])
-    weight = forms.IntegerField (min_value=1)
-    reps = forms.IntegerField (min_value=1)"""
+    # Redefine constructor to enforce required fields
+    def __init__(self, *args, **kwargs):
+        super(StatForm, self).__init__(*args, **kwargs)
+        
+        self.fields['weight'].required = True
+        self.fields['reps'].required = True        
     
     class Meta:
         model = Lifter_Stats
