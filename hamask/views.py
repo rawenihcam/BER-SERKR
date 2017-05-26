@@ -46,8 +46,10 @@ def logs(request):
     return render (request, 'hamask/logs.html')
     
 def stats(request):            
-    maxes = Lifter.objects.get(pk=request.session['lifter']).get_maxes()
-    return render (request, 'hamask/stats.html', {'maxes': maxes})
+    lifter = Lifter.objects.get(pk=request.session['lifter'])
+    maxes = lifter.get_maxes()
+    stats = lifter.get_stats()
+    return render (request, 'hamask/stats.html', {'maxes': maxes, 'stats': stats,})
     
 def stat(request):
     if request.method == 'POST':

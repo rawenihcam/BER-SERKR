@@ -37,6 +37,12 @@ class Lifter (models.Model):
         maxes = s.union (b, d, all=True)
         
         return maxes
+        
+    def get_stats(self):
+        stats = Lifter_Stats.objects.filter(lifter__exact=self.id
+                    ).order_by('-entry_date', 'exercise__name')
+                    
+        return stats
     
 class Exercise (models.Model):
     lifter = models.ForeignKey (Lifter, on_delete=models.CASCADE, blank=True, null=True, editable=False)

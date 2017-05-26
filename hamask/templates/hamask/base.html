@@ -51,7 +51,7 @@
         <!-- Body -->
         <div class="container main">
         <div class="row">
-        <div class="col-sm-12 col-lg-10">
+        <div class="col-sm-12">
             {% if messages %}
                 {% for message in messages %}
                     <div class="alert {{ message.extra_tags }} alert-dismissable fade in" role="alert">
@@ -75,7 +75,7 @@
         </div>
         </div>
         <div class="row">
-            <div class="col-sm-12 col-lg-10">
+            <div class="col-sm-12">
                 {% block content %}
                 {% endblock %}
             </div>

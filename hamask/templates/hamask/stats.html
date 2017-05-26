@@ -4,30 +4,70 @@
 <a href="{% url 'hamask:stat' %}" class="head btn btn-success"><i class="fa fa-plus"></i>&nbsp;ADD</a>
 <h1 class="page-header">Stats</h1>
 
-<h2 class="sub-header">Your maxes</h2>
-{% if maxes %}
-    <div class="table-responsive">
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>Exercise</th>
-                <th>Weight</th>
-                <th>Date</th>
-            </tr>
-        </thead>
-        
-        <tbody>
-        {% for max in maxes %}
-            <tr>
-              <td>{{ max.exercise }}</td>
-              <td>{{ max.weight }}</td>
-              <td>{{ max.entry_date }}</td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+<!-- Maxes -->
+<div class="panel panel-default">
+<div class="panel-heading"><h4>Your maxes</h4></div>
+    {% if maxes %}
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Exercise</th>
+                    <th>Weight</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            
+            <tbody>
+            {% for max in maxes %}
+                <tr>
+                  <td>{{ max.exercise }}</td>
+                  <td>{{ max.weight }}</td>
+                  <td>{{ max.entry_date }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <div class="panel-body">
+            <p>No maxes</p>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Full stats -->
+{% if stats %}
+    <div class="row">
+        <div class="col-sm-12">
+            <a id="btn-full-stats" href="#" class="btn btn-primary"><i class="fa fa-bars"></i>&nbsp;SHOW ALL STATS</a>
+            <div id="full-stats" class="col-sm-12" style="display: none;">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Exercise</th>
+                        <th>Weight</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                
+                <tbody>
+                {% for stat in stats %}
+                    <tr>
+                      <td>{{ stat.exercise }}</td>
+                      <td>{{ stat.weight }}</td>
+                      <td>{{ stat.entry_date }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            </div>
+        </div>
     </div>
-{% else %}
-	<p>No maxes.</p>
 {% endif %}
+
+<!-- Custom JS -->
+<script type="text/javascript">
+    $('#btn-full-stats').on('click', function () {
+        $('#full-stats').slideToggle();
+    });
+</script>
 {% endblock %}
