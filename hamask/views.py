@@ -48,27 +48,47 @@ def logs(request):
 def stats(request):            
     lifter = Lifter.objects.get(pk=request.session['lifter'])
     maxes = lifter.get_maxes()
+    prs = lifter.get_last_prs()
     stats = lifter.get_stats()
-    return render (request, 'hamask/stats.html', {'maxes': maxes, 'stats': stats,})
+    return render (request, 'hamask/stats.html', {'maxes': maxes, 'prs': prs, 'stats': stats,})
     
-def stat(request):
-    if request.method == 'POST':
-        if 'save' in request.POST or 'saveadd' in request.POST:
-            form = StatForm (request.POST)
-            
-            if form.is_valid():
-                stat = form.save(commit=False)
-                stat.lifter = Lifter.objects.get(pk=request.session['lifter'])
-                stat.save()
+def stat_create(request, template_name='hamask/stat.html'):
+    form = StatForm(request.POST or None)
+        
+    if form.is_valid():
+        stat = form.save(commit=False)
+        stat.lifter = Lifter.objects.get(pk=request.session['lifter'])
+        stat.save()
                 
-                if 'saveadd' in request.POST:
-                    form = StatForm()
-                    return HttpResponseRedirect (reverse ('hamask:stat'), {'form': form})
-                else:
-                    messages.success(request, success_message, extra_tags=success_class)
-                    return HttpResponseRedirect (reverse ('hamask:stats'))
-            else:
-                return render (request, 'hamask/stat.html', {'form': form})
+        if 'saveadd' in request.POST:
+            messages.success(request, success_message, extra_tags=success_class)
+            return HttpResponseRedirect (reverse ('hamask:stat_create'))
+        else:
+            messages.success(request, success_message, extra_tags=success_class)
+            return HttpResponseRedirect (reverse ('hamask:stats'))
     else:
-        form = StatForm()
-        return render (request, 'hamask/stat.html', {'form': form})
+        return render (request, template_name, {'form': form})
+
+def stat_update(request, pk, template_name='hamask/stat.html'):
+    lifter_stat = get_object_or_404(Lifter_Stats, pk=pk)
+    if lifter_stat.lifter.id != request.session['lifter']:
+         raise Http404("Invalid stat.")
+    
+    form = StatForm(request.POST or None, instance=lifter_stat)
+    
+    if 'delete' in request.POST:
+        lifter_stat.delete()
+        messages.success(request, success_message, extra_tags=success_class)
+        return HttpResponseRedirect (reverse ('hamask:stats'))
+    else:
+        if form.is_valid():
+            form.save()
+                    
+            if 'saveadd' in request.POST:
+                messages.success(request, success_message, extra_tags=success_class)
+                return HttpResponseRedirect (reverse ('hamask:stat_create'))
+            else:
+                messages.success(request, success_message, extra_tags=success_class)
+                return HttpResponseRedirect (reverse ('hamask:stats'))
+        else:
+            return render (request, template_name, {'form': form, 'id': lifter_stat.id,})

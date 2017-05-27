@@ -38,6 +38,12 @@ class Lifter (models.Model):
         
         return maxes
         
+    def get_last_prs(self):
+        prs = Lifter_Stats.objects.filter(lifter__exact=self.id
+                ).order_by('-entry_date')[:5]
+            
+        return prs
+        
     def get_stats(self):
         stats = Lifter_Stats.objects.filter(lifter__exact=self.id
                     ).order_by('-entry_date', 'exercise__name')

@@ -1,45 +1,52 @@
 {% extends 'hamask/base.html' %}
 
 {% block content %}
-<a href="{% url 'hamask:stat' %}" class="head btn btn-success"><i class="fa fa-plus"></i>&nbsp;ADD</a>
+<a href="{% url 'hamask:stat_create' %}" class="head btn btn-success"><i class="fa fa-plus"></i>&nbsp;ADD</a>
 <h1 class="page-header">Stats</h1>
 
-<!-- Maxes -->
-<div class="panel panel-default">
-<div class="panel-heading"><h4>Your maxes</h4></div>
-    {% if maxes %}
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>Exercise</th>
-                    <th>Weight</th>
-                    <th>Date</th>
-                </tr>
-            </thead>
-            
-            <tbody>
-            {% for max in maxes %}
-                <tr>
-                  <td>{{ max.exercise }}</td>
-                  <td>{{ max.weight }}</td>
-                  <td>{{ max.entry_date }}</td>
-                </tr>
-            {% endfor %}
-            </tbody>
-        </table>
-    {% else %}
-        <div class="panel-body">
-            <p>No maxes</p>
-        </div>
-    {% endif %}
-</div>
-
-<!-- Full stats -->
-{% if stats %}
-    <div class="row">
-        <div class="col-sm-12">
-            <a id="btn-full-stats" href="#" class="btn btn-primary"><i class="fa fa-bars"></i>&nbsp;SHOW ALL STATS</a>
-            <div id="full-stats" class="col-sm-12" style="display: none;">
+<!-- Maxes & PRs -->
+<div class="row">
+    <!-- PRs -->
+    <div class="col-sm-12 col-md-6">
+    <div class="panel panel-default">
+        <div class="panel-heading"><h4>Your last PRs</h4></div>
+        {% if prs %}
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th class="icon">&nbsp;</th>
+                        <th>Date</th>
+                        <th>Exercise</th>
+                        <th>Weight</th>
+                        <th>Reps</th>
+                    </tr>
+                </thead>
+                
+                <tbody>
+                {% for pr in prs %}
+                    <tr>
+                      <td><a href="{% url 'hamask:stat_update' pr.id %}"><i class="fa fa-pencil"></i></a>
+                      <td>{{ pr.entry_date }}</td>
+                      <td>{{ pr.exercise }}</td>
+                      <td>{{ pr.weight }}</td>
+                      <td>{{ pr.reps }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <div class="panel-body">
+                <p>No PRs</p>
+            </div>
+        {% endif %}
+    </div>
+    </div>
+    
+    <!-- Maxes -->
+    <div class="col-sm-12 col-md-6">
+    <div class="panel panel-default">
+        <div class="panel-heading"><h4>Your maxes</h4></div>
+        {% if maxes %}
             <table class="table table-striped">
                 <thead>
                     <tr>
@@ -50,15 +57,58 @@
                 </thead>
                 
                 <tbody>
-                {% for stat in stats %}
+                {% for max in maxes %}
                     <tr>
-                      <td>{{ stat.exercise }}</td>
-                      <td>{{ stat.weight }}</td>
-                      <td>{{ stat.entry_date }}</td>
+                      <td>{{ max.exercise }}</td>
+                      <td>{{ max.weight }}</td>
+                      <td>{{ max.entry_date }}</td>
                     </tr>
                 {% endfor %}
                 </tbody>
             </table>
+        {% else %}
+            <div class="panel-body">
+                <p>No maxes</p>
+            </div>
+        {% endif %}
+    </div>
+    </div>
+</div>
+
+<!-- Full stats -->
+{% if stats %}
+    <div class="row">
+        <div class="col-sm-12">
+            <a id="btn-full-stats" href="#" class="btn btn-primary"><i class="fa fa-bars"></i>&nbsp;SHOW ALL STATS</a>
+            <br/>&nbsp;
+            <div id="full-stats" style="display: none;">
+            <div class="panel panel-default">
+                <div class="panel-heading"><h4>All stats</h4></div>
+                
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th class="icon">&nbsp;</th>
+                            <th>Exercise</th>
+                            <th>Weight</th>
+                            <th>Reps</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    
+                    <tbody>
+                    {% for stat in stats %}
+                        <tr>
+                          <td><a href="{% url 'hamask:stat_update' stat.id %}"><i class="fa fa-pencil"></i></a>
+                          <td>{{ stat.exercise }}</td>
+                          <td>{{ stat.weight }}</td>
+                          <td>{{ stat.reps }}</td>
+                          <td>{{ stat.entry_date }}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
             </div>
         </div>
     </div>
