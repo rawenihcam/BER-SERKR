@@ -1,6 +1,7 @@
 import datetime
 
 from django.db import models
+from django.db.models import Max
 from django.utils import timezone
 
 
@@ -38,9 +39,23 @@ class Lifter (models.Model):
         
         return maxes
         
+    def get_prs(self):
+        stats = Lifter_Stats.objects.filter(lifter__exact=self.id)
+        exercise_combos = stats.values('exercise','reps').annotate(max_weight=Max('weight'))
+        prs = Lifter_Stats.objects.filter(lifter__exact=0)
+                            
+        # Possibly a way to do this without loop and with queryset, but idk, TODO
+        for exercise_combo in exercise_combos:
+            pr = stats.filter(exercise__exact=exercise_combo['exercise']
+                    ).filter(reps__exact=exercise_combo['reps']
+                    ).filter(weight__exact=exercise_combo['max_weight'])
+                    
+            prs = prs.union (pr, all=True)
+            
+        return prs
+    
     def get_last_prs(self):
-        prs = Lifter_Stats.objects.filter(lifter__exact=self.id
-                ).order_by('-entry_date')[:5]
+        prs = self.get_prs().order_by('-entry_date')[:5]
             
         return prs
         
