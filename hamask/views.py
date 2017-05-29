@@ -8,14 +8,7 @@ from django.views import generic
 
 from .forms import *
 from .models import Lifter, Lifter_Stats
-
-# Message control data
-success_class = 'alert-success'
-error_class = 'alert-danger'
-warning_class = 'alert-warning'
-info_class = 'alert-info'
-
-success_message = 'All changes saved.'
+from .control import Notification
 
 # Create your views here.
 def index(request):
@@ -61,10 +54,10 @@ def stat_create(request, template_name='hamask/stat.html'):
         stat.save()
                 
         if 'saveadd' in request.POST:
-            messages.success(request, success_message, extra_tags=success_class)
+            messages.success(request, Notification.success_message, extra_tags=Notification.success_class)
             return HttpResponseRedirect (reverse ('hamask:stat_create'))
         else:
-            messages.success(request, success_message, extra_tags=success_class)
+            messages.success(request, Notification.success_message, extra_tags=Notification.success_class)
             return HttpResponseRedirect (reverse ('hamask:stats'))
     else:
         return render (request, template_name, {'form': form})
@@ -78,17 +71,17 @@ def stat_update(request, pk, template_name='hamask/stat.html'):
     
     if 'delete' in request.POST:
         lifter_stat.delete()
-        messages.success(request, success_message, extra_tags=success_class)
+        messages.success(request, Notification.success_message, extra_tags=Notification.success_class)
         return HttpResponseRedirect (reverse ('hamask:stats'))
     else:
         if form.is_valid():
             form.save()
                     
             if 'saveadd' in request.POST:
-                messages.success(request, success_message, extra_tags=success_class)
+                messages.success(request, Notification.success_message, extra_tags=Notification.success_class)
                 return HttpResponseRedirect (reverse ('hamask:stat_create'))
             else:
-                messages.success(request, success_message, extra_tags=success_class)
+                messages.success(request, Notification.success_message, extra_tags=Notification.success_class)
                 return HttpResponseRedirect (reverse ('hamask:stats'))
         else:
             return render (request, template_name, {'form': form, 'id': lifter_stat.id,})

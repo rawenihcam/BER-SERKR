@@ -51,12 +51,18 @@ class Lifter (models.Model):
                     ).filter(weight__exact=exercise_combo['max_weight'])
                     
             prs = prs.union (pr, all=True)
-            
+        
         return prs
     
     def get_last_prs(self):
-        prs = self.get_prs().order_by('-entry_date')[:5]
-            
+        prs = Lifter_Stats.objects.raw('''select * 
+                                             from hamask_lifter_stats ls 
+                                            where weight = (select max(ls2.weight) 
+                                                              from hamask_lifter_stats ls2 
+                                                             where ls2.exercise_id = ls.exercise_id 
+                                                               and ls2.reps = ls.reps) 
+                                                             order by ls.entry_date desc''')[:5]
+        
         return prs
         
     def get_stats(self):
