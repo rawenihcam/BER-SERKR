@@ -18,6 +18,7 @@
         <script src="{% static 'hamask/js/bootstrap.min.js' %}"></script>
         
         <!-- Custom -->
+        <link rel="shortcut icon" type="image/png" href="hamask/images/favicon.ico"/>
         <link href="{% static 'hamask/css/custom.css' %}" rel="stylesheet">
     </head>
     <body>
@@ -50,27 +51,31 @@
         <!-- Body -->
         <div class="container main">
         <div class="row">
-        <div class="col-sm-12 col-lg-10">
+        <div class="col-sm-12">
             {% if messages %}
-                <div class="alert alert-success alert-dismissable fade in" role="alert">
-                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                    {{ messages }}
-                </div>
+                {% for message in messages %}
+                    <div class="alert {{ message.extra_tags }} alert-dismissable fade in" role="alert">
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                        {{ message }}
+                    </div>
+                {% endfor %}
             {% endif %}
             {% if form.non_field_errors %}
-                <div class="alert alert-danger alert-dismissable fade in" role="alert">
-                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                    {{ form.non_field_errors }}
-                </div>
+                {% for error in form.non_field_errors %}
+                    <div class="alert alert-danger alert-dismissable fade in" role="alert">
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                        {{ error }}
+                    </div>
+                {% endfor %}
             {% endif %}
         </div>
         </div>
         <div class="row">
-            <div class="col-sm-12 col-lg-10">
+            <div class="col-sm-12">
                 {% block content %}
                 {% endblock %}
             </div>
