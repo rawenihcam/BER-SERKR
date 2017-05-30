@@ -21,6 +21,10 @@ class Lifter (models.Model):
     def __str__(self):
         return self.first_name + ' ' + self.last_name
         
+    def get_programs(self):
+        programs = Program.objects.filter(lifter__exact=self.id)
+        return programs
+    
     def get_maxes(self):
         s = Lifter_Stats.objects.filter(lifter__exact=self.id
                 ).filter(reps__exact=1
@@ -88,6 +92,7 @@ class Program (models.Model):
     rep_scheme = models.ForeignKey (Rep_Scheme, on_delete=models.SET_NULL, blank=True, null=True)
     name = models.CharField (max_length=60)
     start_date = models.DateField (blank=True)
+    end_date = models.DateField (blank=True, null=True)
     is_current = models.BooleanField (default=False)
     auto_update_stats = models.BooleanField (default=True)
     #block_type

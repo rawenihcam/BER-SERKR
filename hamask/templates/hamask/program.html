@@ -1,0 +1,41 @@
+{% extends 'hamask/base.html' %}
+
+{% block content %}
+<h1 class="page-header">Edit program</h1>
+    
+<form method="post">
+    {% csrf_token %}
+    
+    {{ form.non_field_errors }}
+    <div class="row">
+        {% include 'hamask/form.html' with field=form.name div_class='col-sm-12 col-md-4 col-lg-3' %}
+        {% include 'hamask/form.html' with field=form.start_date div_class='col-sm-12 col-md-4 col-lg-3' %}
+    </div>    
+    <br/>
+    <div class="row">
+        {% include 'hamask/form.html' with field=form.rounding div_class='col-sm-12 col-md-4 col-lg-3' %}
+        {% include 'hamask/form.html' with field=form.auto_update_stats div_class='col-sm-12 col-md-4 col-lg-3' %}
+        {% include 'hamask/form.html' with field=form.rep_scheme div_class='col-sm-12 col-md-4 col-lg-3' %}
+    </div>
+    
+    <br/>
+    <!-- Buttons -->
+    <div class="row">
+        <div class="col-sm-12">
+            {% if id %}
+                <button type="submit" name="delete" value="delete" class="btn btn-danger"><i class="fa fa-trash"></i>&nbsp;DELETE</button>
+            {% endif %}
+            <button type="submit" name="save" value="save" class="btn btn-primary"><i class="fa fa-save"></i>&nbsp;SAVE</button>
+        </div>
+    </div>
+</form>
+
+<!-- Scripts -->
+<script>
+    $( function() {
+        $( "#id_start_date" ).datepicker({
+          dateFormat: "yy-mm-dd"
+        });
+    });
+</script>
+{% endblock %}
