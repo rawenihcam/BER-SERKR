@@ -19,7 +19,7 @@ class ProgramForm (ModelForm):
         }
         help_texts = {
             'start_date': _('Start date will be used to plan your workouts.'),
-            'rep_scheme': _('Will help you build your program, can be changed later.'),
+            'rep_scheme': _('Will help you build your program, can be changed for each exercise later.'),
             'auto_update_stats': _('Uncheck this if you don''t want the system to automatically log your new PRs.'),
         }
     

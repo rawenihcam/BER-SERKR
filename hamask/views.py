@@ -7,9 +7,9 @@ from django.urls import reverse
 from django.views import generic
 
 from .forms import *
-from .models import Lifter, Lifter_Stats, Program
+from .models import *
 from .control import Notification
-#fuckfuckfuckfuck
+
 # Create your views here.
 def index(request):
     if request.method == 'POST':
@@ -57,6 +57,7 @@ def program_update(request, pk, template_name='hamask/program.html'):
          raise Http404("Invalid program.")
     
     form = ProgramForm(request.POST or None, instance=program)
+    groups = program.get_workout_groups()
     
     if 'delete' in request.POST:
         program.delete()
@@ -69,8 +70,15 @@ def program_update(request, pk, template_name='hamask/program.html'):
             if 'save' in request.POST:
                 messages.success(request, Notification.success_message, extra_tags=Notification.success_class)
                 return HttpResponseRedirect (reverse ('hamask:program_update', kwargs={'pk':program.id}))
+            elif 'add_group' in request.POST:
+                order = program.get_next_workout_group_order()
+                group = Workout_Group(program=program, name='Block ' + str(order + 1), order=order)
+                group.save()
+                
+                messages.success(request, Notification.success_message, extra_tags=Notification.success_class)
+                return HttpResponseRedirect (reverse ('hamask:program_update', kwargs={'pk':program.id}))
         else:
-            return render (request, template_name, {'form': form, 'id': program.id,})
+            return render (request, template_name, {'form': form, 'groups': groups, 'id': program.id,})
     
 def logs(request):
     return render (request, 'hamask/logs.html')

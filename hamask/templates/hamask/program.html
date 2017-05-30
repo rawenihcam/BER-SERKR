@@ -3,7 +3,8 @@
 {% block content %}
 <h1 class="page-header">Edit program</h1>
     
-<form method="post">
+<!-- Program -->
+<form id="form" method="post">
     {% csrf_token %}
     
     {{ form.non_field_errors }}
@@ -29,6 +30,27 @@
         </div>
     </div>
 </form>
+
+<!-- Groups -->
+<br/>
+<div class="row">
+<div class="col-sm-12">
+    {% if groups %}
+        {% for group in groups %}
+            <div class="row">
+                <div class="col-xs-10"><h3>{{ group.name }}</h3></div>
+                <div class="col-xs-2">
+                    <button type="submit" name="add_workout" value="add_workout" class="btn btn-sm btn-success right">
+                    <i class="fa fa-plus"></i>
+                    </button>
+                </div>
+            </div>
+        {% endfor %}
+    {% endif %}
+    
+    <button type="submit" form="form" name="add_group" value="add_group" class="btn btn-primary"><i class="fa fa-plus"></i>&nbsp;ADD BLOCK</button>
+</div>
+</div>
 
 <!-- Scripts -->
 <script>

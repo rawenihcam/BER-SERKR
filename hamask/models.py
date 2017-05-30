@@ -87,6 +87,9 @@ class Rep_Scheme (models.Model):
     code = models.CharField (max_length=30)
     name = models.CharField (max_length=60)
     
+    def __str__(self):
+      return self.name
+    
 class Program (models.Model):
     lifter = models.ForeignKey (Lifter, on_delete=models.CASCADE)
     rep_scheme = models.ForeignKey (Rep_Scheme, on_delete=models.SET_NULL, blank=True, null=True)
@@ -107,10 +110,26 @@ class Program (models.Model):
     
     def __str__(self):
         return self.name
+        
+    def get_workout_groups(self):
+        groups = Workout_Group.objects.filter(program__exact=self.id)
+        
+        return groups
+    
+    def get_next_workout_group_order(self):
+        groups = self.get_workout_groups()
+        
+        if groups.exists():
+            order = groups.aggregate(max_order=Max('order'))['max_order'] + 1
+        else:
+            order = 0
+        
+        return order
     
 class Workout_Group (models.Model):
     program = models.ForeignKey (Program, on_delete=models.CASCADE)
     name = models.CharField (max_length=60)
+    order = models.PositiveIntegerField ()
     
     def __str__(self):
         return self.name
@@ -118,6 +137,7 @@ class Workout_Group (models.Model):
 class Workout (models.Model):
     workout_group = models.ForeignKey (Workout_Group, on_delete=models.CASCADE)
     name = models.CharField (max_length=60)
+    order = models.PositiveIntegerField ()
     
     def __str__(self):
         return self.name
