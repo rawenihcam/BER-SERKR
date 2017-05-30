@@ -9,7 +9,7 @@ from django.views import generic
 from .forms import *
 from .models import Lifter, Lifter_Stats, Program
 from .control import Notification
-
+#fuckfuckfuckfuck
 # Create your views here.
 def index(request):
     if request.method == 'POST':
