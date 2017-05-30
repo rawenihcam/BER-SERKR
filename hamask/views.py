@@ -7,7 +7,7 @@ from django.urls import reverse
 from django.views import generic
 
 from .forms import *
-from .models import Lifter, Lifter_Stats
+from .models import Lifter, Lifter_Stats, Program
 from .control import Notification
 
 # Create your views here.
@@ -33,7 +33,44 @@ def index(request):
             return render (request, 'hamask/index.html')
             
 def programs(request):
-    return render (request, 'hamask/programs.html')
+    lifter = Lifter.objects.get(pk=request.session['lifter'])
+    programs = lifter.get_programs()
+    return render (request, 'hamask/programs.html', {'programs': programs})
+
+def program_create(request, template_name='hamask/program.html'):
+    form = ProgramForm(request.POST or None)
+        
+    if form.is_valid():
+        program = form.save(commit=False)
+        program.lifter = Lifter.objects.get(pk=request.session['lifter'])
+        program.save()
+                
+        if 'save' in request.POST:
+            messages.success(request, Notification.success_message, extra_tags=Notification.success_class)
+            return HttpResponseRedirect (reverse ('hamask:program_update', kwargs={'pk':program.id}))
+    else:
+        return render (request, template_name, {'form': form})
+
+def program_update(request, pk, template_name='hamask/program.html'):
+    program = get_object_or_404(Program, pk=pk)
+    if program.lifter.id != request.session['lifter']:
+         raise Http404("Invalid program.")
+    
+    form = ProgramForm(request.POST or None, instance=program)
+    
+    if 'delete' in request.POST:
+        program.delete()
+        messages.success(request, Notification.success_message, extra_tags=Notification.success_class)
+        return HttpResponseRedirect (reverse ('hamask:programs'))
+    else:
+        if form.is_valid():
+            form.save()
+                    
+            if 'save' in request.POST:
+                messages.success(request, Notification.success_message, extra_tags=Notification.success_class)
+                return HttpResponseRedirect (reverse ('hamask:program_update', kwargs={'pk':program.id}))
+        else:
+            return render (request, template_name, {'form': form, 'id': program.id,})
     
 def logs(request):
     return render (request, 'hamask/logs.html')
