@@ -4,7 +4,7 @@ from django import forms
 from django.forms import ModelForm
 from django.utils.translation import ugettext_lazy as _
 
-from .models import Lifter_Stats, Exercise, Program
+from .models import Lifter_Stats, Exercise, Program, Workout, Workout_Exercise
 
 class LoginForm (forms.Form):
     email = forms.EmailField (label='Email', max_length=254)
@@ -22,7 +22,17 @@ class ProgramForm (ModelForm):
             'rep_scheme': _('Will help you build your program, can be changed for each exercise later.'),
             'auto_update_stats': _('Uncheck this if you don''t want the system to automatically log your new PRs.'),
         }
-    
+
+class WorkoutForm (ModelForm):
+    class Meta:
+        model = Workout
+        fields = ['name']
+        
+class WorkoutExerciseForm (ModelForm):
+    class Meta:
+        model = Workout_Exercise
+        fields = ['exercise', 'sets', 'reps', 'weight', 'percentage', 'rpe', 'is_amrap', 'notes']
+        
 class StatForm (ModelForm):
     # Redefine constructor to enforce required fields
     def __init__(self, *args, **kwargs):

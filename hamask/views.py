@@ -8,7 +8,7 @@ from django.views import generic
 
 from .forms import *
 from .models import *
-from .control import Notification
+from .control import *
 
 # Create your views here.
 def index(request):
@@ -57,7 +57,6 @@ def program_update(request, pk, template_name='hamask/program.html'):
          raise Http404("Invalid program.")
     
     form = ProgramForm(request.POST or None, instance=program)
-    groups = program.get_workout_groups()
     
     if 'delete' in request.POST:
         program.delete()
@@ -77,9 +76,51 @@ def program_update(request, pk, template_name='hamask/program.html'):
                 
                 messages.success(request, Notification.success_message, extra_tags=Notification.success_class)
                 return HttpResponseRedirect (reverse ('hamask:program_update', kwargs={'pk':program.id}))
+            elif 'add_workout' in request.POST:
+                group = Workout_Group.objects.get(pk=request.POST['add_workout'])
+                order = group.get_next_workout_order()
+                workout = Workout(workout_group=group, name='Day ' + str(order + 1), order=order)
+                workout.save()
+                
+                return HttpResponseRedirect (reverse ('hamask:workout_update', kwargs={'pk':workout.id}))
         else:
-            return render (request, template_name, {'form': form, 'groups': groups, 'id': program.id,})
+            groups = program.get_workout_groups()
+            workouts = {}
+            exercises = {}
+            for group in groups:
+                workouts[group.id] = group.get_workouts()
+            for k, w in workouts.items():
+                for workout in w:
+                    exercises[workout.id] = workout.get_workout_exercises()
+            
+            return render (request, template_name, {'form': form
+                            , 'groups': groups
+                            , 'workouts': workouts
+                            , 'exercises': exercises
+                            , 'id': program.id,})
+
+def workout_update(request, pk, template_name='hamask/workout.html'):
+    workout = get_object_or_404(Workout, pk=pk)
+    if workout.workout_group.program.lifter.id != request.session['lifter']:
+         raise Http404("Invalid workout.")
     
+    form = WorkoutForm(request.POST or None, instance=workout)
+    
+    if 'delete' in request.POST:
+        program = workout.workout_group.program
+        workout.delete()
+        messages.success(request, Notification.success_message, extra_tags=Notification.success_class)
+        return HttpResponseRedirect (reverse ('hamask:program_update', kwargs={'pk':program.id}))
+    else:
+        if form.is_valid():
+            form.save()
+                    
+            if 'save' in request.POST:
+                messages.success(request, Notification.success_message, extra_tags=Notification.success_class)
+                return HttpResponseRedirect (reverse ('hamask:workout_update', kwargs={'pk':workout.id}))
+        else:
+            return render (request, template_name, {'form': form, 'id': workout.id,})
+            
 def logs(request):
     return render (request, 'hamask/logs.html')
     

@@ -133,6 +133,21 @@ class Workout_Group (models.Model):
     
     def __str__(self):
         return self.name
+        
+    def get_workouts(self):
+        workouts = Workout.objects.filter(workout_group__exact=self.id)
+        
+        return workouts
+    
+    def get_next_workout_order(self):
+        workouts = self.get_workouts()
+        
+        if workouts.exists():
+            order = workouts.aggregate(max_order=Max('order'))['max_order'] + 1
+        else:
+            order = 0
+        
+        return order
     
 class Workout (models.Model):
     workout_group = models.ForeignKey (Workout_Group, on_delete=models.CASCADE)
@@ -141,6 +156,10 @@ class Workout (models.Model):
     
     def __str__(self):
         return self.name
+        
+    def get_workout_exercises(self):
+        exercises = Workout_Exercise.objects.filter(workout__exact=self.id)
+        return exercises
         
 class Workout_Exercise (models.Model):
     workout = models.ForeignKey (Workout, on_delete=models.CASCADE)
