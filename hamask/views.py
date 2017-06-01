@@ -1,5 +1,6 @@
 from django.contrib import messages
 from django.contrib.auth import authenticate, login
+from django.forms import modelformset_factory
 from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render, get_object_or_404
 from django.template import loader
@@ -104,7 +105,9 @@ def workout_update(request, pk, template_name='hamask/workout.html'):
     if workout.workout_group.program.lifter.id != request.session['lifter']:
          raise Http404("Invalid workout.")
     
-    form = WorkoutForm(request.POST or None, instance=workout)
+    form = WorkoutForm(request.POST or None, instance=workout, prefix='workout')
+    ExerciseFormset = modelformset_factory(Workout_Exercise, form=WorkoutExerciseForm)
+    exercise_formset = ExerciseFormset(request.POST or None, prefix='exercise', queryset=workout.get_workout_exercises())
     
     if 'delete' in request.POST:
         program = workout.workout_group.program
@@ -112,14 +115,18 @@ def workout_update(request, pk, template_name='hamask/workout.html'):
         messages.success(request, Notification.success_message, extra_tags=Notification.success_class)
         return HttpResponseRedirect (reverse ('hamask:program_update', kwargs={'pk':program.id}))
     else:
-        if form.is_valid():
+        if form.is_valid() and exercise_formset.is_valid():
             form.save()
-                    
-            if 'save' in request.POST:
-                messages.success(request, Notification.success_message, extra_tags=Notification.success_class)
-                return HttpResponseRedirect (reverse ('hamask:workout_update', kwargs={'pk':workout.id}))
+            
+            exercises = exercise_formset.save(commit=False)
+            for exercise in exercises:
+                exercise.workout = workout
+                exercise.save()
+            
+            messages.success(request, Notification.success_message, extra_tags=Notification.success_class)
+            return HttpResponseRedirect (reverse ('hamask:workout_update', kwargs={'pk':workout.id}))
         else:
-            return render (request, template_name, {'form': form, 'id': workout.id,})
+            return render (request, template_name, {'form': form, 'exercise_formset': exercise_formset, 'id': workout.id,})
             
 def logs(request):
     return render (request, 'hamask/logs.html')

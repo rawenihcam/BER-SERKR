@@ -34,6 +34,10 @@ button.right {
     float: right;
 }
 
+div.btn-group.right {
+    float: right;
+}
+
 /* Regions */
 h3 {
     font-size: 20px;
@@ -49,7 +53,15 @@ h4 {
     margin-bottom: 5px;
 }
 
+td.center {
+    text-align: center;
+}
+
 /* Forms */
 div.input-group {
     width: 100%;
+}
+
+div.tabular {
+    margin: 5px;
 }

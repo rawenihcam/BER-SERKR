@@ -1,7 +1,7 @@
 import datetime
 
 from django import forms
-from django.forms import ModelForm
+from django.forms import ModelForm, BaseModelFormSet
 from django.utils.translation import ugettext_lazy as _
 
 from .models import Lifter_Stats, Exercise, Program, Workout, Workout_Exercise
@@ -31,7 +31,7 @@ class WorkoutForm (ModelForm):
 class WorkoutExerciseForm (ModelForm):
     class Meta:
         model = Workout_Exercise
-        fields = ['exercise', 'sets', 'reps', 'weight', 'percentage', 'rpe', 'is_amrap', 'notes']
+        fields = ['exercise', 'sets', 'reps', 'rep_scheme', 'weight', 'percentage', 'rpe', 'is_amrap', 'notes']
         
 class StatForm (ModelForm):
     # Redefine constructor to enforce required fields
