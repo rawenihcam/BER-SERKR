@@ -57,14 +57,47 @@
                 </div>
                 
                 {% if workouts|get_item:group.id %}
-                    <table class="table table-bordered">
+                    <table class="table">
+                    <thead>
+                        <tr>
+                            <th class="col-sm-2 invisible"></th>
+                            <th class="col-sm-10 invisible"></th>
+                        </tr>
+                    </thead>
+                    
                     <tbody>
                         {% for workout in workouts|get_item:group.id %}
                             <tr>
-                                <td><a href="{% url 'hamask:workout_update' workout.id %}"><i class="fa fa-pencil"></i></a></td>
-                                <td>{{ workout.name }}</td>
-                                <td>&nbsp;
-                                </td>
+                            <td><a href="{% url 'hamask:workout_update' workout.id %}"><i class="fa fa-pencil"></i></a>&nbsp;&nbsp;&nbsp;
+                                {{ workout.name }}
+                            </td>
+                            <td>
+                                {% if exercises|get_item:workout.id %}
+                                    <table class="table table-condensed table-exercise">
+                                    <thead>
+                                        <tr>
+                                            <th class="col-sm-3 invisible"></th>
+                                            <th class="col-sm-1 invisible"></th>
+                                            <th class="col-sm-1 invisible"></th>
+                                            <th class="col-sm-1 invisible"></th>
+                                            <th class="col-sm-7 invisible"></th>
+                                        </tr>
+                                    </thead>
+                    
+                                    <tbody>
+                                        {% for exercise in exercises|get_item:workout.id %}
+                                            <tr>
+                                            <td>{{ exercise.exercise.name }}</td>
+                                            <td>{{ exercise.sets }}</td>
+                                            <td>{{ exercise.reps }}</td>
+                                            <td>{{ exercise.loading }}</td>
+                                            <td>&nbsp;</td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                    </table>
+                                {% endif %}
+                            </td>
                             </tr>
                         {% endfor %}
                     </tbody>

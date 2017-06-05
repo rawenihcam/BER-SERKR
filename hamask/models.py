@@ -88,7 +88,7 @@ class Rep_Scheme (models.Model):
     name = models.CharField (max_length=60)
     
     def __str__(self):
-      return self.name
+      return self.code + ':' + self.name
     
 class Program (models.Model):
     lifter = models.ForeignKey (Lifter, on_delete=models.CASCADE)
@@ -173,6 +173,18 @@ class Workout_Exercise (models.Model):
     time = models.PositiveIntegerField (blank=True, null=True)
     is_amrap = models.BooleanField (default=False)
     notes = models.TextField (blank=True, null=True)
+    
+    @property
+    def loading(self):
+        if not hasattr(self, '_loading'):
+            if self.rep_scheme.code == 'MAX_PERCENTAGE': 
+                self._loading = str(self.percentage) + '%'
+            elif self.rep_scheme.code == 'RPE':
+                self._loading = 'RPE ' + str(self.rpe)
+            elif self.rep_scheme.code == 'WEIGHT':
+                self._loading = str(self.weight)
+        
+        return self._loading
     
 class Workout_Log (models.Model):
     workout = models.ForeignKey (Workout, on_delete=models.SET_NULL, blank=True, null=True)
