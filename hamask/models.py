@@ -88,7 +88,7 @@ class Rep_Scheme (models.Model):
     name = models.CharField (max_length=60)
     
     def __str__(self):
-      return self.code + ':' + self.name
+      return self.name
     
 class Program (models.Model):
     lifter = models.ForeignKey (Lifter, on_delete=models.CASCADE)
@@ -112,7 +112,8 @@ class Program (models.Model):
         return self.name
         
     def get_workout_groups(self):
-        groups = Workout_Group.objects.filter(program__exact=self.id)
+        groups = Workout_Group.objects.filter(program__exact=self.id
+                    ).order_by('order')
         
         return groups
     
@@ -135,7 +136,8 @@ class Workout_Group (models.Model):
         return self.name
         
     def get_workouts(self):
-        workouts = Workout.objects.filter(workout_group__exact=self.id)
+        workouts = Workout.objects.filter(workout_group__exact=self.id
+                    ).order_by('order')
         
         return workouts
     
@@ -149,6 +151,26 @@ class Workout_Group (models.Model):
         
         return order
     
+    def set_order_up(self):
+        previous = Workout_Group.objects.filter(program__exact=self.program.id
+                    ).filter(order__exact=self.order - 1
+                    ).get()
+                    
+        previous.order += 1
+        self.order -= 1
+        previous.save()
+        self.save()
+        
+    def set_order_down(self):
+        next = Workout_Group.objects.filter(program__exact=self.program.id
+                    ).filter(order__exact=self.order + 1
+                    ).get()
+                    
+        next.order -= 1
+        self.order += 1
+        next.save()
+        self.save()
+    
 class Workout (models.Model):
     workout_group = models.ForeignKey (Workout_Group, on_delete=models.CASCADE)
     name = models.CharField (max_length=60)
@@ -158,13 +180,15 @@ class Workout (models.Model):
         return self.name
         
     def get_workout_exercises(self):
-        exercises = Workout_Exercise.objects.filter(workout__exact=self.id)
+        exercises = Workout_Exercise.objects.filter(workout__exact=self.id
+                        ).order_by('order')
         return exercises
         
 class Workout_Exercise (models.Model):
     workout = models.ForeignKey (Workout, on_delete=models.CASCADE)
     exercise = models.ForeignKey (Exercise, on_delete=models.PROTECT)    
     rep_scheme = models.ForeignKey (Rep_Scheme, on_delete=models.PROTECT)
+    order = models.PositiveIntegerField (default=0)
     sets = models.PositiveIntegerField (blank=True, null=True)
     reps = models.PositiveIntegerField (blank=True, null=True)
     weight = models.PositiveIntegerField (blank=True, null=True)

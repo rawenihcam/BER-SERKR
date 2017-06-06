@@ -34,13 +34,14 @@ button.right {
     float: right;
 }
 
-div.btn-group.right {
+div.right {
     float: right;
 }
 
 /* Regions */
 h3 {
     font-size: 20px;
+    display: inline-block;
 }
 
 /* Lists */

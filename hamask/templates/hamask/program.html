@@ -23,6 +23,7 @@
     <!-- Buttons -->
     <div class="row">
         <div class="col-sm-12">
+            <a href="{% url 'hamask:programs' %}" class="btn btn-default"><i class="fa fa-arrow-left"></i>&nbsp;BACK</a>
             {% if id %}
                 <button type="submit" name="delete" value="delete" class="btn btn-danger"><i class="fa fa-trash"></i>&nbsp;DELETE</button>
             {% endif %}
@@ -38,9 +39,14 @@
     {% if groups %}
         {% for group in groups %}
             <div class="row">
-                <div class="col-xs-10"><h3>{{ group.name }}</h3></div>
+                <div class="col-xs-10">
+                    <h3>{{ group.name }}</h3>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    <a href="javascript:group_order_up({{ group.id }});"><i id="" class="fa fa-arrow-down"></i></a>&nbsp;&nbsp;
+                    <a href="#"><i id="" class="fa fa-arrow-up"></i></a>
+                </div>
+                
                 <div class="col-xs-2">                    
-                    <button type="submit" form="form" name="add_workout" value="{{ group.id }}" class="btn btn-sm btn-success right">
+                    <button type="submit" form="form" name="add_workout" value="{{ group.id }}" title="Add workout" class="btn btn-sm btn-success right">
                     <i class="fa fa-plus"></i>
                     </button>
                     

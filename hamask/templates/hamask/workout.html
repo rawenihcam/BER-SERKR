@@ -1,8 +1,6 @@
 {% extends 'hamask/base.html' %}
 
-{% block content %}
-<h1 class="page-header">Workout</h1>
-    
+{% block content %}    
 <form method="post">
     {% csrf_token %}
     
@@ -16,6 +14,7 @@
     <!-- Buttons -->
     <div class="row">
         <div class="col-sm-12">
+            <a href="{% url 'hamask:program_update' program_id %}" class="btn btn-default"><i class="fa fa-arrow-left"></i>&nbsp;BACK</a>
             {% if id %}
                 <button type="submit" name="delete" value="delete" class="btn btn-danger"><i class="fa fa-trash"></i>&nbsp;DELETE</button>
             {% endif %}
@@ -37,7 +36,7 @@
                 <th class="col-sm-1">% of Max</th>
                 <th class="col-sm-1">Weight</th>
                 <th class="col-sm-1">RPE</th>
-                <th class="col-sm-1">Is AMRAP</th>
+                <th class="col-sm-1">AMRAP</th>
                 <th class="col-sm-1">&nbsp;</th>
             </tr>
         </thead>

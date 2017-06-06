@@ -1,7 +1,8 @@
 from django.contrib import messages
 from django.contrib.auth import authenticate, login
+from django.contrib.auth.models import User
 from django.forms import modelformset_factory
-from django.http import HttpResponseRedirect, HttpResponse
+from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
 from django.shortcuts import render, get_object_or_404
 from django.template import loader
 from django.urls import reverse
@@ -100,6 +101,19 @@ def program_update(request, pk, template_name='hamask/program.html'):
                             , 'exercises': exercises
                             , 'id': program.id,})
 
+def reorder_group(request):
+    group = Workout_Group.objects.get(pk=request.GET.get('group_id', None))
+    order = request.GET.get('order', None)
+    
+    if order == 'UP':
+        group.order_up()
+    elif order == 'DOWN':
+        group.order_down()
+        
+    data = {}
+    
+    return JsonResponse(data)
+                            
 def workout_update(request, pk, template_name='hamask/workout.html'):
     workout = get_object_or_404(Workout, pk=pk)
     if workout.workout_group.program.lifter.id != request.session['lifter']:
@@ -126,7 +140,10 @@ def workout_update(request, pk, template_name='hamask/workout.html'):
             messages.success(request, Notification.success_message, extra_tags=Notification.success_class)
             return HttpResponseRedirect (reverse ('hamask:workout_update', kwargs={'pk':workout.id}))
         else:
-            return render (request, template_name, {'form': form, 'exercise_formset': exercise_formset, 'id': workout.id,})
+            return render (request, template_name, {'form': form
+                                                   , 'exercise_formset': exercise_formset
+                                                   , 'id': workout.id
+                                                   , 'program_id': workout.workout_group.program.id,})
             
 def logs(request):
     return render (request, 'hamask/logs.html')

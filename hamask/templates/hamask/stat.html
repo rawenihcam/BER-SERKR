@@ -21,6 +21,7 @@
     <!-- Buttons -->
     <div class="row">
         <div class="col-sm-12">
+            <a href="{% url 'hamask:stats' %}" class="btn btn-default"><i class="fa fa-arrow-left"></i>&nbsp;BACK</a>
             {% if id %}
                 <button type="submit" name="delete" value="delete" class="btn btn-danger"><i class="fa fa-trash"></i>&nbsp;DELETE</button>
             {% endif %}

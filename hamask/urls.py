@@ -7,6 +7,7 @@ urlpatterns = [
 	url(r'^$', views.index, name='index'),
 	url(r'^login/', views.index, name='index'),
 	url(r'^programs/program/workout/(?P<pk>[0-9]+)', views.workout_update, name='workout_update'),
+	url(r'^ajax/reorder_group/', views.reorder_group, name='reorder_group'),
 	url(r'^programs/program/(?P<pk>[0-9]+)', views.program_update, name='program_update'),
 	url(r'^programs/program/', views.program_create, name='program_create'),
 	url(r'^programs/', views.programs, name='programs'),
