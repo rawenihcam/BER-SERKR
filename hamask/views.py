@@ -106,9 +106,9 @@ def reorder_group(request):
     order = request.GET.get('order', None)
     
     if order == 'UP':
-        group.order_up()
+        group.set_order_up()
     elif order == 'DOWN':
-        group.order_down()
+        group.set_order_down()
         
     data = {}
     
