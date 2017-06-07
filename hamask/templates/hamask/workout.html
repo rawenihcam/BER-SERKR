@@ -43,7 +43,7 @@
                 
         <tbody>
         {% for formset in exercise_formset %}
-            <tr>
+            <tr id="tr_{{ formset.id.value }}">
                 <td>{% include 'hamask/formset.html' with field=formset.exercise div_class='tabular' %}</td>
                 <td>{% include 'hamask/formset.html' with field=formset.sets div_class='tabular' %}</td>
                 <td>{% include 'hamask/formset.html' with field=formset.reps div_class='tabular' %}</td>
@@ -53,8 +53,12 @@
                 <td>{% include 'hamask/formset.html' with field=formset.rpe div_class='tabular' %}</td>
                 <td class="center">{% include 'hamask/formset.html' with field=formset.is_amrap div_class='tabular' %}</td>
                 <td>
-                    {% for hidden in formset.hidden_fields %}{{ hidden }}{% endfor %}
-                    <i id="" class="fa fa-chevron-down"></i>&nbsp;<i id="" class="fa fa-chevron-up"></i>
+                    {% if formset.id.value != None %}
+                        {% for hidden in formset.hidden_fields %}{{ hidden }}{% endfor %}
+                        <a href="javascript:exercise_order({{ formset.id.value }}, 'DOWN');"><i class="fa fa-chevron-down"></i></a>&nbsp;&nbsp;
+                        <a href="javascript:exercise_order({{ formset.id.value }}, 'UP');"><i class="fa fa-chevron-up"></i></a>&nbsp;&nbsp;
+                        <a href="javascript:exercise_delete({{ formset.id.value }});"><i class="fa fa-times"></i></a>
+                    {% endif %}
                 </td>
             </tr>
         {% endfor %}

@@ -1,6 +1,7 @@
 from django.contrib import messages
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.models import User
+from django.core.exceptions import ObjectDoesNotExist
 from django.forms import modelformset_factory
 from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
 from django.shortcuts import render, get_object_or_404
@@ -135,6 +136,9 @@ def workout_update(request, pk, template_name='hamask/workout.html'):
             exercises = exercise_formset.save(commit=False)
             for exercise in exercises:
                 exercise.workout = workout
+                if exercise.order == None:
+                    exercise.order = workout.get_next_exercise_order()
+                    
                 exercise.save()
             
             messages.success(request, Notification.success_message, extra_tags=Notification.success_class)
@@ -144,7 +148,31 @@ def workout_update(request, pk, template_name='hamask/workout.html'):
                                                    , 'exercise_formset': exercise_formset
                                                    , 'id': workout.id
                                                    , 'program_id': workout.workout_group.program.id,})
-            
+
+def reorder_exercise(request):
+    exercise = Workout_Exercise.objects.get(pk=request.GET.get('exercise_id', None))
+    order = request.GET.get('order', None)
+    data = {}
+    
+    try:
+        if order == 'UP':
+            exercise.set_order_up()
+        elif order == 'DOWN':
+            exercise.set_order_down()
+    except ObjectDoesNotExist:
+        pass
+    else:
+        data = {'exercise_id': exercise.id}
+    
+    return JsonResponse(data)
+
+def delete_exercise(request):
+    exercise = Workout_Exercise.objects.get(pk=request.GET.get('exercise_id', None))
+    data = {'exercise_id': exercise.id}
+    exercise.delete()    
+    
+    return JsonResponse(data)
+
 def logs(request):
     return render (request, 'hamask/logs.html')
     

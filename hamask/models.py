@@ -152,24 +152,31 @@ class Workout_Group (models.Model):
         return order
     
     def set_order_up(self):
-        previous = Workout_Group.objects.filter(program__exact=self.program.id
-                    ).filter(order__exact=self.order - 1
-                    ).get()
-                    
-        previous.order += 1
-        self.order -= 1
-        previous.save()
-        self.save()
+        try:
+            previous = Workout_Group.objects.filter(program__exact=self.program.id
+                        ).filter(order__exact=self.order - 1
+                        ).get()
+                        
+            previous.order += 1
+            self.order -= 1
+            previous.save()
+            self.save()
+        except ObjectDoesNotExist:
+            pass
         
     def set_order_down(self):
-        next = Workout_Group.objects.filter(program__exact=self.program.id
-                    ).filter(order__exact=self.order + 1
-                    ).get()
-                    
-        next.order -= 1
-        self.order += 1
-        next.save()
-        self.save()
+        try:
+            next = Workout_Group.objects.filter(program__exact=self.program.id
+                        ).filter(order__exact=self.order + 1
+                        ).get()
+                      
+            next.order -= 1
+            self.order += 1
+            next.save()
+            self.save()
+        except ObjectDoesNotExist:
+            pass
+            
     
 class Workout (models.Model):
     workout_group = models.ForeignKey (Workout_Group, on_delete=models.CASCADE)
@@ -184,6 +191,16 @@ class Workout (models.Model):
                         ).order_by('order')
         return exercises
         
+    def get_next_exercise_order(self):
+        exercises = self.get_workout_exercises()
+        
+        if exercises.exists():
+            order = exercises.aggregate(max_order=Max('order'))['max_order'] + 1
+        else:
+            order = 0
+        
+        return order
+        
 class Workout_Exercise (models.Model):
     workout = models.ForeignKey (Workout, on_delete=models.CASCADE)
     exercise = models.ForeignKey (Exercise, on_delete=models.PROTECT)    
@@ -197,6 +214,30 @@ class Workout_Exercise (models.Model):
     time = models.PositiveIntegerField (blank=True, null=True)
     is_amrap = models.BooleanField (default=False)
     notes = models.TextField (blank=True, null=True)
+    
+    """def delete(self, *args, **kwargs):
+        #reorder shit
+        super(Blog, self).save(*args, **kwargs) # Call the "real" delete() method.
+    """
+    def set_order_up(self):
+        previous = Workout_Exercise.objects.filter(workout__exact=self.workout.id
+                    ).filter(order__exact=self.order - 1
+                    ).get()
+                    
+        previous.order += 1
+        self.order -= 1
+        previous.save()
+        self.save()
+        
+    def set_order_down(self):
+        next = Workout_Exercise.objects.filter(workout__exact=self.workout.id
+                    ).filter(order__exact=self.order + 1
+                    ).get()
+                  
+        next.order -= 1
+        self.order += 1
+        next.save()
+        self.save()
     
     @property
     def loading(self):

@@ -31,7 +31,7 @@ class WorkoutForm (ModelForm):
 class WorkoutExerciseForm (ModelForm):
     class Meta:
         model = Workout_Exercise
-        fields = ['exercise', 'sets', 'reps', 'rep_scheme', 'weight', 'percentage', 'rpe', 'is_amrap', 'notes']
+        fields = ['id', 'exercise', 'sets', 'reps', 'rep_scheme', 'weight', 'percentage', 'rpe', 'is_amrap', 'notes']
         
 class StatForm (ModelForm):
     # Redefine constructor to enforce required fields
