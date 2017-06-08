@@ -38,7 +38,7 @@
 <div class="col-sm-12">
     {% if groups %}
         {% for group in groups %}
-            <div class="row">
+            <div id="div_{{ group.id }}" class="row">
                 <div class="col-xs-10">
                     <h3>{{ group.name }}</h3>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                     <a href="javascript:group_order({{ group.id }}, 'DOWN');"><i id="" class="fa fa-arrow-down"></i></a>&nbsp;&nbsp;
@@ -56,7 +56,7 @@
                         </button>
                         <ul class="dropdown-menu">
                             <li><a href="javascript:$('#form').submit();" name="copy_group" value="{{ group.id }}"><i class="fa fa-copy"></i>&nbsp;COPY</a></li>
-                            <li><a href="javascript:$('#form').submit();" name="delete_group" value="{{ group.id }}"><i class="fa fa-trash"></i>&nbsp;DELETE</a></li>
+                            <li><a href="javascript:group_delete({{ group.id }});"><i class="fa fa-trash"></i>&nbsp;DELETE</a></li>
                         </ul>
                         &nbsp;
                     </div>

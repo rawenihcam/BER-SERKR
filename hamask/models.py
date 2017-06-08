@@ -135,6 +135,22 @@ class Workout_Group (models.Model):
     def __str__(self):
         return self.name
         
+    def delete(self, *args, **kwargs):
+        # Reorder groups
+        next_groups = Workout_Group.objects.filter(program__exact=self.program.id
+                            ).filter(order__gt=self.order)
+                            
+        for group in next_groups:
+            group.order -= 1
+            group.save()
+        
+        # Call the "real" delete() method
+        super(Workout_Group, self).delete(*args, **kwargs)
+        
+    #def copy(self, *args, **kwargs):
+        #
+        
+        
     def get_workouts(self):
         workouts = Workout.objects.filter(workout_group__exact=self.id
                     ).order_by('order')
@@ -152,30 +168,24 @@ class Workout_Group (models.Model):
         return order
     
     def set_order_up(self):
-        try:
-            previous = Workout_Group.objects.filter(program__exact=self.program.id
-                        ).filter(order__exact=self.order - 1
-                        ).get()
-                        
-            previous.order += 1
-            self.order -= 1
-            previous.save()
-            self.save()
-        except ObjectDoesNotExist:
-            pass
+        previous = Workout_Group.objects.filter(program__exact=self.program.id
+                    ).filter(order__exact=self.order - 1
+                    ).get()
+                    
+        previous.order += 1
+        self.order -= 1
+        previous.save()
+        self.save()
         
     def set_order_down(self):
-        try:
-            next = Workout_Group.objects.filter(program__exact=self.program.id
-                        ).filter(order__exact=self.order + 1
-                        ).get()
-                      
-            next.order -= 1
-            self.order += 1
-            next.save()
-            self.save()
-        except ObjectDoesNotExist:
-            pass
+        next = Workout_Group.objects.filter(program__exact=self.program.id
+                    ).filter(order__exact=self.order + 1
+                    ).get()
+                  
+        next.order -= 1
+        self.order += 1
+        next.save()
+        self.save()
             
     
 class Workout (models.Model):
@@ -185,6 +195,18 @@ class Workout (models.Model):
     
     def __str__(self):
         return self.name
+        
+    def delete(self, *args, **kwargs):
+        # Reorder workouts
+        next_workouts = Workout.objects.filter(workout_group__exact=self.workout_group.id
+                            ).filter(order__gt=self.order)
+                            
+        for workout in next_workouts:
+            workout.order -= 1
+            workout.save()
+        
+        # Call the "real" delete() method
+        super(Workout, self).delete(*args, **kwargs)
         
     def get_workout_exercises(self):
         exercises = Workout_Exercise.objects.filter(workout__exact=self.id
@@ -205,7 +227,7 @@ class Workout_Exercise (models.Model):
     workout = models.ForeignKey (Workout, on_delete=models.CASCADE)
     exercise = models.ForeignKey (Exercise, on_delete=models.PROTECT)    
     rep_scheme = models.ForeignKey (Rep_Scheme, on_delete=models.PROTECT)
-    order = models.PositiveIntegerField (default=0)
+    order = models.PositiveIntegerField ()
     sets = models.PositiveIntegerField (blank=True, null=True)
     reps = models.PositiveIntegerField (blank=True, null=True)
     weight = models.PositiveIntegerField (blank=True, null=True)
@@ -215,10 +237,18 @@ class Workout_Exercise (models.Model):
     is_amrap = models.BooleanField (default=False)
     notes = models.TextField (blank=True, null=True)
     
-    """def delete(self, *args, **kwargs):
-        #reorder shit
-        super(Blog, self).save(*args, **kwargs) # Call the "real" delete() method.
-    """
+    def delete(self, *args, **kwargs):
+        # Reorder exercises
+        next_exercises = Workout_Exercise.objects.filter(workout__exact=self.workout.id
+                            ).filter(order__gt=self.order)
+                            
+        for exercise in next_exercises:
+            exercise.order -= 1
+            exercise.save()
+        
+        # Call the "real" delete() method
+        super(Workout_Exercise, self).delete(*args, **kwargs)
+    
     def set_order_up(self):
         previous = Workout_Exercise.objects.filter(workout__exact=self.workout.id
                     ).filter(order__exact=self.order - 1

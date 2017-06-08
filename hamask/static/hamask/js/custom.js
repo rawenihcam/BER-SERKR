@@ -8,8 +8,32 @@ function group_order(p_id, p_order) {
         },
         dataType: 'json',
         success: function (data) {
+            if (typeof data.group_id !== "undefined"){
+                row = $('#div_'+p_id);            
+                if (p_order == 'UP'){
+                    row.insertBefore(row.prev('div.row'));
+                }
+                else if (p_order == 'DOWN'){
+                    row.insertAfter(row.next('div.row'));
+                }
+            }
         }
       });
+}
+
+function group_delete(p_id) {
+    $.ajax({
+        url: '/ajax/delete_group/',
+        data: {
+          'group_id': p_id
+        },
+        dataType: 'json',
+        success: function (data) {
+            if (typeof data.group_id !== "undefined"){
+                $('#div_'+p_id).remove();
+            }
+        }
+    });
 }
 
 /* Workout_Exercise */

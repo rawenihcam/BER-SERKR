@@ -105,16 +105,27 @@ def program_update(request, pk, template_name='hamask/program.html'):
 def reorder_group(request):
     group = Workout_Group.objects.get(pk=request.GET.get('group_id', None))
     order = request.GET.get('order', None)
-    
-    if order == 'UP':
-        group.set_order_up()
-    elif order == 'DOWN':
-        group.set_order_down()
-        
     data = {}
     
+    try:
+        if order == 'UP':
+            group.set_order_up()
+        elif order == 'DOWN':
+            group.set_order_down()
+    except ObjectDoesNotExist:
+        pass
+    else:
+        data = {'group_id': group.id}
+    
     return JsonResponse(data)
-                            
+
+def delete_group(request):
+    group = Workout_Group.objects.get(pk=request.GET.get('group_id', None))
+    data = {'group_id': exercise.id}
+    group.delete()    
+    
+    return JsonResponse(data)
+    
 def workout_update(request, pk, template_name='hamask/workout.html'):
     workout = get_object_or_404(Workout, pk=pk)
     if workout.workout_group.program.lifter.id != request.session['lifter']:
@@ -138,7 +149,7 @@ def workout_update(request, pk, template_name='hamask/workout.html'):
                 exercise.workout = workout
                 if exercise.order == None:
                     exercise.order = workout.get_next_exercise_order()
-                    
+                print(str(exercise.order))   
                 exercise.save()
             
             messages.success(request, Notification.success_message, extra_tags=Notification.success_class)
