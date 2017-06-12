@@ -60,7 +60,7 @@ function exercise_order(p_id, p_order) {
 }
 
 function exercise_delete(p_id) {
-    $.ajax({
+    /*$.ajax({
         url: '/ajax/delete_exercise/',
         data: {
           'exercise_id': p_id
@@ -68,10 +68,13 @@ function exercise_delete(p_id) {
         dataType: 'json',
         success: function (data) {
             if (typeof data.exercise_id !== "undefined"){
-                $('#tr_'+p_id).remove();
+                $('#tr_'+p_id).hide("fast");
+                $('#tr_'+p_id+' > td.can_delete > input').val("on");
             }
         }
-    });
+    });*/
+                    $('#tr_'+p_id).hide("fast");
+                $('#tr_'+p_id+' > td.can_delete > input').val("on");
 }
 
 /* GLOBAL */

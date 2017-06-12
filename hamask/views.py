@@ -132,7 +132,7 @@ def workout_update(request, pk, template_name='hamask/workout.html'):
          raise Http404("Invalid workout.")
     
     form = WorkoutForm(request.POST or None, instance=workout, prefix='workout')
-    ExerciseFormset = modelformset_factory(Workout_Exercise, form=WorkoutExerciseForm)
+    ExerciseFormset = modelformset_factory(Workout_Exercise, form=WorkoutExerciseForm, can_delete=True)
     exercise_formset = ExerciseFormset(request.POST or None, prefix='exercise', queryset=workout.get_workout_exercises())
     
     if 'delete' in request.POST:
@@ -144,13 +144,16 @@ def workout_update(request, pk, template_name='hamask/workout.html'):
         if form.is_valid() and exercise_formset.is_valid():
             form.save()
             
-            exercises = exercise_formset.save(commit=False)
-            for exercise in exercises:
-                exercise.workout = workout
-                if exercise.order == None:
-                    exercise.order = workout.get_next_exercise_order()
-                print(str(exercise.order))   
-                exercise.save()
+            exercise_formset.save(commit=False)
+            
+            for exercise in exercise_formset.changed_objects: 
+                exercise[0].save()
+            
+            for exercise in exercise_formset.new_objects:                
+                exercise[0].workout = workout
+                if exercise[0].order == None:
+                    exercise[0].order = workout.get_next_exercise_order() 
+                exercise[0].save()
             
             messages.success(request, Notification.success_message, extra_tags=Notification.success_class)
             return HttpResponseRedirect (reverse ('hamask:workout_update', kwargs={'pk':workout.id}))

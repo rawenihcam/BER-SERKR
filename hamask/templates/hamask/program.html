@@ -23,11 +23,11 @@
     <!-- Buttons -->
     <div class="row">
         <div class="col-sm-12">
-            <a href="{% url 'hamask:programs' %}" class="btn btn-default"><i class="fa fa-arrow-left"></i>&nbsp;BACK</a>
+            <a href="{% url 'hamask:programs' %}" class="btn btn-default"><i class="fa fa-arrow-left"></i>&nbsp;Back</a>
             {% if id %}
-                <button type="submit" name="delete" value="delete" class="btn btn-danger"><i class="fa fa-trash"></i>&nbsp;DELETE</button>
+                <button type="submit" name="delete" value="delete" class="btn btn-danger"><i class="fa fa-trash"></i>&nbsp;Delete</button>
             {% endif %}
-            <button type="submit" name="save" value="save" class="btn btn-primary"><i class="fa fa-save"></i>&nbsp;SAVE</button>
+            <button type="submit" name="save" value="save" class="btn btn-primary"><i class="fa fa-save"></i>&nbsp;Save</button>
         </div>
     </div>
 </form>
@@ -55,8 +55,8 @@
                             <i class="fa fa-chevron-down"></i>
                         </button>
                         <ul class="dropdown-menu">
-                            <li><a href="javascript:$('#form').submit();" name="copy_group" value="{{ group.id }}"><i class="fa fa-copy"></i>&nbsp;COPY</a></li>
-                            <li><a href="javascript:group_delete({{ group.id }});"><i class="fa fa-trash"></i>&nbsp;DELETE</a></li>
+                            <li><a href="javascript:$('#form').submit();" name="copy_group" value="{{ group.id }}"><i class="fa fa-copy"></i>&nbsp;Copy</a></li>
+                            <li><a href="javascript:$('#form').submit();" name="delete_group" value="{{ group.id }}"><i class="fa fa-trash"></i>&nbsp;Delete</a></li>
                         </ul>
                         &nbsp;
                     </div>
@@ -113,7 +113,7 @@
         {% endfor %}
     {% endif %}
     
-    <button type="submit" form="form" name="add_group" value="add_group" class="btn btn-primary"><i class="fa fa-plus"></i>&nbsp;ADD BLOCK</button>
+    <button type="submit" form="form" name="add_group" value="add_group" class="btn btn-primary"><i class="fa fa-plus"></i>&nbsp;Add Block</button>
 </div>
 </div>
 

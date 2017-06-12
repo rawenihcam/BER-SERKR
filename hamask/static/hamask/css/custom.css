@@ -38,6 +38,14 @@ div.right {
     float: right;
 }
 
+a.btn {
+    margin-top: 5px;
+}
+
+button.btn{
+    margin-top: 5px;
+}
+
 /* Regions */
 h3 {
     font-size: 20px;

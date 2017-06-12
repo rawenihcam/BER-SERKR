@@ -57,9 +57,10 @@
                         {% for hidden in formset.hidden_fields %}{{ hidden }}{% endfor %}
                         <a href="javascript:exercise_order({{ formset.id.value }}, 'DOWN');"><i class="fa fa-chevron-down"></i></a>&nbsp;&nbsp;
                         <a href="javascript:exercise_order({{ formset.id.value }}, 'UP');"><i class="fa fa-chevron-up"></i></a>&nbsp;&nbsp;
-                        <a href="#"><i class="fa fa-times"></i></a>
+                        <a href="javascript:exercise_delete({{ formset.id.value }});"><i class="fa fa-times"></i></a>
                     {% endif %}
                 </td>
+                <td class="can_delete" style="display:none;">{{ formset.DELETE }}</td>
             </tr>
         {% endfor %}
         </tbody>
