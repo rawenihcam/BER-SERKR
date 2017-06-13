@@ -43,11 +43,11 @@
                 
         <tbody>
         {% for formset in exercise_formset %}
-            <tr id="tr_{{ formset.id.value }}">
+            <tr id="tr_{{ formset.id.value }}" class="formset_exercise">
                 <td>{% include 'hamask/formset.html' with field=formset.exercise div_class='tabular' %}</td>
                 <td>{% include 'hamask/formset.html' with field=formset.sets div_class='tabular' %}</td>
                 <td>{% include 'hamask/formset.html' with field=formset.reps div_class='tabular' %}</td>
-                <td>{% include 'hamask/formset.html' with field=formset.rep_scheme div_class='tabular' %}</td>
+                <td>{% include 'hamask/formset.html' with field=formset.rep_scheme div_class='tabular rep_scheme' %}</td>
                 <td>{% include 'hamask/formset.html' with field=formset.percentage div_class='tabular' %}</td>
                 <td>{% include 'hamask/formset.html' with field=formset.weight div_class='tabular' %}</td>
                 <td>{% include 'hamask/formset.html' with field=formset.rpe div_class='tabular' %}</td>
@@ -55,9 +55,9 @@
                 <td>
                     {% if formset.id.value != None %}
                         {% for hidden in formset.hidden_fields %}{{ hidden }}{% endfor %}
-                        <a href="javascript:exercise_order({{ formset.id.value }}, 'DOWN');"><i class="fa fa-chevron-down"></i></a>&nbsp;&nbsp;
-                        <a href="javascript:exercise_order({{ formset.id.value }}, 'UP');"><i class="fa fa-chevron-up"></i></a>&nbsp;&nbsp;
-                        <a href="javascript:exercise_delete({{ formset.id.value }});"><i class="fa fa-times"></i></a>
+                        <a href="javascript:void(0);" onclick="exercise_order({{ formset.id.value }}, 'DOWN');"><i class="fa fa-chevron-down"></i></a>&nbsp;&nbsp;
+                        <a href="javascript:void(0);" onclick="exercise_order({{ formset.id.value }}, 'UP');"><i class="fa fa-chevron-up"></i></a>&nbsp;&nbsp;
+                        <a href="javascript:void(0);" onclick="exercise_delete({{ formset.id.value }});"><i class="fa fa-times"></i></a>
                     {% endif %}
                 </td>
                 <td class="can_delete" style="display:none;">{{ formset.DELETE }}</td>
@@ -65,6 +65,15 @@
         {% endfor %}
         </tbody>
     </table>
+    <a id="btn_add_exercise" class="btn btn-primary" href="javascript:void(0);" onclick="formset_add_more('tr.formset_exercise:last', 'exercise');">
+        <i class="fa fa-plus"></i>&nbsp;ADD EXERCISE    
+    </a>
 </form>
 
+<!-- Scripts -->
+<script>
+$('div.rep_scheme > div > select').on('input', function() { 
+    $(this).val() // get the current value of the input field.
+});
+</script>
 {% endblock %}

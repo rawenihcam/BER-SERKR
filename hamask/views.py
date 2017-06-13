@@ -69,7 +69,6 @@ def program_update(request, pk, template_name='hamask/program.html'):
         if form.is_valid():
             form.save()
                     
-            print(request.POST)
             if 'save' in request.POST:
                 messages.success(request, Notification.success_message, extra_tags=Notification.success_class)
                 return HttpResponseRedirect (reverse ('hamask:program_update', kwargs={'pk':program.id}))
@@ -77,13 +76,6 @@ def program_update(request, pk, template_name='hamask/program.html'):
                 order = program.get_next_workout_group_order()
                 group = Workout_Group(program=program, name='Block ' + str(order + 1), order=order)
                 group.save()
-                
-                messages.success(request, Notification.success_message, extra_tags=Notification.success_class)
-                return HttpResponseRedirect (reverse ('hamask:program_update', kwargs={'pk':program.id}))
-            elif 'delete_group' in request.POST:
-                print('delete_group')
-                group = Workout_Group.objects.get(pk=request.POST['delete_group'])
-                group.delete()
                 
                 messages.success(request, Notification.success_message, extra_tags=Notification.success_class)
                 return HttpResponseRedirect (reverse ('hamask:program_update', kwargs={'pk':program.id}))
@@ -129,7 +121,7 @@ def reorder_group(request):
 
 def delete_group(request):
     group = Workout_Group.objects.get(pk=request.GET.get('group_id', None))
-    data = {'group_id': exercise.id}
+    data = {'group_id': group.id}
     group.delete()    
     
     return JsonResponse(data)
@@ -168,8 +160,8 @@ def workout_update(request, pk, template_name='hamask/workout.html'):
                 exercise.save()
                 
             # Delete
-            for exercise in exercise_formset.deleted_objects:
-                exercise.delete()
+            #for exercise in exercise_formset.deleted_objects:
+             #   exercise.delete()
             
             messages.success(request, Notification.success_message, extra_tags=Notification.success_class)
             return HttpResponseRedirect (reverse ('hamask:workout_update', kwargs={'pk':workout.id}))
@@ -193,6 +185,13 @@ def reorder_exercise(request):
         pass
     else:
         data = {'exercise_id': exercise.id}
+    
+    return JsonResponse(data)
+    
+def delete_exercise(request):
+    exercise = Workout_Exercise.objects.get(pk=request.GET.get('exercise_id', None))
+    data = {'exercise_id': exercise.id}
+    exercise.delete()    
     
     return JsonResponse(data)
 
