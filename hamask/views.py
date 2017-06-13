@@ -69,6 +69,7 @@ def program_update(request, pk, template_name='hamask/program.html'):
         if form.is_valid():
             form.save()
                     
+            print(request.POST)
             if 'save' in request.POST:
                 messages.success(request, Notification.success_message, extra_tags=Notification.success_class)
                 return HttpResponseRedirect (reverse ('hamask:program_update', kwargs={'pk':program.id}))
@@ -76,6 +77,13 @@ def program_update(request, pk, template_name='hamask/program.html'):
                 order = program.get_next_workout_group_order()
                 group = Workout_Group(program=program, name='Block ' + str(order + 1), order=order)
                 group.save()
+                
+                messages.success(request, Notification.success_message, extra_tags=Notification.success_class)
+                return HttpResponseRedirect (reverse ('hamask:program_update', kwargs={'pk':program.id}))
+            elif 'delete_group' in request.POST:
+                print('delete_group')
+                group = Workout_Group.objects.get(pk=request.POST['delete_group'])
+                group.delete()
                 
                 messages.success(request, Notification.success_message, extra_tags=Notification.success_class)
                 return HttpResponseRedirect (reverse ('hamask:program_update', kwargs={'pk':program.id}))
@@ -131,6 +139,7 @@ def workout_update(request, pk, template_name='hamask/workout.html'):
     if workout.workout_group.program.lifter.id != request.session['lifter']:
          raise Http404("Invalid workout.")
     
+    # Build forms
     form = WorkoutForm(request.POST or None, instance=workout, prefix='workout')
     ExerciseFormset = modelformset_factory(Workout_Exercise, form=WorkoutExerciseForm, can_delete=True)
     exercise_formset = ExerciseFormset(request.POST or None, prefix='exercise', queryset=workout.get_workout_exercises())
@@ -146,14 +155,21 @@ def workout_update(request, pk, template_name='hamask/workout.html'):
             
             exercise_formset.save(commit=False)
             
-            for exercise in exercise_formset.changed_objects: 
-                exercise[0].save()
+            # Update
+            exercises_changed = dict(exercise_formset.changed_objects)
+            for exercise in exercises_changed:
+                exercise.save()
             
-            for exercise in exercise_formset.new_objects:                
-                exercise[0].workout = workout
-                if exercise[0].order == None:
-                    exercise[0].order = workout.get_next_exercise_order() 
-                exercise[0].save()
+            # Create
+            for exercise in exercise_formset.new_objects: 
+                exercise.workout = workout
+                if exercise.order == None:
+                    exercise.order = workout.get_next_exercise_order() 
+                exercise.save()
+                
+            # Delete
+            for exercise in exercise_formset.deleted_objects:
+                exercise.delete()
             
             messages.success(request, Notification.success_message, extra_tags=Notification.success_class)
             return HttpResponseRedirect (reverse ('hamask:workout_update', kwargs={'pk':workout.id}))
@@ -177,13 +193,6 @@ def reorder_exercise(request):
         pass
     else:
         data = {'exercise_id': exercise.id}
-    
-    return JsonResponse(data)
-
-def delete_exercise(request):
-    exercise = Workout_Exercise.objects.get(pk=request.GET.get('exercise_id', None))
-    data = {'exercise_id': exercise.id}
-    exercise.delete()    
     
     return JsonResponse(data)
 
