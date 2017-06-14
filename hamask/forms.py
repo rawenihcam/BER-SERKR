@@ -29,6 +29,12 @@ class WorkoutForm (ModelForm):
         fields = ['name']
         
 class WorkoutExerciseForm (ModelForm):
+    # Redefine constructor to alter fields
+    def __init__(self, *args, **kwargs):
+        super(WorkoutExerciseForm, self).__init__(*args, **kwargs)
+        
+        self.fields['rep_scheme'].to_field_name = 'code' 
+    
     class Meta:
         model = Workout_Exercise
         fields = ['id', 'exercise', 'sets', 'reps', 'rep_scheme', 'weight', 'percentage', 'rpe', 'is_amrap', 'notes']

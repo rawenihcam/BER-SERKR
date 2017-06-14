@@ -34,8 +34,8 @@
                 <th class="col-sm-1">Reps</th>
                 <th class="col-sm-2">Loading</th>
                 <th class="col-sm-1">% of Max</th>
-                <th class="col-sm-1">Weight</th>
                 <th class="col-sm-1">RPE</th>
+                <th class="col-sm-1">Weight</th>
                 <th class="col-sm-1">AMRAP</th>
                 <th class="col-sm-1">&nbsp;</th>
             </tr>
@@ -48,9 +48,9 @@
                 <td>{% include 'hamask/formset.html' with field=formset.sets div_class='tabular' %}</td>
                 <td>{% include 'hamask/formset.html' with field=formset.reps div_class='tabular' %}</td>
                 <td>{% include 'hamask/formset.html' with field=formset.rep_scheme div_class='tabular rep_scheme' %}</td>
-                <td>{% include 'hamask/formset.html' with field=formset.percentage div_class='tabular' %}</td>
-                <td>{% include 'hamask/formset.html' with field=formset.weight div_class='tabular' %}</td>
-                <td>{% include 'hamask/formset.html' with field=formset.rpe div_class='tabular' %}</td>
+                <td>{% include 'hamask/formset.html' with field=formset.percentage div_class='tabular percentage' %}</td>
+                <td>{% include 'hamask/formset.html' with field=formset.rpe div_class='tabular rpe' %}</td>
+                <td>{% include 'hamask/formset.html' with field=formset.weight div_class='tabular weight' %}</td>
                 <td class="center">{% include 'hamask/formset.html' with field=formset.is_amrap div_class='tabular' %}</td>
                 <td>
                     {% if formset.id.value != None %}
@@ -72,8 +72,35 @@
 
 <!-- Scripts -->
 <script>
-$('div.rep_scheme > div > select').on('input', function() { 
-    $(this).val() // get the current value of the input field.
-});
+    $('div.rep_scheme > div > select').on('input', function() { 
+        rep_scheme = $(this).val();
+        rep_scheme_id = $(this).attr('id');
+        base_id = rep_scheme_id.replace(/rep_scheme$/, '');
+        
+        percentage = $('#'+base_id+'percentage');
+        rpe = $('#'+base_id+'rpe');
+        weight = $('#'+base_id+'weight');
+        
+        if (rep_scheme == 'MAX_PERCENTAGE'){
+            percentage.prop('disabled', false);
+            rpe.prop('disabled', true);
+            weight.prop('disabled', true);
+        }
+        else if (rep_scheme == 'RPE'){
+            percentage.prop('disabled', true);
+            rpe.prop('disabled', false);
+            weight.prop('disabled', true);
+        }
+        else if (rep_scheme == 'WEIGHT'){
+            percentage.prop('disabled', true);
+            rpe.prop('disabled', true);
+            weight.prop('disabled', false);
+        }
+        else{
+            percentage.prop('disabled', true);
+            rpe.prop('disabled', true);
+            weight.prop('disabled', true);
+        }
+    });
 </script>
 {% endblock %}
