@@ -42,7 +42,7 @@
                 <li><a href="{% url 'hamask:stats' %}"><i class="fa fa-bar-chart"></i>&nbsp;Stats</a></li>
               </ul>
               <ul class="nav navbar-nav navbar-right">
-                <li><a href="#"><i class="fa fa-sign-out"></i>&nbsp;Logout</a></li>
+                <li><a href="{% url 'hamask:logout' %}"><i class="fa fa-sign-out"></i>&nbsp;Logout</a></li>
               </ul>
             </div>
           </div>
@@ -86,7 +86,7 @@
         <!-- Global JS -->        
         <script type="text/javascript">
             $(document).ready(function(){
-                $('input[type=number], input[type=text], select').addClass('form-control');
+                $('input[type=number], input[type=text], input[type=email], input[type=password], select').addClass('form-control');
                 $('label').addClass('control-label');
             })
         </script>

@@ -17,14 +17,32 @@
         <!-- Custom -->
         <link href="{% static 'hamask/css/custom.css' %}" rel="stylesheet">
     </head>
-    <body>
+    <body class="signin">
         <div class="container">
-        <form action="/login/" method="post">
-            {% csrf_token %}
-            <h2 class="sub-header">Please login</h2>
-            {{ form }}
-            <button type="submit" name="_submit" class="btn btn-large btn-primary">Login</button>
+        <form action="/login/" method="post" class="form-signin">        
+            <div class="row">
+            <div class="col-sm-12">
+                <h2 class="form-signin-heading">Please sign in</h2>
+                {% csrf_token %}
+                {{ form.non_field_errors }}
+                
+                {% include 'hamask/form.html' with field=form.email div_class='col-sm-12' %}
+                {% include 'hamask/form.html' with field=form.password div_class='col-sm-12' %}
+            </div></div>    
+            <br/>
+            <div class="row">
+            <div class="col-sm-12">
+                <button type="submit" name="_submit" class="btn btn-primary btn-block"><i class="fa fa-sign-in"></i>&nbsp;Sign In</button>
+            </div></div>
         </form>
         </div>
+        
+        <!-- Global JS -->        
+        <script type="text/javascript">
+            $(document).ready(function(){
+                $('input[type=number], input[type=text], input[type=email], input[type=password], select').addClass('form-control');
+                $('label').addClass('control-label');
+            })
+        </script>
     </body>
 </html>

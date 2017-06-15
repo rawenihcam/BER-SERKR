@@ -1,5 +1,5 @@
 from django.contrib import messages
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist
 from django.forms import modelformset_factory
@@ -34,6 +34,10 @@ def index(request):
             return render (request, 'hamask/login.html', {'form': form})
         else:
             return render (request, 'hamask/index.html')
+
+def logout_view(request):
+    logout(request)
+    return HttpResponseRedirect (reverse ('hamask:index'))
             
 def programs(request):
     lifter = Lifter.objects.get(pk=request.session['lifter'])
