@@ -16,7 +16,6 @@
     <div class="row">
         {% include 'hamask/form.html' with field=form.rounding div_class='col-sm-12 col-md-4 col-lg-3' %}
         {% include 'hamask/form.html' with field=form.auto_update_stats div_class='col-sm-12 col-md-4 col-lg-3' %}
-        {% include 'hamask/form.html' with field=form.rep_scheme div_class='col-sm-12 col-md-4 col-lg-3' %}
     </div>
     
     <br/>
@@ -40,7 +39,12 @@
         {% for group in groups %}
             <div id="div_{{ group.id }}" class="row">
                 <div class="col-xs-10">
-                    <h3>{{ group.name }}</h3>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    <h3 id="h_group_{{ group.id }}" class="h_group">
+                        <span id="span_group_{{ group.id }}">{{ group.name }}</span>&nbsp;
+                        <i class="fa fa-pencil"></i>
+                    </h3>
+                    <input type="text" value="{{ group.name }}" maxlength="60" id="group_name_{{ group.id }}" class="group_name">
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                     <a href="javascript:void(0);" onclick="group_order({{ group.id }}, 'DOWN');"><i id="" class="fa fa-arrow-down"></i></a>&nbsp;&nbsp;
                     <a href="javascript:void(0);" onclick="group_order({{ group.id }}, 'UP');"><i id="" class="fa fa-arrow-up"></i></a>
                 </div>
@@ -123,6 +127,22 @@
         $( "#id_start_date" ).datepicker({
           dateFormat: "yy-mm-dd"
         });
+    });
+    
+    $('h3.h_group').click(function() { 
+        $(this).hide();
+        h_id = $(this).attr('id');
+
+        group_id = h_id.replace(/^h_group_/, '');   
+        input = $('#group_name_'+group_id);
+
+        $(input).css('display', 'inline-block');
+    });
+    
+    $('input.group_name').on('focusout', function() { 
+        group_name = $(this).val();
+        group_id = $(this).attr('id').replace(/^group_name_/, '');
+        group_change_name(group_id, group_name);
     });
 </script>
 {% endblock %}

@@ -36,6 +36,29 @@ function group_delete(p_id) {
     });
 }
 
+function group_change_name(p_id, p_name) {
+    if (p_name != ''){        
+        $.ajax({
+            url: '/ajax/update_group/',
+            data: {
+              'group_id': p_id,
+              'group_name': p_name
+            },
+            dataType: 'json',
+            success: function (data) {
+                if (typeof data.group_id !== "undefined"){
+                    $('#span_group_'+p_id).text(p_name);
+                    $('#group_name_'+p_id).hide();
+                    $('#h_group_'+p_id).show();
+                }
+            }
+        });
+    }else{
+        $('#group_name_'+p_id).hide().val($('#span_group_'+p_id).text());
+        $('#h_group_'+p_id).show();
+    }
+}
+
 /* Workout_Exercise */
 function exercise_order(p_id, p_order) {
     $.ajax({
@@ -73,6 +96,43 @@ function exercise_delete(p_id) {
             }
         }
     });
+}
+
+function exercise_field_display(p_field) {
+    if (p_field != '') {
+        rep_scheme = $(p_field).val();
+        rep_scheme_id = $(p_field).attr('id');
+        base_id = rep_scheme_id.replace(/rep_scheme$/, '');
+        
+        percentage = $('#'+base_id+'percentage');
+        rpe = $('#'+base_id+'rpe');
+        weight = $('#'+base_id+'weight');
+        
+        if (rep_scheme == 'MAX_PERCENTAGE'){
+            percentage.prop('disabled', false);
+            rpe.prop('disabled', true).val('');
+            weight.prop('disabled', true).val('');
+        }
+        else if (rep_scheme == 'RPE'){
+            percentage.prop('disabled', true).val('');
+            rpe.prop('disabled', false);
+            weight.prop('disabled', true).val('');
+        }
+        else if (rep_scheme == 'WEIGHT'){
+            percentage.prop('disabled', true).val('');
+            rpe.prop('disabled', true).val('');
+            weight.prop('disabled', false);
+        }
+        else{
+            percentage.prop('disabled', true).val('');
+            rpe.prop('disabled', true).val('');
+            weight.prop('disabled', true).val('');
+        }
+    }else{
+        $('div.rep_scheme > div > select').each(function(){
+            exercise_field_display(this);
+        });
+    }
 }
 
 /*** GLOBAL ****/

@@ -74,6 +74,15 @@ class Lifter (models.Model):
                     ).order_by('-entry_date', 'exercise__name')
                     
         return stats
+        
+    def get_weight_unit(self):
+        unit = ''
+        if self.measurement_system == 'METRC':
+            unit = 'kg'
+        elif self.measurement_system == 'IMPER':
+            unit = 'lbs'
+            
+        return unit;
     
 class Exercise (models.Model):
     lifter = models.ForeignKey (Lifter, on_delete=models.CASCADE, blank=True, null=True, editable=False)
@@ -82,17 +91,15 @@ class Exercise (models.Model):
     
     def __str__(self):
         return self.name
-
-class Rep_Scheme (models.Model):
-    code = models.CharField (max_length=30)
-    name = models.CharField (max_length=60)
-    
-    def __str__(self):
-      return self.name
     
 class Program (models.Model):
     lifter = models.ForeignKey (Lifter, on_delete=models.CASCADE)
-    rep_scheme = models.ForeignKey (Rep_Scheme, on_delete=models.SET_NULL, blank=True, null=True)
+    rep_scheme_choices = (
+        ('MAX_PERCENTAGE', '% of Max'),
+        ('RPE', 'RPE'),
+        ('WEIGHT', 'Weight'),
+    )
+    rep_scheme = models.CharField (max_length=30, choices=rep_scheme_choices, blank=True, null=True)
     name = models.CharField (max_length=60)
     start_date = models.DateField (blank=True)
     end_date = models.DateField (blank=True, null=True)
@@ -225,8 +232,13 @@ class Workout (models.Model):
         
 class Workout_Exercise (models.Model):
     workout = models.ForeignKey (Workout, on_delete=models.CASCADE)
-    exercise = models.ForeignKey (Exercise, on_delete=models.PROTECT)    
-    rep_scheme = models.ForeignKey (Rep_Scheme, on_delete=models.PROTECT)
+    exercise = models.ForeignKey (Exercise, on_delete=models.PROTECT)
+    rep_scheme_choices = (
+        ('MAX_PERCENTAGE', '% of Max'),
+        ('RPE', 'RPE'),
+        ('WEIGHT', 'Weight'),
+    )
+    rep_scheme = models.CharField (max_length=30, choices=rep_scheme_choices)
     order = models.PositiveIntegerField ()
     sets = models.PositiveIntegerField (blank=True, null=True)
     reps = models.PositiveIntegerField (blank=True, null=True)
@@ -272,12 +284,21 @@ class Workout_Exercise (models.Model):
     @property
     def loading(self):
         if not hasattr(self, '_loading'):
-            if self.rep_scheme.code == 'MAX_PERCENTAGE': 
-                self._loading = str(self.percentage) + '%'
-            elif self.rep_scheme.code == 'RPE':
-                self._loading = 'RPE ' + str(self.rpe)
-            elif self.rep_scheme.code == 'WEIGHT':
-                self._loading = str(self.weight)
+            if self.rep_scheme == 'MAX_PERCENTAGE': 
+                if self.percentage != None:
+                    self._loading = str(self.percentage) + '%'
+                else:
+                    self._loading = ''
+            elif self.rep_scheme == 'RPE':
+                if self.rpe != None:
+                    self._loading = 'RPE ' + str(self.rpe)
+                else:
+                    self._loading = ''
+            elif self.rep_scheme == 'WEIGHT':
+                if self.weight != None:
+                    self._loading = str(self.weight) + self.workout.workout_group.program.lifter.get_weight_unit()
+                else:
+                    self._loading = ''
         
         return self._loading
     

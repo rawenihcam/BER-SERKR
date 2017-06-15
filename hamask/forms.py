@@ -13,10 +13,10 @@ class LoginForm (forms.Form):
 class ProgramForm (ModelForm):
     class Meta:
         model = Program
-        fields = ['name', 'start_date', 'rep_scheme', 'auto_update_stats', 'rounding']
-        labels = {
+        fields = ['name', 'start_date', 'auto_update_stats', 'rounding']
+        """labels = {
             'rep_scheme': _('Prefered rep scheme'),
-        }
+        }"""
         help_texts = {
             'start_date': _('Start date will be used to plan your workouts.'),
             'rep_scheme': _('Will help you build your program, can be changed for each exercise later.'),
@@ -29,12 +29,6 @@ class WorkoutForm (ModelForm):
         fields = ['name']
         
 class WorkoutExerciseForm (ModelForm):
-    # Redefine constructor to alter fields
-    def __init__(self, *args, **kwargs):
-        super(WorkoutExerciseForm, self).__init__(*args, **kwargs)
-        
-        self.fields['rep_scheme'].to_field_name = 'code' 
-    
     class Meta:
         model = Workout_Exercise
         fields = ['id', 'exercise', 'sets', 'reps', 'rep_scheme', 'weight', 'percentage', 'rpe', 'is_amrap', 'notes']

@@ -126,6 +126,14 @@ def delete_group(request):
     
     return JsonResponse(data)
     
+def update_group(request):
+    group = Workout_Group.objects.get(pk=request.GET.get('group_id', None))
+    group.name = request.GET.get('group_name', None)
+    group.save()
+    data = {'group_id': group.id}    
+    
+    return JsonResponse(data)
+    
 def workout_update(request, pk, template_name='hamask/workout.html'):
     workout = get_object_or_404(Workout, pk=pk)
     if workout.workout_group.program.lifter.id != request.session['lifter']:

@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 # Register your models here.
-from .models import Exercise, Lifter, Rep_Scheme
+from .models import Exercise, Lifter
 
 class ExerciseAdmin(admin.ModelAdmin):
     list_display = ('name', 'has_stats')
@@ -13,4 +13,3 @@ class LifterAdmin(admin.ModelAdmin):
 
 admin.site.register (Exercise, ExerciseAdmin)
 admin.site.register (Lifter, LifterAdmin)
-admin.site.register (Rep_Scheme)

@@ -98,3 +98,9 @@ div.input-group {
 div.tabular {
     margin: 5px;
 }
+
+input.group_name {
+    display: none;
+    width: 33%;
+    margin-bottom: 8px;
+}
