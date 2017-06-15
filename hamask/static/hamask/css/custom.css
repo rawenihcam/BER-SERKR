@@ -17,6 +17,22 @@ h1.page-header {
     margin: 0px 0px 20px 0px;
 }
 
+/* Sign In */
+body.signin {
+  padding-top: 40px;
+  padding-bottom: 40px;
+  background-color: #eee;
+}
+
+.form-signin {
+  max-width: 330px;
+  padding: 15px;
+  margin: 0 auto;
+}
+.form-signin .form-signin-heading {
+  margin-bottom: 10px;
+}
+
 /* Buttons */
 button.head {
     float: right;

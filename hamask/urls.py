@@ -6,6 +6,7 @@ app_name = 'hamask'
 urlpatterns = [
 	url(r'^$', views.index, name='index'),
 	url(r'^login/', views.index, name='index'),
+	url(r'^logout/', views.logout_view, name='logout'),
 	url(r'^programs/program/workout/(?P<pk>[0-9]+)', views.workout_update, name='workout_update'),
     url(r'^ajax/reorder_exercise/', views.reorder_exercise, name='reorder_exercise'),
     url(r'^ajax/delete_exercise/', views.delete_exercise, name='delete_exercise'),
