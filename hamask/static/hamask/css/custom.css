@@ -34,9 +34,42 @@ button.right {
     float: right;
 }
 
+div.right {
+    float: right;
+}
+
+a.btn {
+    margin-top: 5px;
+}
+
+button.btn{
+    margin-top: 5px;
+}
+
+/* Regions */
+h3 {
+    font-size: 20px;
+    display: inline-block;
+    margin-top: 10px;
+}
+
 /* Lists */
 th.icon {
     width: 30px;
+}
+
+table.table>thead>tr>th.invisible {
+    padding: 0px;
+    border: none;
+}
+
+
+td.icon {
+    width: 30px;
+}
+
+td.fifth {
+    width: 20%;
 }
 
 h4 {
@@ -44,7 +77,30 @@ h4 {
     margin-bottom: 5px;
 }
 
+td.center {
+    text-align: center;
+}
+
+table.table.table-condensed.table-exercise {
+    margin-bottom: 0px;
+}
+
+table.table.table-condensed.table-exercise>tbody>tr>td {
+    border: none;
+    
+}
+
 /* Forms */
 div.input-group {
     width: 100%;
+}
+
+div.tabular {
+    margin: 5px;
+}
+
+input.group_name {
+    display: none;
+    width: 33%;
+    margin-bottom: 8px;
 }

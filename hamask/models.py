@@ -74,6 +74,15 @@ class Lifter (models.Model):
                     ).order_by('-entry_date', 'exercise__name')
                     
         return stats
+        
+    def get_weight_unit(self):
+        unit = ''
+        if self.measurement_system == 'METRC':
+            unit = 'kg'
+        elif self.measurement_system == 'IMPER':
+            unit = 'lbs'
+            
+        return unit;
     
 class Exercise (models.Model):
     lifter = models.ForeignKey (Lifter, on_delete=models.CASCADE, blank=True, null=True, editable=False)
@@ -82,14 +91,15 @@ class Exercise (models.Model):
     
     def __str__(self):
         return self.name
-
-class Rep_Scheme (models.Model):
-    code = models.CharField (max_length=30)
-    name = models.CharField (max_length=60)
     
 class Program (models.Model):
     lifter = models.ForeignKey (Lifter, on_delete=models.CASCADE)
-    rep_scheme = models.ForeignKey (Rep_Scheme, on_delete=models.SET_NULL, blank=True, null=True)
+    rep_scheme_choices = (
+        ('MAX_PERCENTAGE', '% of Max'),
+        ('RPE', 'RPE'),
+        ('WEIGHT', 'Weight'),
+    )
+    rep_scheme = models.CharField (max_length=30, choices=rep_scheme_choices, blank=True, null=True)
     name = models.CharField (max_length=60)
     start_date = models.DateField (blank=True)
     end_date = models.DateField (blank=True, null=True)
@@ -107,33 +117,190 @@ class Program (models.Model):
     
     def __str__(self):
         return self.name
+        
+    def get_workout_groups(self):
+        groups = Workout_Group.objects.filter(program__exact=self.id
+                    ).order_by('order')
+        
+        return groups
+    
+    def get_next_workout_group_order(self):
+        groups = self.get_workout_groups()
+        
+        if groups.exists():
+            order = groups.aggregate(max_order=Max('order'))['max_order'] + 1
+        else:
+            order = 0
+        
+        return order
     
 class Workout_Group (models.Model):
     program = models.ForeignKey (Program, on_delete=models.CASCADE)
     name = models.CharField (max_length=60)
-    
-    def __str__(self):
-        return self.name
-    
-class Workout (models.Model):
-    workout_group = models.ForeignKey (Workout_Group, on_delete=models.CASCADE)
-    name = models.CharField (max_length=60)
+    order = models.PositiveIntegerField ()
     
     def __str__(self):
         return self.name
         
+    def delete(self, *args, **kwargs):
+        # Reorder groups
+        next_groups = Workout_Group.objects.filter(program__exact=self.program.id
+                            ).filter(order__gt=self.order)
+                            
+        for group in next_groups:
+            group.order -= 1
+            group.save()
+        
+        # Call the "real" delete() method
+        super(Workout_Group, self).delete(*args, **kwargs)
+        
+    #def copy(self, *args, **kwargs):
+        #
+        
+        
+    def get_workouts(self):
+        workouts = Workout.objects.filter(workout_group__exact=self.id
+                    ).order_by('order')
+        
+        return workouts
+    
+    def get_next_workout_order(self):
+        workouts = self.get_workouts()
+        
+        if workouts.exists():
+            order = workouts.aggregate(max_order=Max('order'))['max_order'] + 1
+        else:
+            order = 0
+        
+        return order
+    
+    def set_order_up(self):
+        previous = Workout_Group.objects.filter(program__exact=self.program.id
+                    ).filter(order__exact=self.order - 1
+                    ).get()
+                    
+        previous.order += 1
+        self.order -= 1
+        previous.save()
+        self.save()
+        
+    def set_order_down(self):
+        next = Workout_Group.objects.filter(program__exact=self.program.id
+                    ).filter(order__exact=self.order + 1
+                    ).get()
+                  
+        next.order -= 1
+        self.order += 1
+        next.save()
+        self.save()
+            
+    
+class Workout (models.Model):
+    workout_group = models.ForeignKey (Workout_Group, on_delete=models.CASCADE)
+    name = models.CharField (max_length=60)
+    order = models.PositiveIntegerField ()
+    
+    def __str__(self):
+        return self.name
+        
+    def delete(self, *args, **kwargs):
+        # Reorder workouts
+        next_workouts = Workout.objects.filter(workout_group__exact=self.workout_group.id
+                            ).filter(order__gt=self.order)
+                            
+        for workout in next_workouts:
+            workout.order -= 1
+            workout.save()
+        
+        # Call the "real" delete() method
+        super(Workout, self).delete(*args, **kwargs)
+        
+    def get_workout_exercises(self):
+        exercises = Workout_Exercise.objects.filter(workout__exact=self.id
+                        ).order_by('order')
+        return exercises
+        
+    def get_next_exercise_order(self):
+        exercises = self.get_workout_exercises()
+        
+        if exercises.exists():
+            order = exercises.aggregate(max_order=Max('order'))['max_order'] + 1
+        else:
+            order = 0
+        
+        return order
+        
 class Workout_Exercise (models.Model):
     workout = models.ForeignKey (Workout, on_delete=models.CASCADE)
-    exercise = models.ForeignKey (Exercise, on_delete=models.PROTECT)    
-    rep_scheme = models.ForeignKey (Rep_Scheme, on_delete=models.PROTECT)
-    sets = models.PositiveIntegerField (blank=True)
-    reps = models.PositiveIntegerField (blank=True)
-    weight = models.PositiveIntegerField (blank=True)
-    percentage = models.PositiveIntegerField (blank=True)
-    rpe = models.PositiveIntegerField (blank=True)
-    time = models.PositiveIntegerField (blank=True)
+    exercise = models.ForeignKey (Exercise, on_delete=models.PROTECT)
+    rep_scheme_choices = (
+        ('MAX_PERCENTAGE', '% of Max'),
+        ('RPE', 'RPE'),
+        ('WEIGHT', 'Weight'),
+    )
+    rep_scheme = models.CharField (max_length=30, choices=rep_scheme_choices)
+    order = models.PositiveIntegerField ()
+    sets = models.PositiveIntegerField (blank=True, null=True)
+    reps = models.PositiveIntegerField (blank=True, null=True)
+    weight = models.PositiveIntegerField (blank=True, null=True)
+    percentage = models.PositiveIntegerField (blank=True, null=True)
+    rpe = models.PositiveIntegerField (blank=True, null=True)
+    time = models.PositiveIntegerField (blank=True, null=True)
     is_amrap = models.BooleanField (default=False)
-    notes = models.TextField (blank=True)
+    notes = models.TextField (blank=True, null=True)
+    
+    def delete(self, *args, **kwargs):
+        # Reorder exercises
+        next_exercises = Workout_Exercise.objects.filter(workout__exact=self.workout.id
+                            ).filter(order__gt=self.order)
+                            
+        for exercise in next_exercises:
+            exercise.order -= 1
+            exercise.save()
+        
+        # Call the "real" delete() method
+        super(Workout_Exercise, self).delete(*args, **kwargs)
+    
+    def set_order_up(self):
+        previous = Workout_Exercise.objects.filter(workout__exact=self.workout.id
+                    ).filter(order__exact=self.order - 1
+                    ).get()
+                    
+        previous.order += 1
+        self.order -= 1
+        previous.save()
+        self.save()
+        
+    def set_order_down(self):
+        next = Workout_Exercise.objects.filter(workout__exact=self.workout.id
+                    ).filter(order__exact=self.order + 1
+                    ).get()
+                  
+        next.order -= 1
+        self.order += 1
+        next.save()
+        self.save()
+    
+    @property
+    def loading(self):
+        if not hasattr(self, '_loading'):
+            if self.rep_scheme == 'MAX_PERCENTAGE': 
+                if self.percentage != None:
+                    self._loading = str(self.percentage) + '%'
+                else:
+                    self._loading = ''
+            elif self.rep_scheme == 'RPE':
+                if self.rpe != None:
+                    self._loading = 'RPE ' + str(self.rpe)
+                else:
+                    self._loading = ''
+            elif self.rep_scheme == 'WEIGHT':
+                if self.weight != None:
+                    self._loading = str(self.weight) + self.workout.workout_group.program.lifter.get_weight_unit()
+                else:
+                    self._loading = ''
+        
+        return self._loading
     
 class Workout_Log (models.Model):
     workout = models.ForeignKey (Workout, on_delete=models.SET_NULL, blank=True, null=True)

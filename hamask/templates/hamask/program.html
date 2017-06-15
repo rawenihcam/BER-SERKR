@@ -1,9 +1,10 @@
 {% extends 'hamask/base.html' %}
 
 {% block content %}
-<h1 class="page-header">Edit program</h1>
+<h1 class="page-header">Program</h1>
     
-<form method="post">
+<!-- Program -->
+<form id="form" method="post">
     {% csrf_token %}
     
     {{ form.non_field_errors }}
@@ -15,20 +16,110 @@
     <div class="row">
         {% include 'hamask/form.html' with field=form.rounding div_class='col-sm-12 col-md-4 col-lg-3' %}
         {% include 'hamask/form.html' with field=form.auto_update_stats div_class='col-sm-12 col-md-4 col-lg-3' %}
-        {% include 'hamask/form.html' with field=form.rep_scheme div_class='col-sm-12 col-md-4 col-lg-3' %}
     </div>
     
     <br/>
     <!-- Buttons -->
     <div class="row">
         <div class="col-sm-12">
+            <a href="{% url 'hamask:programs' %}" class="btn btn-default"><i class="fa fa-arrow-left"></i>&nbsp;Back</a>
             {% if id %}
-                <button type="submit" name="delete" value="delete" class="btn btn-danger"><i class="fa fa-trash"></i>&nbsp;DELETE</button>
+                <button type="submit" name="delete" value="delete" class="btn btn-danger"><i class="fa fa-trash"></i>&nbsp;Delete</button>
             {% endif %}
-            <button type="submit" name="save" value="save" class="btn btn-primary"><i class="fa fa-save"></i>&nbsp;SAVE</button>
+            <button type="submit" name="save" value="save" class="btn btn-primary"><i class="fa fa-save"></i>&nbsp;Save</button>
         </div>
     </div>
 </form>
+
+<!-- Groups -->
+<br/>
+<div class="row">
+<div class="col-sm-12">
+    {% if groups %}
+        {% for group in groups %}
+            <div id="div_{{ group.id }}" class="row">
+                <div class="col-xs-10">
+                    <h3 id="h_group_{{ group.id }}" class="h_group">
+                        <span id="span_group_{{ group.id }}">{{ group.name }}</span>&nbsp;
+                        <i class="fa fa-pencil"></i>
+                    </h3>
+                    <input type="text" value="{{ group.name }}" maxlength="60" id="group_name_{{ group.id }}" class="group_name">
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    <a href="javascript:void(0);" onclick="group_order({{ group.id }}, 'DOWN');"><i id="" class="fa fa-arrow-down"></i></a>&nbsp;&nbsp;
+                    <a href="javascript:void(0);" onclick="group_order({{ group.id }}, 'UP');"><i id="" class="fa fa-arrow-up"></i></a>
+                </div>
+                
+                <div class="col-xs-2">                    
+                    <button type="submit" form="form" name="add_workout" value="{{ group.id }}" title="Add workout" class="btn btn-sm btn-success right">
+                    <i class="fa fa-plus"></i>
+                    </button>
+                    
+                    <div class="btn-group right">
+                        <button type="button" class="btn btn-sm btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <i class="fa fa-chevron-down"></i>
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a href="javascript:$('#form').submit();" name="copy_group" value="{{ group.id }}"><i class="fa fa-copy"></i>&nbsp;Copy</a></li>
+                            <li><a href="javascript:void(0);" onclick="group_delete({{ group.id }});"><i class="fa fa-trash"></i>&nbsp;Delete</a></li>
+                        </ul>
+                        &nbsp;
+                    </div>
+                </div>
+                
+                {% if workouts|get_item:group.id %}
+                    <table class="table">
+                    <thead>
+                        <tr>
+                            <th class="col-sm-2 invisible"></th>
+                            <th class="col-sm-10 invisible"></th>
+                        </tr>
+                    </thead>
+                    
+                    <tbody>
+                        {% for workout in workouts|get_item:group.id %}
+                            <tr>
+                            <td><a href="{% url 'hamask:workout_update' workout.id %}"><i class="fa fa-pencil"></i></a>&nbsp;&nbsp;&nbsp;
+                                {{ workout.name }}
+                            </td>
+                            <td>
+                                {% if exercises|get_item:workout.id %}
+                                    <table class="table table-condensed table-exercise">
+                                    <thead>
+                                        <tr>
+                                            <th class="col-sm-3 invisible"></th>
+                                            <th class="col-sm-1 invisible"></th>
+                                            <th class="col-sm-1 invisible"></th>
+                                            <th class="col-sm-1 invisible"></th>
+                                            <th class="col-sm-7 invisible"></th>
+                                        </tr>
+                                    </thead>
+                    
+                                    <tbody>
+                                        {% for exercise in exercises|get_item:workout.id %}
+                                            <tr>
+                                            <td>{{ exercise.exercise.name }}</td>
+                                            <td>{{ exercise.sets }}</td>
+                                            <td>{{ exercise.reps }}</td>
+                                            <td>{{ exercise.loading }}</td>
+                                            <td>&nbsp;</td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                    </table>
+                                {% endif %}
+                            </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                    </table>
+                {% endif %}
+            </div>
+        {% endfor %}
+    {% endif %}
+    
+    <button type="submit" form="form" name="add_group" value="add_group" class="btn btn-primary"><i class="fa fa-plus"></i>&nbsp;Add Block</button>
+</div>
+</div>
 
 <!-- Scripts -->
 <script>
@@ -36,6 +127,22 @@
         $( "#id_start_date" ).datepicker({
           dateFormat: "yy-mm-dd"
         });
+    });
+    
+    $('h3.h_group').click(function() { 
+        $(this).hide();
+        h_id = $(this).attr('id');
+
+        group_id = h_id.replace(/^h_group_/, '');   
+        input = $('#group_name_'+group_id);
+
+        $(input).css('display', 'inline-block');
+    });
+    
+    $('input.group_name').on('focusout', function() { 
+        group_name = $(this).val();
+        group_id = $(this).attr('id').replace(/^group_name_/, '');
+        group_change_name(group_id, group_name);
     });
 </script>
 {% endblock %}

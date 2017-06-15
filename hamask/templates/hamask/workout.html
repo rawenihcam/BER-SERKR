@@ -1,0 +1,83 @@
+{% extends 'hamask/base.html' %}
+
+{% block content %}    
+<form method="post">
+    {% csrf_token %}
+    
+    <!-- Workout -->
+    {{ form.non_field_errors }}
+    <div class="row">
+        {% include 'hamask/form.html' with field=form.name div_class='col-sm-12 col-md-4 col-lg-3' %}
+    </div>
+    
+    <br/>
+    <!-- Buttons -->
+    <div class="row">
+        <div class="col-sm-12">
+            <a href="{% url 'hamask:program_update' program_id %}" class="btn btn-default"><i class="fa fa-arrow-left"></i>&nbsp;BACK</a>
+            {% if id %}
+                <button type="submit" name="delete" value="delete" class="btn btn-danger"><i class="fa fa-trash"></i>&nbsp;DELETE</button>
+            {% endif %}
+            <button type="submit" name="save" value="save" class="btn btn-primary"><i class="fa fa-save"></i>&nbsp;SAVE</button>
+        </div>
+    </div>
+    
+    <br/>
+    <!-- Exercises -->
+    <h3>Exercises</h3>
+    {{ exercise_formset.management_form }}
+    <table>
+        <thead>
+            <tr>
+                <th class="col-sm-3">Exercise</th>
+                <th class="col-sm-1">Sets</th>
+                <th class="col-sm-1">Reps</th>
+                <th class="col-sm-2">Loading</th>
+                <th class="col-sm-1">% of Max</th>
+                <th class="col-sm-1">RPE</th>
+                <th class="col-sm-1">Weight</th>
+                <th class="col-sm-1">AMRAP</th>
+                <th class="col-sm-1">&nbsp;</th>
+            </tr>
+        </thead>
+                
+        <tbody>
+        {% for formset in exercise_formset %}
+            <tr id="tr_{{ formset.id.value }}" class="formset_exercise">
+                <td>{% include 'hamask/formset.html' with field=formset.exercise div_class='tabular' %}</td>
+                <td>{% include 'hamask/formset.html' with field=formset.sets div_class='tabular' %}</td>
+                <td>{% include 'hamask/formset.html' with field=formset.reps div_class='tabular' %}</td>
+                <td>{% include 'hamask/formset.html' with field=formset.rep_scheme div_class='tabular rep_scheme' %}</td>
+                <td>{% include 'hamask/formset.html' with field=formset.percentage div_class='tabular percentage' %}</td>
+                <td>{% include 'hamask/formset.html' with field=formset.rpe div_class='tabular rpe' %}</td>
+                <td>{% include 'hamask/formset.html' with field=formset.weight div_class='tabular weight' %}</td>
+                <td class="center">{% include 'hamask/formset.html' with field=formset.is_amrap div_class='tabular' %}</td>
+                <td>
+                    {% if formset.id.value != None %}
+                        {% for hidden in formset.hidden_fields %}{{ hidden }}{% endfor %}
+                        <a href="javascript:void(0);" onclick="exercise_order({{ formset.id.value }}, 'DOWN');"><i class="fa fa-chevron-down"></i></a>&nbsp;&nbsp;
+                        <a href="javascript:void(0);" onclick="exercise_order({{ formset.id.value }}, 'UP');"><i class="fa fa-chevron-up"></i></a>&nbsp;&nbsp;
+                        <a href="javascript:void(0);" onclick="exercise_delete({{ formset.id.value }});"><i class="fa fa-times"></i></a>
+                    {% endif %}
+                </td>
+                <td class="can_delete" style="display:none;">{{ formset.DELETE }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    <a id="btn_add_exercise" class="btn btn-primary" href="javascript:void(0);" onclick="formset_add_more('tr.formset_exercise:last', 'exercise');">
+        <i class="fa fa-plus"></i>&nbsp;ADD EXERCISE    
+    </a>
+</form>
+
+<!-- Scripts -->
+<script>
+    $( function() {
+        exercise_field_display('');
+    });
+
+    $('div.rep_scheme > div > select').on('input', function() { 
+        exercise_field_display(this);
+    });
+</script>
+{% endblock %}
