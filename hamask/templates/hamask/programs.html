@@ -1,8 +1,14 @@
 {% extends 'hamask/base.html' %}
 
 {% block content %}
-<a href="{% url 'hamask:program_create' %}" class="head btn btn-success"><i class="fa fa-plus"></i>&nbsp;Add</a>
-<h1 class="page-header">Programs</h1>
+<div class="row page-header">
+    <div class="col-xs-6">
+        <h1>Programs</h1>
+    </div>
+    <div class="col-xs-6">
+        <a href="{% url 'hamask:program_create' %}" class="btn btn-success right" title="Create new program"><i class="fa fa-plus"></i></a>
+    </div>
+</div>
 
 <div class="row">
     <div class="col-sm-12">
@@ -12,7 +18,9 @@
                     <tr>
                         <th class="icon">&nbsp;</th>
                         <th>Name</th>
-                        <th>Is current</th>
+                        <th class="center">Ready</th>
+                        <th class="center">Started</th>
+                        <th class="center">Completed</th>
                         <th>Start</th>
                         <th>End</th>
                     </tr>
@@ -23,9 +31,11 @@
                     <tr>
                       <td><a href="{% url 'hamask:program_update' program.id %}"><i class="fa fa-pencil"></i></a></td>
                       <td>{{ program.name }}</td>
-                      <td>{% if program.weight == True %}<i class="fa fa-check"></i>{% endif %}</td>
-                      <td>{{ program.start_date }}</td>
-                      <td>{{ program.end_date }}</td>
+                      <td class="center">{% if program.is_ready %}<i class="fa fa-check"></i>{% else %}<i class="fa fa-times"></i>{% endif %}</td>
+                      <td class="center">{% if program.start_date %}<i class="fa fa-check"></i>{% else %}<i class="fa fa-times"></i>{% endif %}</td>
+                      <td class="center">{% if program.end_date %}<i class="fa fa-check"></i>{% else %}<i class="fa fa-times"></i>{% endif %}</td>
+                      <td>{% if program.start_date %}{{ program.start_date }}{% endif %}</td>
+                      <td>{% if program.end_date %}{{ program.end_date }}{% endif %}</td>
                     </tr>
                 {% endfor %}
                 </tbody>

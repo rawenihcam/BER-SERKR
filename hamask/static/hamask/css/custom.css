@@ -13,8 +13,22 @@ div.message-box {
     z-index: 1031;
 }
 
-h1.page-header {
+div.row.page-header {
     margin: 0px 0px 20px 0px;
+    border-bottom: 1px solid #eee;
+}
+
+h1 {
+    margin: 0px;
+    font-size: 30px;
+}
+
+.pointer {
+    cursor: pointer;
+}
+
+span.label {
+    font-size: 60%;
 }
 
 /* Sign In */
@@ -47,7 +61,17 @@ button.left {
 }
 
 button.right {
+    float: right;    
+    margin-left: 8px;
+}
+
+a.left {
+    float: left;
+}
+
+a.right {
     float: right;
+    margin-left: 8px;
 }
 
 div.right {
@@ -93,7 +117,7 @@ h4 {
     margin-bottom: 5px;
 }
 
-td.center {
+th.center, td.center {
     text-align: center;
 }
 
@@ -119,4 +143,8 @@ input.group_name {
     display: none;
     width: 33%;
     margin-bottom: 8px;
+}
+
+button.btn-form {
+    margin-top: 25px;
 }

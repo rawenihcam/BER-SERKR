@@ -4,6 +4,7 @@ from django.db import models
 from django.db.models import Max
 from django.utils import timezone
 
+from .control import IncompleteProgram
 
 class Lifter (models.Model):
     first_name = models.CharField (max_length=60)
@@ -24,6 +25,11 @@ class Lifter (models.Model):
     def get_programs(self):
         programs = Program.objects.filter(lifter__exact=self.id)
         return programs
+        
+    def get_started_programs(self):
+        programs = self.get_programs().filter(start_date__isnull=False
+                    ).filter(end_date__isnull=True)
+        return programs            
     
     def get_maxes(self):
         s = Lifter_Stats.objects.filter(lifter__exact=self.id
@@ -42,6 +48,14 @@ class Lifter (models.Model):
         maxes = s.union (b, d, all=True)
         
         return maxes
+        
+    def get_max(self, exercise):
+        max = Lifter_Stats.objects.filter(lifter__exact=self.id
+                ).filter(reps__exact=1
+                ).filter(exercise__exact=exercise.id
+                ).order_by('-entry_date', '-weight')[:1]
+                
+        return max
         
     def get_prs(self):
         stats = Lifter_Stats.objects.filter(lifter__exact=self.id)
@@ -101,10 +115,11 @@ class Program (models.Model):
     )
     rep_scheme = models.CharField (max_length=30, choices=rep_scheme_choices, blank=True, null=True)
     name = models.CharField (max_length=60)
-    start_date = models.DateField (blank=True)
+    start_date = models.DateField (blank=True, null=True)
     end_date = models.DateField (blank=True, null=True)
     is_current = models.BooleanField (default=False)
     auto_update_stats = models.BooleanField (default=True)
+    repeatable = models.BooleanField (default=False)
     #block_type
     rounding_choices = (
         ('NO', 'No rounding'),
@@ -118,6 +133,14 @@ class Program (models.Model):
     def __str__(self):
         return self.name
         
+    def start(self):
+        self.start_date = timezone.now()
+        self.sate()
+        
+    def end(self):
+        self.end_date = timezone.now()
+        self.sate()
+    
     def get_workout_groups(self):
         groups = Workout_Group.objects.filter(program__exact=self.id
                     ).order_by('order')
@@ -133,6 +156,32 @@ class Program (models.Model):
             order = 0
         
         return order
+        
+    def is_ready(self):
+        ready = False
+        
+        try:
+            # Must have at least 1 block
+            groups = self.get_workout_groups()
+            
+            if not groups.exists():
+                raise IncompleteProgram
+            else:
+                for group in groups:
+                    # Blocks must have at least 1 workout
+                    if not group.get_workouts().exists():
+                        raise IncompleteProgram
+                        
+                    # If block uses % of max, lifter must have maxes (though will not validate per exercise)
+                    if group.uses_max() and not self.lifter.get_maxes().exists():
+                        raise IncompleteProgram
+            
+        except IncompleteProgram:
+            ready = False
+        else:
+            ready = True
+        
+        return ready
     
 class Workout_Group (models.Model):
     program = models.ForeignKey (Program, on_delete=models.CASCADE)
@@ -193,12 +242,30 @@ class Workout_Group (models.Model):
         self.order += 1
         next.save()
         self.save()
+        
+    def uses_max(self):
+        max = False
+        
+        if Workout_Exercise.objects.filter(workout__workout_group__exact=self.id
+            ).filter(rep_scheme__exact='MAX_PERCENTAGE').exists():
+            max = True
             
+        return max
     
 class Workout (models.Model):
     workout_group = models.ForeignKey (Workout_Group, on_delete=models.CASCADE)
     name = models.CharField (max_length=60)
     order = models.PositiveIntegerField ()
+    day_of_week_choices = (
+        ('1', 'Sunday'),
+        ('2', 'Monday'),
+        ('3', 'Tuesday'),
+        ('4', 'Wednesday'),
+        ('5', 'Thursday'),
+        ('6', 'Friday'),
+        ('7', 'Saturday'),
+    )
+    day_of_week = models.CharField (max_length=30, choices=day_of_week_choices, blank=True, null=True)
     
     def __str__(self):
         return self.name
@@ -229,6 +296,14 @@ class Workout (models.Model):
             order = 0
         
         return order
+        
+    @property
+    def full_name(self):
+        full_name = self.name
+        if self.day_of_week:
+            full_name += ' - ' + self.get_day_of_week_display()
+            
+        return full_name
         
 class Workout_Exercise (models.Model):
     workout = models.ForeignKey (Workout, on_delete=models.CASCADE)

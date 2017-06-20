@@ -90,6 +90,10 @@ def program_update(request, pk, template_name='hamask/program.html'):
                 workout.save()
                 
                 return HttpResponseRedirect (reverse ('hamask:workout_update', kwargs={'pk':workout.id}))
+            elif 'start' in request.POST:
+                program.start()
+                messages.success(request, Notification.success_message, extra_tags=Notification.success_class)
+                return HttpResponseRedirect (reverse ('hamask:workout_update', kwargs={'pk':workout.id}))
         else:
             groups = program.get_workout_groups()
             workouts = {}
@@ -101,10 +105,10 @@ def program_update(request, pk, template_name='hamask/program.html'):
                     exercises[workout.id] = workout.get_workout_exercises()
             
             return render (request, template_name, {'form': form
+                            , 'program': program
                             , 'groups': groups
                             , 'workouts': workouts
-                            , 'exercises': exercises
-                            , 'id': program.id,})
+                            , 'exercises': exercises,})
 
 def reorder_group(request):
     group = Workout_Group.objects.get(pk=request.GET.get('group_id', None))
