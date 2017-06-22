@@ -1,5 +1,6 @@
 import datetime
 
+from math import floor
 from django.db import models
 from django.db.models import Max
 from django.utils import timezone
@@ -29,7 +30,16 @@ class Lifter (models.Model):
     def get_started_programs(self):
         programs = self.get_programs().filter(start_date__isnull=False
                     ).filter(end_date__isnull=True)
-        return programs            
+        return programs
+
+    def get_next_workouts(self):
+        programs = self.get_started_programs()
+        workouts = []
+        
+        for program in programs:
+            workouts.append(program.get_next_workout())
+            
+        return workouts
     
     def get_maxes(self):
         s = Lifter_Stats.objects.filter(lifter__exact=self.id
@@ -53,7 +63,8 @@ class Lifter (models.Model):
         max = Lifter_Stats.objects.filter(lifter__exact=self.id
                 ).filter(reps__exact=1
                 ).filter(exercise__exact=exercise.id
-                ).order_by('-entry_date', '-weight')[:1]
+                ).order_by('-entry_date', '-weight'
+                ).first()
                 
         return max
         
@@ -123,7 +134,6 @@ class Program (models.Model):
     #block_type
     rounding_choices = (
         ('NO', 'No rounding'),
-        ('2.5', '2.5'),
         ('5', '5'),
         ('10', '10'),
         ('LAST_5', 'Last digit is 5'),
@@ -156,6 +166,31 @@ class Program (models.Model):
             order = 0
         
         return order
+        
+    def get_workouts(self):
+        workouts = Workout.objects.filter(workout_group__program__exact=self.id)
+        return workouts
+        
+    def get_workout_logs(self):
+        logs = Workout_Log.objects.filter(workout__workout_group__program__exact=self.id)
+        return logs
+    
+    def get_workout_logs_list(self):
+        logs = self.get_workout_logs().values_list('id', flat=True)
+        return logs
+        
+        
+    def get_next_workout(self):
+        if self.start_date and not self.end_date:
+            workouts = self.get_workouts()  
+            logs = self.get_workout_logs_list()
+            
+            workout = workouts.exclude(id__in=list(logs)
+                        ).first()
+        else:
+            workout = None
+            
+        return workout
         
     def is_ready(self):
         ready = False
@@ -221,7 +256,7 @@ class Workout_Group (models.Model):
         else:
             order = 0
         
-        return order
+        return order        
     
     def set_order_up(self):
         previous = Workout_Group.objects.filter(program__exact=self.program.id
@@ -360,22 +395,49 @@ class Workout_Exercise (models.Model):
     def loading(self):
         if not hasattr(self, '_loading'):
             if self.rep_scheme == 'MAX_PERCENTAGE': 
-                if self.percentage != None:
+                if self.percentage:
                     self._loading = str(self.percentage) + '%'
                 else:
                     self._loading = ''
             elif self.rep_scheme == 'RPE':
-                if self.rpe != None:
+                if self.rpe:
                     self._loading = 'RPE ' + str(self.rpe)
                 else:
                     self._loading = ''
             elif self.rep_scheme == 'WEIGHT':
-                if self.weight != None:
+                if self.weight:
                     self._loading = str(self.weight) + self.workout.workout_group.program.lifter.get_weight_unit()
                 else:
                     self._loading = ''
         
         return self._loading
+    
+    @property
+    def loading_weight(self):
+        if not hasattr(self, '_loading_weight'):
+            self._loading_weight = ''
+            if self.rep_scheme == 'MAX_PERCENTAGE': 
+                if self.percentage:
+                    program = self.workout.workout_group.program
+                    lifter = program.lifter
+                    max = lifter.get_max(self)
+                    
+                    if max:
+                        weight = int(round(max.weight * (self.percentage / 100)))
+                        rounding = program.rounding
+                        
+                        if rounding == '5':
+                            weight = int(5 * round(weight / 5))
+                        elif rounding == '10':
+                            weight = int(round(weight, -1))
+                        elif rounding == 'LAST_5':
+                            weight = (floor(weight / 10) * 10) + 5                            
+                        
+                        self._loading_weight = str(weight) + lifter.get_weight_unit()
+                    else:
+                        self._loading_weight = 'No max defined'
+        
+        return self._loading_weight
     
 class Workout_Log (models.Model):
     workout = models.ForeignKey (Workout, on_delete=models.SET_NULL, blank=True, null=True)

@@ -33,7 +33,15 @@ def index(request):
             form = LoginForm()
             return render (request, 'hamask/login.html', {'form': form})
         else:
-            return render (request, 'hamask/index.html')
+            lifter = Lifter.objects.get(pk=request.session['lifter'])
+            workouts = lifter.get_next_workouts()
+            exercises = {} 
+            
+            if workouts:               
+                for workout in workouts:
+                    exercises[workout.id] = workout.get_workout_exercises()
+            
+            return render (request, 'hamask/index.html', {'workouts': workouts, 'exercises': exercises,})
 
 def logout_view(request):
     logout(request)

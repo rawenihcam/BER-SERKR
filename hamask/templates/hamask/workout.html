@@ -8,11 +8,11 @@
         <h1>Workout</h1>
     </div>
     <div class="col-xs-6 right">
-        <button type="submit" name="save" value="save" class="btn btn-success right" title="Save"><i class="fa fa-save"></i></button>
+        <button type="submit" name="save" value="save" class="btn btn-success right"><i class="fa fa-save"></i>&nbsp;Save</button>
         {% if id %}
-            <button type="submit" name="delete" value="delete" class="btn btn-danger right" title="Delete"><i class="fa fa-trash"></i></button>
+            <button type="submit" name="delete" value="delete" class="btn btn-danger right"><i class="fa fa-trash"></i>&nbsp;Delete</button>
         {% endif %}
-        <a href="{% url 'hamask:program_update' program_id %}" class="btn btn-default right" title="Back"><i class="fa fa-arrow-left"></i></a>
+        <a href="{% url 'hamask:program_update' program_id %}" class="btn btn-default right"><i class="fa fa-arrow-left"></i>&nbsp;Back</a>
     </div>
 </div>
 
