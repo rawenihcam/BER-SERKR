@@ -2,6 +2,7 @@
 
 {% block content %}
 {% if workouts %}
+<form method="post">
     <h1 class="page-header">BER-SERKR</h1>
 
     {% for workout in workouts %}
@@ -39,12 +40,17 @@
                         </tbody>
                         </table>
                     {% endif %}
+                    
+                    
+                    <button type="submit" name="log" value="{{ workout.id }}" class="btn btn-sm btn-success right"><i class="fa fa-check"></i>&nbsp;Log</button>
+                    <a href="{% url 'hamask:workout_update' workout.id %}" class="btn btn-sm btn-warning right"><i class="fa fa-pencil"></i>&nbsp;Edit</a>
+                    <button type="submit" name="skip" value="{{ workout.id }}" class="btn btn-sm btn-danger right"><i class="fa fa-times"></i>&nbsp;Skip</button>
                 </div>
             </div>
         </div>
     </div>
     {% endfor %}
-    
+</form>    
 {% else %}
     <div class="jumbotron">
         <h1>Welcome to BER-SERKR</h1>

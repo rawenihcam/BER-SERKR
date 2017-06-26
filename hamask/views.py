@@ -16,17 +16,25 @@ from .control import *
 # Create your views here.
 def index(request):
     if request.method == 'POST':
-        form = LoginForm (request.POST)
-        if form.is_valid():
-            email = request.POST['email']
-            password = request.POST['password']            
-            user = authenticate (request, username=email, password=password)
-            
-            if user is not None:
-                login (request, user)
-                request.session['lifter'] = Lifter.objects.get(email=email).id
-            
-            return HttpResponseRedirect (reverse ('hamask:index'))
+        # Login
+        if 'login' in request.POST:
+            form = LoginForm (request.POST)
+            if form.is_valid():
+                email = request.POST['email']
+                password = request.POST['password']            
+                user = authenticate (request, username=email, password=password)
+                
+                if user is not None:
+                    login (request, user)
+                    request.session['lifter'] = Lifter.objects.get(email=email).id
+                
+                return HttpResponseRedirect (reverse ('hamask:index'))
+        # Log workout
+        elif 'log' in request.POST:
+            workout = get_object_or_404(Workout, pk=request.POST['log'])
+        # Skip workout
+        elif 'skip' in request.POST:
+            workout = get_object_or_404(Workout, pk=request.POST['skip'])
     else:
         # If user is not authenticated, show login form
         if not request.user.is_authenticated:

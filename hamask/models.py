@@ -1,6 +1,7 @@
 import datetime
 
 from math import floor
+from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 from django.db.models import Max
 from django.utils import timezone
@@ -131,9 +132,9 @@ class Program (models.Model):
     is_current = models.BooleanField (default=False)
     auto_update_stats = models.BooleanField (default=True)
     repeatable = models.BooleanField (default=False)
-    #block_type
     rounding_choices = (
         ('NO', 'No rounding'),
+        ('0.5', '0.5'),
         ('5', '5'),
         ('10', '10'),
         ('LAST_5', 'Last digit is 5'),
@@ -332,6 +333,33 @@ class Workout (models.Model):
         
         return order
         
+    def get_log_create(self):
+        # Get existing log or create new
+        try:
+            log = Workout_Log.objects.get(workout__exact=self.id)
+        except ObjectDoesNotExist:
+            log = Workout_Log(workout=self.id, workout_date=timezone.now(), status='IN_PROGR')
+            log.save()
+        
+        return log
+    
+    def log(self):
+        # Get existing log or create new
+        log = self.get_log_create()
+        log.status = 'COMPL'    
+        log.save()
+        
+        # Log exercises
+        exercises = self.get_workout_exercises()
+        for exercise in exercises:
+            exercise.log()
+    
+    def skip(self):
+        # Get existing log or create new
+        log = self.get_log_create()
+        log.status = 'SKIPD'    
+        log.save()
+        
     @property
     def full_name(self):
         full_name = self.name
@@ -390,6 +418,8 @@ class Workout_Exercise (models.Model):
         self.order += 1
         next.save()
         self.save()
+        
+    #def log(self):
     
     @property
     def loading(self):
@@ -423,15 +453,19 @@ class Workout_Exercise (models.Model):
                     max = lifter.get_max(self)
                     
                     if max:
-                        weight = int(round(max.weight * (self.percentage / 100)))
+                        weight = max.weight * (self.percentage / 100)
                         rounding = program.rounding
                         
-                        if rounding == '5':
-                            weight = int(5 * round(weight / 5))
-                        elif rounding == '10':
-                            weight = int(round(weight, -1))
-                        elif rounding == 'LAST_5':
-                            weight = (floor(weight / 10) * 10) + 5                            
+                        if rounding == '0.5':
+                            weight = round(weight * 2) / 2
+                        else:
+                            weight = round(weight)
+                            if rounding == '5':
+                                weight = 5 * round(weight / 5)
+                            elif rounding == '10':
+                                weight = round(weight, -1)
+                            elif rounding == 'LAST_5':
+                                weight = (floor(weight / 10) * 10) + 5                            
                         
                         self._loading_weight = str(weight) + lifter.get_weight_unit()
                     else:
@@ -442,6 +476,12 @@ class Workout_Exercise (models.Model):
 class Workout_Log (models.Model):
     workout = models.ForeignKey (Workout, on_delete=models.SET_NULL, blank=True, null=True)
     workout_date = models.DateField ()
+    status_choices = (
+        ('COMPL', 'Completed'),
+        ('SKIPD', 'Skipped'),
+        ('IN_PROGR', 'In Progress'),
+    )
+    status = models.CharField (max_length=30, choices=status_choices)
     notes = models.TextField (blank=True)
     
 class Workout_Exercise_Log (models.Model):
@@ -449,7 +489,7 @@ class Workout_Exercise_Log (models.Model):
     Workout_Exercise = models.ForeignKey (Workout_Exercise, on_delete=models.SET_NULL, blank=True, null=True)
     sets = models.PositiveIntegerField (blank=True)
     reps = models.PositiveIntegerField (blank=True)
-    weight = models.PositiveIntegerField (blank=True)
+    weight = models.FloatField (blank=True)
     percentage = models.PositiveIntegerField (blank=True)
     rpe = models.PositiveIntegerField (blank=True)
     time = models.PositiveIntegerField (blank=True)
