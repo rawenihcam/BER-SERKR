@@ -175,6 +175,11 @@ class Program (models.Model):
     def get_workout_logs(self):
         logs = Workout_Log.objects.filter(workout__workout_group__program__exact=self.id)
         return logs
+        
+    def get_last_workout_log(self):
+        logs = Workout_Log.objects.filter(workout__workout_group__program__exact=self.id
+                ).order_by('-workout_date').first()
+        return logs
     
     def get_workout_logs_list(self):
         logs = self.get_workout_logs().values_list('id', flat=True)
@@ -183,11 +188,23 @@ class Program (models.Model):
         
     def get_next_workout(self):
         if self.start_date and not self.end_date:
-            workouts = self.get_workouts()  
-            logs = self.get_workout_logs_list()
-            
-            workout = workouts.exclude(id__in=list(logs)
-                        ).first()
+            if self.repeatable:
+                log = self.get_last_workout_log()
+                
+                try:
+                    workout = Workout.objects.filter(program__exact=self.id
+                                ).filter(order__exact=log.workout.order + 1
+                                ).get()
+                else:
+                    workout = Workout.objects.filter(program__exact=self.id
+                                ).filter(order__exact=1
+                                ).get()
+            else:
+                workouts = self.get_workouts()  
+                logs = self.get_workout_logs_list()
+                
+                workout = workouts.exclude(id__in=list(logs)
+                            ).first()
         else:
             workout = None
             
