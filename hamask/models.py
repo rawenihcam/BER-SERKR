@@ -41,6 +41,11 @@ class Lifter (models.Model):
             workouts.append(program.get_next_workout())
             
         return workouts
+        
+    def get_last_workouts(self):
+        workouts = Workout_Log.objects.filter(workout__workout_group__program__lifter__exact=self.id)[:50]
+        return workouts
+    
     
     def get_maxes(self):
         s = Lifter_Stats.objects.filter(lifter__exact=self.id
@@ -195,6 +200,8 @@ class Program (models.Model):
                     workout = Workout.objects.filter(program__exact=self.id
                                 ).filter(order__exact=log.workout.order + 1
                                 ).get()
+                except ObjectDoesNotExist:
+                    None
                 else:
                     workout = Workout.objects.filter(program__exact=self.id
                                 ).filter(order__exact=1
@@ -235,6 +242,10 @@ class Program (models.Model):
             ready = True
         
         return ready
+        
+    def complete(self):
+        if not self.get_next_workout():
+            self.end()
     
 class Workout_Group (models.Model):
     program = models.ForeignKey (Program, on_delete=models.CASCADE)
@@ -360,22 +371,18 @@ class Workout (models.Model):
         
         return log
     
-    def log(self):
-        # Get existing log or create new
-        log = self.get_log_create()
-        log.status = 'COMPL'    
+    def log(self, status):
+        # Create new log
+        log = Workout_Log(workout=self.id, workout_date=timezone.now(), status=status)  
         log.save()
         
         # Log exercises
         exercises = self.get_workout_exercises()
         for exercise in exercises:
-            exercise.log()
-    
-    def skip(self):
-        # Get existing log or create new
-        log = self.get_log_create()
-        log.status = 'SKIPD'    
-        log.save()
+            exercise.log(log)
+            
+        # Check if program is completed
+        self.workout_group.program.complete()
         
     @property
     def full_name(self):
@@ -436,7 +443,17 @@ class Workout_Exercise (models.Model):
         next.save()
         self.save()
         
-    #def log(self):
+    def log(self, workout_log):
+        log = Workout_Exercise_Log(workout_log=workout_log.id
+                ,workout_exercise=self.id
+                ,sets=self.sets
+                ,reps=self.reps
+                ,weight=self._loading_weight
+                ,percentage=self.percentage
+                ,rpe=self.rpe
+                ,time=self.time
+                ,is_amrap=self.is_amrap
+                ,notes=self.notes)
     
     @property
     def loading(self):
@@ -502,8 +519,8 @@ class Workout_Log (models.Model):
     notes = models.TextField (blank=True)
     
 class Workout_Exercise_Log (models.Model):
-    Workout_Log = models.ForeignKey (Workout_Log, on_delete=models.CASCADE)
-    Workout_Exercise = models.ForeignKey (Workout_Exercise, on_delete=models.SET_NULL, blank=True, null=True)
+    workout_log = models.ForeignKey (Workout_Log, on_delete=models.CASCADE)
+    workout_exercise = models.ForeignKey (Workout_Exercise, on_delete=models.SET_NULL, blank=True, null=True)
     sets = models.PositiveIntegerField (blank=True)
     reps = models.PositiveIntegerField (blank=True)
     weight = models.FloatField (blank=True)
