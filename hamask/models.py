@@ -88,6 +88,15 @@ class Lifter (models.Model):
             prs = prs.union (pr, all=True)
         
         return prs
+        
+    def get_pr(self, exercise, reps):
+        pr = Lifter_Stats.objects.filter(lifter__exact=self.id
+                ).filter(exercise__exact=exercise
+                ).filter(reps__exact=reps
+                ).order_by('-weight'
+                ).first()
+         
+        return pr
     
     def get_last_prs(self):
         prs = Lifter_Stats.objects.raw('''select * 
@@ -454,6 +463,8 @@ class Workout_Exercise (models.Model):
                 ,time=self.time
                 ,is_amrap=self.is_amrap
                 ,notes=self.notes)
+                
+        log.save()
     
     @property
     def loading(self):
@@ -506,6 +517,18 @@ class Workout_Exercise (models.Model):
                         self._loading_weight = 'No max defined'
         
         return self._loading_weight
+        
+    @property
+    def is_pr(self):
+        if not hasattr(self, '_is_pr'):
+            self._is_pr = False
+            
+            pr = program.lifter.get_pr(self.exercise, self.reps)
+            if pr:
+                if self.weight > pr.weight:
+                    self._is_pr = True
+        
+        return self._is_pr
     
 class Workout_Log (models.Model):
     workout = models.ForeignKey (Workout, on_delete=models.SET_NULL, blank=True, null=True)
@@ -529,6 +552,35 @@ class Workout_Exercise_Log (models.Model):
     time = models.PositiveIntegerField (blank=True)
     is_amrap = models.BooleanField (default=False)
     notes = models.TextField (blank=True)
+    
+    def save(self, *args, **kwargs):        
+        # Call the "real" save() method
+        super(Workout_Exercise_Log, self).save(*args, **kwargs)
+        
+        # Log PR if applicable
+        if self.workout_exercise and self.workout_log.status == 'COMPL':
+            program = Program.objects.get(pk=self.workout_exercise.workout.workout_group.program)
+            
+            if program.auto_update_stats:
+                # Clean referencing stat
+                try:
+                    old_stat = Lifter_Stats.objects.get(workout_exercise_log__exact=self.id)
+                except ObjectDoesNotExist:
+                    None
+                else:
+                    old_stat.delete()
+                
+                #Log PR
+                pr = program.lifter.get_pr(self.exercise, self.reps)
+                if pr:
+                    if self.weight > pr.weight:
+                        stat = Lifter_Stats(lifter=program.lifter
+                                ,exercise=self.exercise
+                                ,workout_exercise_log=self.id
+                                ,reps=self.reps
+                                ,weight=self.weight)
+                                
+                        stat.save()
     
 class Lifter_Stats (models.Model):
     lifter = models.ForeignKey (Lifter, on_delete=models.CASCADE)

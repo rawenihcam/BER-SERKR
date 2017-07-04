@@ -32,9 +32,15 @@ def index(request):
         # Log workout
         elif 'log' in request.POST:
             workout = get_object_or_404(Workout, pk=request.POST['log'])
+            workout.log('COMPL')
+        # Edit workout
+        elif 'edit' in request.POST:
+            workout = get_object_or_404(Workout, pk=request.POST['edit'])
+            workout.log('IN_PROGR')
         # Skip workout
         elif 'skip' in request.POST:
             workout = get_object_or_404(Workout, pk=request.POST['skip'])
+            workout.log('SKIPD')
     else:
         # If user is not authenticated, show login form
         if not request.user.is_authenticated:

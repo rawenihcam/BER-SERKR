@@ -41,9 +41,8 @@
                         </table>
                     {% endif %}
                     
-                    
                     <button type="submit" name="log" value="{{ workout.id }}" class="btn btn-sm btn-success right"><i class="fa fa-check"></i>&nbsp;Log</button>
-                    <a href="{% url 'hamask:workout_update' workout.id %}" class="btn btn-sm btn-warning right"><i class="fa fa-pencil"></i>&nbsp;Edit</a>
+                    <button type="submit" name="edit" value="{{ workout.id }}" class="btn btn-sm btn-warning right"><i class="fa fa-pencil"></i>&nbsp;Edit</button>
                     <button type="submit" name="skip" value="{{ workout.id }}" class="btn btn-sm btn-danger right"><i class="fa fa-times"></i>&nbsp;Skip</button>
                 </div>
             </div>
