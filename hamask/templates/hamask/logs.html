@@ -1,11 +1,53 @@
 {% extends 'hamask/base.html' %}
 
 {% block content %}
-<h1>LOGS</h1>
+<div class="col-sm-3 col-md-2 sidebar">
+    <ul class="nav nav-sidebar">
+        <li class="active"><a href="#">Last workouts</a></li>
+    </ul>
+</div>
 
-<ul>
-    <li><a href="{% url 'hamask:programs' %}">Programs</a></li>
-    <li><a href="{% url 'hamask:logs' %}">Training Logs</a></li>
-    <li><a href="{% url 'hamask:stats' %}">Stats</a></li>
-</ul>
+<div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2">
+
+<div class="row page-header">
+    <div class="col-xs-6">
+        <h1>Training Logs</h1>
+    </div>
+    <div class="col-xs-6">
+        <a href="{% url 'hamask:log_create' %}" class="btn btn-success right"><i class="fa fa-plus"></i>&nbsp;Create</a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-sm-12">
+        {% if logs %}
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th class="icon">&nbsp;</th>
+                        <th class="center">Date</th>
+                        <th>Workout</th>
+                    </tr>
+                </thead>
+                
+                <tbody>
+                {% for log in logs %}
+                    <tr>
+                      <td><a href="{% url 'hamask:program_update' program.id %}"><i class="fa fa-pencil"></i></a></td>
+                      <td>{{ program.name }}</td>
+                      <td class="center">{% if program.is_ready %}<i class="fa fa-check"></i>{% else %}<i class="fa fa-times"></i>{% endif %}</td>
+                      <td class="center">{% if program.start_date %}<i class="fa fa-check"></i>{% else %}<i class="fa fa-times"></i>{% endif %}</td>
+                      <td class="center">{% if program.end_date %}<i class="fa fa-check"></i>{% else %}<i class="fa fa-times"></i>{% endif %}</td>
+                      <td>{% if program.start_date %}{{ program.start_date }}{% endif %}</td>
+                      <td>{% if program.end_date %}{{ program.end_date }}{% endif %}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>Start a program or <a href="{% url 'hamask:log_create' %}">enter a log</a></p>
+        {% endif %}
+    </div>
+</div>
+</div>
 {% endblock %}

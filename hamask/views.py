@@ -234,7 +234,15 @@ def delete_exercise(request):
     return JsonResponse(data)
 
 def logs(request):
-    return render (request, 'hamask/logs.html')
+    lifter = Lifter.objects.get(pk=request.session['lifter'])
+    logs = lifter.get_last_workouts()
+    return render (request, 'hamask/logs.html', {'logs': logs})
+    
+def log_create(request):
+    return render (request, 'hamask/log.html')
+    
+def log_update(request):
+    return render (request, 'hamask/log.html')
     
 def stats(request):            
     lifter = Lifter.objects.get(pk=request.session['lifter'])

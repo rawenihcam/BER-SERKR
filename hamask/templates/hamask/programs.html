@@ -1,6 +1,8 @@
 {% extends 'hamask/base.html' %}
 
 {% block content %}
+<div class="container">
+
 <div class="row page-header">
     <div class="col-xs-6">
         <h1>Programs</h1>
@@ -44,5 +46,6 @@
             <p><a href="{% url 'hamask:program_create' %}">Create a new program</a></p>
         {% endif %}
     </div>
+</div>
 </div>
 {% endblock %}

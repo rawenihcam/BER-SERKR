@@ -1,0 +1,36 @@
+{% extends 'hamask/base.html' %}
+
+{% block content %}
+<div class="container">
+  
+<form method="post">
+<div class="row page-header">
+    <div class="col-xs-6">
+        <h1>Workout</h1>
+    </div>
+    <div class="col-xs-6 right">
+        <button type="submit" name="save" value="save" class="btn btn-success right"><i class="fa fa-save"></i>&nbsp;Save</button>
+        {% if id %}
+            <button type="submit" name="delete" value="delete" class="btn btn-danger right"><i class="fa fa-trash"></i>&nbsp;Delete</button>
+        {% endif %}
+        <a href="{% url 'hamask:logs' %}" class="btn btn-default right"><i class="fa fa-arrow-left"></i>&nbsp;Back</a>
+    </div>
+</div>
+
+    {% csrf_token %}
+    
+    
+</form>
+</div>
+
+<!-- Scripts -->
+<script>
+    $( function() {
+        exercise_field_display('');
+    });
+
+    $('div.rep_scheme > div > select').on('input', function() { 
+        exercise_field_display(this);
+    });
+</script>
+{% endblock %}

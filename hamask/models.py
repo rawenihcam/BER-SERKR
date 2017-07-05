@@ -43,7 +43,8 @@ class Lifter (models.Model):
         return workouts
         
     def get_last_workouts(self):
-        workouts = Workout_Log.objects.filter(workout__workout_group__program__lifter__exact=self.id)[:50]
+        workouts = Workout_Log.objects.filter(workout__workout_group__program__lifter__exact=self.id
+                    ).order_by('-workout_date')[:50]
         return workouts
     
     
