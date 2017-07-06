@@ -1,18 +1,72 @@
 {% extends 'hamask/base.html' %}
 
 {% block content %}
-<h1 class="page-header">Welcome to BER-SERKR</h1>
+<div class="container">
 
-<div class="row">
-    <div class="col-sm-6">
-        <div class="panel panel-default">
-            <div class="panel-heading">
-                <h3 class="panel-title">Your next workout</h3>
-            </div>
-            <div class="panel-body">
-                Shake da booty
+{% if workouts %}
+<form method="post">
+    {% csrf_token %}
+    <h1 class="page-header">BER-SERKR</h1>
+
+    {% for workout in workouts %}
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Your next workout&nbsp;-&nbsp;{{ workout.workout_group.program.name }}</h3>
+                </div>
+                <div class="panel-body">
+                    <b>{{ workout.workout_group.name }}&nbsp;-&nbsp;{{ workout.name }}{% if workout.day_of_week %}&nbsp;({{ workout.get_day_of_week_display }}){% endif %}</b>
+                    
+                    {% if exercises|get_item:workout.id %}
+                        <table class="table table-condensed table-exercise">
+                        <thead>
+                            <tr>
+                                <th class="col-sm-4 invisible"></th>
+                                <th class="col-sm-1 invisible"></th>
+                                <th class="col-sm-1 invisible"></th>
+                                <th class="col-sm-4 invisible"></th>
+                            </tr>
+                        </thead>
+        
+                        <tbody>
+                            {% for exercise in exercises|get_item:workout.id %}
+                                <tr>
+                                <td>{{ exercise.exercise.name }}</td>
+                                <td>{{ exercise.sets }}&nbsp;x&nbsp;{{ exercise.reps }}</td>
+                                <td>{{ exercise.loading }}</td>
+                                <td>{{ exercise.loading_weight_formt }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                        </table>
+                    {% endif %}
+                    
+                    <button type="submit" name="log" value="{{ workout.id }}" class="btn btn-sm btn-success right"><i class="fa fa-check"></i>&nbsp;Log</button>
+                    <button type="submit" name="edit" value="{{ workout.id }}" class="btn btn-sm btn-warning right"><i class="fa fa-pencil"></i>&nbsp;Edit</button>
+                    <button type="submit" name="skip" value="{{ workout.id }}" class="btn btn-sm btn-danger right"><i class="fa fa-times"></i>&nbsp;Skip</button>
+                </div>
             </div>
         </div>
     </div>
+    {% endfor %}
+</form>    
+{% else %}
+    <div class="jumbotron">
+        <h1>BER-SERKR</h1>
+        <p>
+            Here are the first steps needed to use BER-SERKR to it's full potential:
+            <br/>
+            1. Create a new program
+            <br/>
+            2. Log your maxes
+            <br/>
+            3. Start your program and go lift heavy shit
+            <br/>
+            4. Report back and log your workout
+        </p>
+        <p>GO BERSERK!</p>
+    </div>
+{% endif %}
 </div>
 {% endblock %}

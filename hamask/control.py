@@ -1,5 +1,6 @@
 from django.template.defaulttags import register
 
+# Custom classes
 class Notification():
     success_class = 'alert-success'
     error_class = 'alert-danger'
@@ -8,6 +9,10 @@ class Notification():
     
     success_message = 'All changes saved.'
     
+class IncompleteProgram(Exception):
+    pass
+    
+# Custom functions    
 @register.filter
 def get_item(dictionary, key):
     return dictionary.get(key)

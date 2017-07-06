@@ -1,34 +1,49 @@
 {% extends 'hamask/base.html' %}
 
 {% block content %}
-<h1 class="page-header">Program</h1>
+<div class="container">
     
 <!-- Program -->
 <form id="form" method="post">
+<div class="row page-header">
+    <div class="col-xs-6">
+        <h1>Program</h1>
+    </div>
+    <div class="col-xs-6 right">
+        <button type="submit" name="save" value="save" class="btn btn-success right"><i class="fa fa-save"></i>&nbsp;Save</button>
+        {% if program %}
+            <button type="submit" name="delete" value="delete" class="btn btn-danger right"><i class="fa fa-trash"></i>&nbsp;Delete</button>
+        {% endif %}
+        <a href="{% url 'hamask:programs' %}" class="btn btn-default right"><i class="fa fa-arrow-left"></i>&nbsp;Back</a>
+    </div>
+</div>
+
     {% csrf_token %}
     
     {{ form.non_field_errors }}
     <div class="row">
         {% include 'hamask/form.html' with field=form.name div_class='col-sm-12 col-md-4 col-lg-3' %}
-        {% include 'hamask/form.html' with field=form.start_date div_class='col-sm-12 col-md-4 col-lg-3' %}
+        
+        <div class="col-sm-12 col-md-4 col-lg-3">
+        {% if not program.start_date %}
+            <button type="submit" name="start" value="start" class="btn btn-warning btn-form" {% if not program.is_ready %} disabled {% endif %}>
+                <i class="fa fa-play"></i>&nbsp;Start Program
+            </button>
+        {% else %}
+            <button type="submit" name="end" value="end" class="btn btn-warning btn-form">
+                <i class="fa fa-stop"></i>&nbsp;End Program
+            </button>
+        {% endif %}
+        </div>
     </div>    
     <br/>
     <div class="row">
         {% include 'hamask/form.html' with field=form.rounding div_class='col-sm-12 col-md-4 col-lg-3' %}
-        {% include 'hamask/form.html' with field=form.auto_update_stats div_class='col-sm-12 col-md-4 col-lg-3' %}
+        {% include 'hamask/form.html' with field=form.auto_update_stats div_class='col-sm-12 col-md-3 col-lg-2' %}
+        {% include 'hamask/form.html' with field=form.repeatable div_class='col-sm-12 col-md-3 col-lg-2' %}
     </div>
     
     <br/>
-    <!-- Buttons -->
-    <div class="row">
-        <div class="col-sm-12">
-            <a href="{% url 'hamask:programs' %}" class="btn btn-default"><i class="fa fa-arrow-left"></i>&nbsp;Back</a>
-            {% if id %}
-                <button type="submit" name="delete" value="delete" class="btn btn-danger"><i class="fa fa-trash"></i>&nbsp;Delete</button>
-            {% endif %}
-            <button type="submit" name="save" value="save" class="btn btn-primary"><i class="fa fa-save"></i>&nbsp;Save</button>
-        </div>
-    </div>
 </form>
 
 <!-- Groups -->
@@ -39,7 +54,7 @@
         {% for group in groups %}
             <div id="div_{{ group.id }}" class="row">
                 <div class="col-xs-10">
-                    <h3 id="h_group_{{ group.id }}" class="h_group">
+                    <h3 id="h_group_{{ group.id }}" class="h_group pointer">
                         <span id="span_group_{{ group.id }}">{{ group.name }}</span>&nbsp;
                         <i class="fa fa-pencil"></i>
                     </h3>
@@ -50,8 +65,8 @@
                 </div>
                 
                 <div class="col-xs-2">                    
-                    <button type="submit" form="form" name="add_workout" value="{{ group.id }}" title="Add workout" class="btn btn-sm btn-success right">
-                    <i class="fa fa-plus"></i>
+                    <button type="submit" form="form" name="add_workout" value="{{ group.id }}" class="btn btn-sm btn-success right">
+                    <i class="fa fa-plus"></i>&nbsp;&nbsp;Add Workout
                     </button>
                     
                     <div class="btn-group right">
@@ -62,7 +77,6 @@
                             <li><a href="javascript:$('#form').submit();" name="copy_group" value="{{ group.id }}"><i class="fa fa-copy"></i>&nbsp;Copy</a></li>
                             <li><a href="javascript:void(0);" onclick="group_delete({{ group.id }});"><i class="fa fa-trash"></i>&nbsp;Delete</a></li>
                         </ul>
-                        &nbsp;
                     </div>
                 </div>
                 
@@ -79,7 +93,7 @@
                         {% for workout in workouts|get_item:group.id %}
                             <tr>
                             <td><a href="{% url 'hamask:workout_update' workout.id %}"><i class="fa fa-pencil"></i></a>&nbsp;&nbsp;&nbsp;
-                                {{ workout.name }}
+                                {{ workout.full_name }}
                             </td>
                             <td>
                                 {% if exercises|get_item:workout.id %}
@@ -118,6 +132,7 @@
     {% endif %}
     
     <button type="submit" form="form" name="add_group" value="add_group" class="btn btn-primary"><i class="fa fa-plus"></i>&nbsp;Add Block</button>
+</div>
 </div>
 </div>
 

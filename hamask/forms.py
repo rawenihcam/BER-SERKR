@@ -13,7 +13,7 @@ class LoginForm (forms.Form):
 class ProgramForm (ModelForm):
     class Meta:
         model = Program
-        fields = ['name', 'start_date', 'auto_update_stats', 'rounding']
+        fields = ['name', 'auto_update_stats', 'rounding', 'repeatable']
         """labels = {
             'rep_scheme': _('Prefered rep scheme'),
         }"""
@@ -26,7 +26,7 @@ class ProgramForm (ModelForm):
 class WorkoutForm (ModelForm):
     class Meta:
         model = Workout
-        fields = ['name']
+        fields = ['name', 'day_of_week']
         
 class WorkoutExerciseForm (ModelForm):
     class Meta:

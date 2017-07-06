@@ -1,11 +1,58 @@
 {% extends 'hamask/base.html' %}
 
 {% block content %}
-<h1>LOGS</h1>
+<div class="col-sm-3 col-md-2 sidebar">
+    <ul class="nav nav-sidebar">
+        <li class="active"><a href="#">Last workouts</a></li>
+    </ul>
+</div>
 
-<ul>
-    <li><a href="{% url 'hamask:programs' %}">Programs</a></li>
-    <li><a href="{% url 'hamask:logs' %}">Training Logs</a></li>
-    <li><a href="{% url 'hamask:stats' %}">Stats</a></li>
-</ul>
+<div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2">
+
+<div class="row page-header">
+    <div class="col-xs-6">
+        <h1>Training Logs</h1>
+    </div>
+    <div class="col-xs-6">
+        <a href="{% url 'hamask:log_create' %}" class="btn btn-success right"><i class="fa fa-plus"></i>&nbsp;Create</a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-sm-12">
+        {% if logs %}
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th class="icon">&nbsp;</th>
+                        <th class="center">Date</th>
+                        <th>Workout</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                
+                <tbody>
+                {% for log in logs %}
+                    <tr>
+                      <td><a href="{% url 'hamask:log_create' %}"><i class="fa fa-pencil"></i></a></td>
+                      <td class="center">{{ log.workout_date }}</td>
+                      <td>
+                            {% if log.workout %}
+                                {{ log.workout.workout_group.program }}&nbsp;-&nbsp;{{ log.workout.workout_group }}&nbsp;-&nbsp;{{ log.workout }}
+                                {% if log.workout.day_of_week %}&nbsp;({{ log.workout.get_day_of_week_display }}){% endif %}
+                            {% else %}
+                                {{ log.get_exercise_log_formt }}
+                            {% endif %}
+                      </td>
+                      <td>{{ log.status }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>Start a program or <a href="{% url 'hamask:log_create' %}">enter a log</a></p>
+        {% endif %}
+    </div>
+</div>
+</div>
 {% endblock %}

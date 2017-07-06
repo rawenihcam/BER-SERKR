@@ -16,24 +16,47 @@ from .control import *
 # Create your views here.
 def index(request):
     if request.method == 'POST':
-        form = LoginForm (request.POST)
-        if form.is_valid():
-            email = request.POST['email']
-            password = request.POST['password']            
-            user = authenticate (request, username=email, password=password)
+        # Login
+        if 'login' in request.POST:
+            form = LoginForm (request.POST)
+            if form.is_valid():
+                email = request.POST['email']
+                password = request.POST['password']            
+                user = authenticate (request, username=email, password=password)
+                
+                if user is not None:
+                    login (request, user)
+                    request.session['lifter'] = Lifter.objects.get(email=email).id
+                
+        # Log workout
+        elif 'log' in request.POST:
+            workout = get_object_or_404(Workout, pk=request.POST['log'])
+            workout.log('COMPL')
+        # Edit workout
+        elif 'edit' in request.POST:
+            workout = get_object_or_404(Workout, pk=request.POST['edit'])
+            workout.log('IN_PROGR')
+        # Skip workout
+        elif 'skip' in request.POST:
+            workout = get_object_or_404(Workout, pk=request.POST['skip'])
+            workout.log('SKIPD')
             
-            if user is not None:
-                login (request, user)
-                request.session['lifter'] = Lifter.objects.get(email=email).id
-            
-            return HttpResponseRedirect (reverse ('hamask:index'))
+        return HttpResponseRedirect (reverse ('hamask:index'))
     else:
         # If user is not authenticated, show login form
         if not request.user.is_authenticated:
             form = LoginForm()
             return render (request, 'hamask/login.html', {'form': form})
         else:
-            return render (request, 'hamask/index.html')
+            lifter = Lifter.objects.get(pk=request.session['lifter'])
+            workouts = lifter.get_next_workouts()
+            exercises = {} 
+            
+            if workouts:               
+                for workout in workouts:
+                    exercises[workout.id] = workout.get_workout_exercises()
+            
+            return render (request, 'hamask/index.html', {'workouts': workouts, 'exercises': exercises,})
 
 def logout_view(request):
     logout(request)
@@ -90,6 +113,10 @@ def program_update(request, pk, template_name='hamask/program.html'):
                 workout.save()
                 
                 return HttpResponseRedirect (reverse ('hamask:workout_update', kwargs={'pk':workout.id}))
+            elif 'start' in request.POST:
+                program.start()
+                messages.success(request, Notification.success_message, extra_tags=Notification.success_class)
+                return HttpResponseRedirect (reverse ('hamask:workout_update', kwargs={'pk':workout.id}))
         else:
             groups = program.get_workout_groups()
             workouts = {}
@@ -101,10 +128,10 @@ def program_update(request, pk, template_name='hamask/program.html'):
                     exercises[workout.id] = workout.get_workout_exercises()
             
             return render (request, template_name, {'form': form
+                            , 'program': program
                             , 'groups': groups
                             , 'workouts': workouts
-                            , 'exercises': exercises
-                            , 'id': program.id,})
+                            , 'exercises': exercises,})
 
 def reorder_group(request):
     group = Workout_Group.objects.get(pk=request.GET.get('group_id', None))
@@ -208,7 +235,15 @@ def delete_exercise(request):
     return JsonResponse(data)
 
 def logs(request):
-    return render (request, 'hamask/logs.html')
+    lifter = Lifter.objects.get(pk=request.session['lifter'])
+    logs = lifter.get_last_workouts()
+    return render (request, 'hamask/logs.html', {'logs': logs})
+    
+def log_create(request):
+    return render (request, 'hamask/log.html')
+    
+def log_update(request):
+    return render (request, 'hamask/log.html')
     
 def stats(request):            
     lifter = Lifter.objects.get(pk=request.session['lifter'])

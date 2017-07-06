@@ -1,27 +1,30 @@
 {% extends 'hamask/base.html' %}
 
-{% block content %}    
+{% block content %}
+<div class="container">
+  
 <form method="post">
+<div class="row page-header">
+    <div class="col-xs-6">
+        <h1>Workout</h1>
+    </div>
+    <div class="col-xs-6 right">
+        <button type="submit" name="save" value="save" class="btn btn-success right"><i class="fa fa-save"></i>&nbsp;Save</button>
+        {% if id %}
+            <button type="submit" name="delete" value="delete" class="btn btn-danger right"><i class="fa fa-trash"></i>&nbsp;Delete</button>
+        {% endif %}
+        <a href="{% url 'hamask:program_update' program_id %}" class="btn btn-default right"><i class="fa fa-arrow-left"></i>&nbsp;Back</a>
+    </div>
+</div>
+
     {% csrf_token %}
     
     <!-- Workout -->
     {{ form.non_field_errors }}
     <div class="row">
         {% include 'hamask/form.html' with field=form.name div_class='col-sm-12 col-md-4 col-lg-3' %}
-    </div>
-    
-    <br/>
-    <!-- Buttons -->
-    <div class="row">
-        <div class="col-sm-12">
-            <a href="{% url 'hamask:program_update' program_id %}" class="btn btn-default"><i class="fa fa-arrow-left"></i>&nbsp;BACK</a>
-            {% if id %}
-                <button type="submit" name="delete" value="delete" class="btn btn-danger"><i class="fa fa-trash"></i>&nbsp;DELETE</button>
-            {% endif %}
-            <button type="submit" name="save" value="save" class="btn btn-primary"><i class="fa fa-save"></i>&nbsp;SAVE</button>
-        </div>
-    </div>
-    
+        {% include 'hamask/form.html' with field=form.day_of_week div_class='col-sm-12 col-md-4 col-lg-3' %}
+    </div>    
     <br/>
     <!-- Exercises -->
     <h3>Exercises</h3>
@@ -66,9 +69,10 @@
         </tbody>
     </table>
     <a id="btn_add_exercise" class="btn btn-primary" href="javascript:void(0);" onclick="formset_add_more('tr.formset_exercise:last', 'exercise');">
-        <i class="fa fa-plus"></i>&nbsp;ADD EXERCISE    
+        <i class="fa fa-plus"></i>&nbsp;Add Exercise    
     </a>
 </form>
+</div>
 
 <!-- Scripts -->
 <script>
