@@ -38,13 +38,15 @@ class Lifter (models.Model):
         workouts = []
         
         for program in programs:
-            workouts.append(program.get_next_workout())
+            workout = program.get_next_workout()
+            if workout:
+                workouts.append(workout)
             
         return workouts
         
     def get_last_workouts(self):
         workouts = Workout_Log.objects.filter(workout__workout_group__program__lifter__exact=self.id
-                    ).order_by('-workout_date')[:50]
+                    ).order_by('-workout_date', '-id')[:50]
         return workouts
     
     
@@ -161,11 +163,11 @@ class Program (models.Model):
         
     def start(self):
         self.start_date = timezone.now()
-        self.sate()
+        self.save()
         
     def end(self):
         self.end_date = timezone.now()
-        self.sate()
+        self.save()
     
     def get_workout_groups(self):
         groups = Workout_Group.objects.filter(program__exact=self.id
@@ -383,7 +385,7 @@ class Workout (models.Model):
     
     def log(self, status):
         # Create new log
-        log = Workout_Log(workout=self.id, workout_date=timezone.now(), status=status)  
+        log = Workout_Log(workout=self, workout_date=timezone.now(), status=status)  
         log.save()
         
         # Log exercises
@@ -454,11 +456,13 @@ class Workout_Exercise (models.Model):
         self.save()
         
     def log(self, workout_log):
-        log = Workout_Exercise_Log(workout_log=workout_log.id
-                ,workout_exercise=self.id
+        log = Workout_Exercise_Log(workout_log=workout_log
+                ,workout_exercise=self
+                ,exercise=self.exercise
+                ,order=self.order
                 ,sets=self.sets
                 ,reps=self.reps
-                ,weight=self._loading_weight
+                ,weight=self.loading_weight
                 ,percentage=self.percentage
                 ,rpe=self.rpe
                 ,time=self.time
@@ -491,12 +495,12 @@ class Workout_Exercise (models.Model):
     @property
     def loading_weight(self):
         if not hasattr(self, '_loading_weight'):
-            self._loading_weight = ''
+            self._loading_weight = None
             if self.rep_scheme == 'MAX_PERCENTAGE': 
                 if self.percentage:
                     program = self.workout.workout_group.program
                     lifter = program.lifter
-                    max = lifter.get_max(self)
+                    max = lifter.get_max(self.exercise)
                     
                     if max:
                         weight = max.weight * (self.percentage / 100)
@@ -513,11 +517,20 @@ class Workout_Exercise (models.Model):
                             elif rounding == 'LAST_5':
                                 weight = (floor(weight / 10) * 10) + 5                            
                         
-                        self._loading_weight = str(weight) + lifter.get_weight_unit()
-                    else:
-                        self._loading_weight = 'No max defined'
+                        self._loading_weight = weight
         
         return self._loading_weight
+        
+    @property
+    def loading_weight_formt(self):
+        if not hasattr(self, '_loading_weight_formt'):
+            if self.loading_weight:
+                self._loading_weight_formt = str(self.loading_weight
+                    ) + self.workout.workout_group.program.lifter.get_weight_unit()
+            else:
+                self._loading_weight_formt = 'No max defined'
+        
+        return self._loading_weight_formt
         
     @property
     def is_pr(self):
@@ -525,7 +538,7 @@ class Workout_Exercise (models.Model):
             self._is_pr = False
             
             pr = program.lifter.get_pr(self.exercise, self.reps)
-            if pr:
+            if pr and self.weight:
                 if self.weight > pr.weight:
                     self._is_pr = True
         
@@ -540,19 +553,33 @@ class Workout_Log (models.Model):
         ('IN_PROGR', 'In Progress'),
     )
     status = models.CharField (max_length=30, choices=status_choices)
-    notes = models.TextField (blank=True)
+    notes = models.TextField (blank=True, null=True)
+    
+    def get_exercise_log(self):
+        exercise_log = Workout_Exercise_Log.objects.filter(workout_log__exact=self.id
+                        ).order_by('order')
+                        
+        return exercise_log
+    
+    def get_exercise_log_formt(self):
+        exercise_log = self.get_exercise_log
+        list_formt = exercise_log.values_list('exercise', flat=True)
+        
+        return list_formt
     
 class Workout_Exercise_Log (models.Model):
     workout_log = models.ForeignKey (Workout_Log, on_delete=models.CASCADE)
-    workout_exercise = models.ForeignKey (Workout_Exercise, on_delete=models.SET_NULL, blank=True, null=True)
-    sets = models.PositiveIntegerField (blank=True)
-    reps = models.PositiveIntegerField (blank=True)
-    weight = models.FloatField (blank=True)
-    percentage = models.PositiveIntegerField (blank=True)
-    rpe = models.PositiveIntegerField (blank=True)
-    time = models.PositiveIntegerField (blank=True)
+    workout_exercise = models.ForeignKey (Workout_Exercise, on_delete=models.SET_NULL, blank=True, null=True)    
+    exercise = models.ForeignKey (Exercise, on_delete=models.PROTECT)
+    order = models.PositiveIntegerField ()
+    sets = models.PositiveIntegerField (blank=True, null=True)
+    reps = models.PositiveIntegerField (blank=True, null=True)
+    weight = models.FloatField (blank=True, null=True)
+    percentage = models.PositiveIntegerField (blank=True, null=True)
+    rpe = models.PositiveIntegerField (blank=True, null=True)
+    time = models.PositiveIntegerField (blank=True, null=True)
     is_amrap = models.BooleanField (default=False)
-    notes = models.TextField (blank=True)
+    notes = models.TextField (blank=True, null=True)
     
     def save(self, *args, **kwargs):        
         # Call the "real" save() method
@@ -560,7 +587,7 @@ class Workout_Exercise_Log (models.Model):
         
         # Log PR if applicable
         if self.workout_exercise and self.workout_log.status == 'COMPL':
-            program = Program.objects.get(pk=self.workout_exercise.workout.workout_group.program)
+            program = Program.objects.get(pk=self.workout_exercise.workout.workout_group.program.id)
             
             if program.auto_update_stats:
                 # Clean referencing stat
@@ -573,7 +600,7 @@ class Workout_Exercise_Log (models.Model):
                 
                 #Log PR
                 pr = program.lifter.get_pr(self.exercise, self.reps)
-                if pr:
+                if pr and self.weight:
                     if self.weight > pr.weight:
                         stat = Lifter_Stats(lifter=program.lifter
                                 ,exercise=self.exercise

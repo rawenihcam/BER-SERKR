@@ -27,19 +27,24 @@
                         <th class="icon">&nbsp;</th>
                         <th class="center">Date</th>
                         <th>Workout</th>
+                        <th>Status</th>
                     </tr>
                 </thead>
                 
                 <tbody>
                 {% for log in logs %}
                     <tr>
-                      <td><a href="{% url 'hamask:program_update' program.id %}"><i class="fa fa-pencil"></i></a></td>
-                      <td>{{ program.name }}</td>
-                      <td class="center">{% if program.is_ready %}<i class="fa fa-check"></i>{% else %}<i class="fa fa-times"></i>{% endif %}</td>
-                      <td class="center">{% if program.start_date %}<i class="fa fa-check"></i>{% else %}<i class="fa fa-times"></i>{% endif %}</td>
-                      <td class="center">{% if program.end_date %}<i class="fa fa-check"></i>{% else %}<i class="fa fa-times"></i>{% endif %}</td>
-                      <td>{% if program.start_date %}{{ program.start_date }}{% endif %}</td>
-                      <td>{% if program.end_date %}{{ program.end_date }}{% endif %}</td>
+                      <td><a href="{% url 'hamask:log_create' %}"><i class="fa fa-pencil"></i></a></td>
+                      <td class="center">{{ log.workout_date }}</td>
+                      <td>
+                            {% if log.workout %}
+                                {{ log.workout.workout_group.program }}&nbsp;-&nbsp;{{ log.workout.workout_group }}&nbsp;-&nbsp;{{ log.workout }}
+                                {% if log.workout.day_of_week %}&nbsp;({{ log.workout.get_day_of_week_display }}){% endif %}
+                            {% else %}
+                                {{ log.get_exercise_log_formt }}
+                            {% endif %}
+                      </td>
+                      <td>{{ log.status }}</td>
                     </tr>
                 {% endfor %}
                 </tbody>

@@ -28,7 +28,6 @@ def index(request):
                     login (request, user)
                     request.session['lifter'] = Lifter.objects.get(email=email).id
                 
-                return HttpResponseRedirect (reverse ('hamask:index'))
         # Log workout
         elif 'log' in request.POST:
             workout = get_object_or_404(Workout, pk=request.POST['log'])
@@ -41,6 +40,8 @@ def index(request):
         elif 'skip' in request.POST:
             workout = get_object_or_404(Workout, pk=request.POST['skip'])
             workout.log('SKIPD')
+            
+        return HttpResponseRedirect (reverse ('hamask:index'))
     else:
         # If user is not authenticated, show login form
         if not request.user.is_authenticated:
