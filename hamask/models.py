@@ -186,7 +186,8 @@ class Program (models.Model):
         return order
         
     def get_workouts(self):
-        workouts = Workout.objects.filter(workout_group__program__exact=self.id)
+        workouts = Workout.objects.filter(workout_group__program__exact=self.id
+                    ).order_by('workout_group__order', 'order')
         return workouts
         
     def get_workout_logs(self):
@@ -199,7 +200,7 @@ class Program (models.Model):
         return logs
     
     def get_workout_logs_list(self):
-        logs = self.get_workout_logs().values_list('id', flat=True)
+        logs = self.get_workout_logs().values_list('workout_id', flat=True)
         return logs
         
         
@@ -209,14 +210,24 @@ class Program (models.Model):
                 log = self.get_last_workout_log()
                 
                 try:
-                    workout = Workout.objects.filter(program__exact=self.id
-                                ).filter(order__exact=log.workout.order + 1
-                                ).get()
+                    '''workout = Workout.objects.filter(workout_group__program__exact=self.id
+                                ).extra(_full_order__gt=log.workout.full_order
+                                ).order_by('order'
+                                ).first()'''
+                    workout = Workout.objects.raw('''select * 
+                                                     from hamask_workout w,
+                                                          hamask_workout_group wg
+                                                    where w.workout_group_id = wg.id
+                                                      and wg.program_id = %s
+                                                      and (wg.order * 1000) + w.order > cast(%s as integer)'''
+                                                , [self.id, (log.workout.workout_group.id * 1000) + log.workout.order])[0]            
+                                
                 except ObjectDoesNotExist:
                     None
                 else:
-                    workout = Workout.objects.filter(program__exact=self.id
-                                ).filter(order__exact=1
+                    workout = Workout.objects.filter(workout_group__program__exact=self.id
+                                ).filter(order__exact=0
+                                ).filter(workout_group__order__exact=0
                                 ).get()
             else:
                 workouts = self.get_workouts()  
@@ -396,7 +407,6 @@ class Workout (models.Model):
         # Check if program is completed
         self.workout_group.program.complete()
         
-    @property
     def full_name(self):
         full_name = self.name
         if self.day_of_week:
