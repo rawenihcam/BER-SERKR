@@ -194,31 +194,19 @@ class Program (models.Model):
         workout = self.get_workouts().first()
         return workout
         
-    """def get_workout_logs(self):
-        logs = Workout_Log.objects.filter(workout__workout_group__program__exact=self.id)
-        return logs"""
-        
     def get_last_workout_log(self):
         logs = Workout_Log.objects.filter(workout__workout_group__program__exact=self.id
                 ).order_by('-workout_date', '-id').first()
         return logs
-    
-    """def get_workout_logs_list(self):
-        logs = self.get_workout_logs().values_list('workout_id', flat=True)
-        return logs"""
-        
         
     def get_next_workout(self):
         if self.start_date and not self.end_date:
             try:
                 # Get last workout done
                 log = self.get_last_workout_log()
-                '''workout = Workout.objects.filter(workout_group__program__exact=self.id
-                            ).extra(_full_order__gt=log.workout.full_order
-                            ).order_by('order'
-                            ).first()'''
-                print(log.workout.workout_group.order)
-                print(log.workout.order)
+                if not log:
+                    raise ObjectDoesNotExist
+                
                 # Get next workout according to order
                 workout = Workout.objects.raw('''select * 
                                                  from hamask_workout w,
@@ -232,17 +220,14 @@ class Program (models.Model):
             # No last workout, get first
             except ObjectDoesNotExist:
                 workout = self.get_first_workout()
+                
             # Last workout of program, repeat if needed
             except IndexError:
                 if self.repeatable:
                     workout = self.get_first_workout()
                 else:
                     workout = None
-                """workouts = self.get_workouts()  
-                logs = self.get_workout_logs_list()
-                
-                workout = workouts.exclude(id__in=list(logs)
-                            ).first()"""
+                    
         # Program not started or ended
         else:
             workout = None
