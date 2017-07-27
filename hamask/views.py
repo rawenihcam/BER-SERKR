@@ -116,7 +116,11 @@ def program_update(request, pk, template_name='hamask/program.html'):
             elif 'start' in request.POST:
                 program.start()
                 messages.success(request, Notification.success_message, extra_tags=Notification.success_class)
-                return HttpResponseRedirect (reverse ('hamask:workout_update', kwargs={'pk':workout.id}))
+                return HttpResponseRedirect (reverse ('hamask:program_update', kwargs={'pk':program.id}))
+            elif 'end' in request.POST:
+                program.end()
+                messages.success(request, Notification.success_message, extra_tags=Notification.success_class)
+                return HttpResponseRedirect (reverse ('hamask:program_update', kwargs={'pk':program.id}))
         else:
             groups = program.get_workout_groups()
             workouts = {}

@@ -186,44 +186,49 @@ class Program (models.Model):
         return order
         
     def get_workouts(self):
-        workouts = Workout.objects.filter(workout_group__program__exact=self.id)
+        workouts = Workout.objects.filter(workout_group__program__exact=self.id
+                    ).order_by('workout_group__order', 'order')
         return workouts
         
-    def get_workout_logs(self):
-        logs = Workout_Log.objects.filter(workout__workout_group__program__exact=self.id)
-        return logs
+    def get_first_workout(self):
+        workout = self.get_workouts().first()
+        return workout
         
     def get_last_workout_log(self):
         logs = Workout_Log.objects.filter(workout__workout_group__program__exact=self.id
-                ).order_by('-workout_date').first()
+                ).order_by('-workout_date', '-id').first()
         return logs
-    
-    def get_workout_logs_list(self):
-        logs = self.get_workout_logs().values_list('id', flat=True)
-        return logs
-        
         
     def get_next_workout(self):
         if self.start_date and not self.end_date:
-            if self.repeatable:
+            try:
+                # Get last workout done
                 log = self.get_last_workout_log()
+                if not log:
+                    raise ObjectDoesNotExist
                 
-                try:
-                    workout = Workout.objects.filter(program__exact=self.id
-                                ).filter(order__exact=log.workout.order + 1
-                                ).get()
-                except ObjectDoesNotExist:
-                    None
+                # Get next workout according to order
+                workout = Workout.objects.raw('''select * 
+                                                 from hamask_workout w,
+                                                      hamask_workout_group wg
+                                                where w.workout_group_id = wg.id
+                                                  and wg.program_id = %s
+                                                  and (wg.order * 10000) + w.order > cast(%s as integer)
+                                                order by wg.order, w.order'''
+                                            , [self.id, (log.workout.workout_group.order * 10000) + log.workout.order])[0]            
+                            
+            # No last workout, get first
+            except ObjectDoesNotExist:
+                workout = self.get_first_workout()
+                
+            # Last workout of program, repeat if needed
+            except IndexError:
+                if self.repeatable:
+                    workout = self.get_first_workout()
                 else:
-                    workout = Workout.objects.filter(program__exact=self.id
-                                ).filter(order__exact=1
-                                ).get()
-            else:
-                workouts = self.get_workouts()  
-                logs = self.get_workout_logs_list()
-                
-                workout = workouts.exclude(id__in=list(logs)
-                            ).first()
+                    workout = None
+                    
+        # Program not started or ended
         else:
             workout = None
             
@@ -396,7 +401,6 @@ class Workout (models.Model):
         # Check if program is completed
         self.workout_group.program.complete()
         
-    @property
     def full_name(self):
         full_name = self.name
         if self.day_of_week:

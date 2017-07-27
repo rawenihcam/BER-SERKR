@@ -29,7 +29,7 @@
             <button type="submit" name="start" value="start" class="btn btn-warning btn-form" {% if not program.is_ready %} disabled {% endif %}>
                 <i class="fa fa-play"></i>&nbsp;Start Program
             </button>
-        {% else %}
+        {% elif not program.end_date %}
             <button type="submit" name="end" value="end" class="btn btn-warning btn-form">
                 <i class="fa fa-stop"></i>&nbsp;End Program
             </button>
