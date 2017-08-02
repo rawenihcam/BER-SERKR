@@ -135,6 +135,45 @@ function exercise_field_display(p_field) {
     }
 }
 
+/* Workout_Log */
+function exercise_log_order(p_id, p_order) {
+    $.ajax({
+        url: '/ajax/reorder_exercise_log/',
+        data: {
+          'exercise_log_id': p_id,
+          'order': p_order
+        },
+        dataType: 'json',
+        success: function (data) {
+            if (typeof data.exercise_log_id !== "undefined"){
+                row = $('#tr_'+p_id);            
+                if (p_order == 'UP'){
+                    row.insertBefore(row.prev('tr'));
+                }
+                else if (p_order == 'DOWN'){
+                    row.insertAfter(row.next('tr'));
+                }
+            }
+        }
+      });
+}
+
+function exercise_log_delete(p_id) {
+    $.ajax({
+        url: '/ajax/delete_exercise_log/',
+        data: {
+          'exercise_log_id': p_id
+        },
+        dataType: 'json',
+        success: function (data) {
+            if (typeof data.exercise_log_id !== "undefined"){
+                $('#tr_'+p_id).hide("fast");
+                $('#tr_'+p_id+' > td.can_delete > input').prop('checked', true);
+            }
+        }
+    });
+}
+
 /*** GLOBAL ****/
 /* Formsets */
 function formset_add_more(p_selector, p_type) {

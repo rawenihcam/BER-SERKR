@@ -1,6 +1,9 @@
 {% extends 'hamask/base.html' %}
 
 {% block content %}
+<form id="form" method="post">
+{% csrf_token %}
+
 <div class="col-sm-3 col-md-2 sidebar">
     <ul class="nav nav-sidebar">
         <li class="active"><a href="#">Last workouts</a></li>
@@ -14,7 +17,7 @@
         <h1>Training Logs</h1>
     </div>
     <div class="col-xs-6">
-        <a href="{% url 'hamask:log_create' %}" class="btn btn-success right"><i class="fa fa-plus"></i>&nbsp;Create</a>
+        <button type="submit" form="form" name="create_log" class="btn btn-success right"><i class="fa fa-plus"></i>&nbsp;Create</button>
     </div>
 </div>
 
@@ -24,18 +27,16 @@
             <table class="table table-striped">
                 <thead>
                     <tr>
-                        <th class="icon">&nbsp;</th>
-                        <th class="center">Date</th>
-                        <th>Workout</th>
-                        <th>Status</th>
+                        <th class="col-sm-1 center">Date</th>
+                        <th class="col-sm-6">Workout</th>
+                        <th class="icon center">Done</th>
                     </tr>
                 </thead>
                 
                 <tbody>
                 {% for log in logs %}
                     <tr>
-                      <td><a href="{% url 'hamask:log_create' %}"><i class="fa fa-pencil"></i></a></td>
-                      <td class="center">{{ log.workout_date }}</td>
+                      <td class="center"><a href="{% url 'hamask:log_update' log.id%}">{{ log.workout_date }}</a></td>
                       <td>
                             {% if log.workout %}
                                 {{ log.workout.workout_group.program }}&nbsp;-&nbsp;{{ log.workout.workout_group }}&nbsp;-&nbsp;{{ log.workout }}
@@ -44,15 +45,16 @@
                                 {{ log.get_exercise_log_formt }}
                             {% endif %}
                       </td>
-                      <td>{{ log.status }}</td>
+                      <td class="center">{% if log.status == 'COMPL' %}<i class="fa fa-check"></i>{% else %}<i class="fa fa-times"></i>{% endif %}</td>
                     </tr>
                 {% endfor %}
                 </tbody>
             </table>
         {% else %}
-            <p>Start a program or <a href="{% url 'hamask:log_create' %}">enter a log</a></p>
+            <p>Start a program or <a href="{% url 'hamask:log_update' log.id %}">enter a log</a></p>
         {% endif %}
     </div>
 </div>
 </div>
+</form>
 {% endblock %}
