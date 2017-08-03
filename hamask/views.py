@@ -31,15 +31,17 @@ def index(request):
         # Log workout
         elif 'log' in request.POST:
             workout = get_object_or_404(Workout, pk=request.POST['log'])
-            workout.log('COMPL')
+            log = workout.log('COMPL')
         # Edit workout
         elif 'edit' in request.POST:
             workout = get_object_or_404(Workout, pk=request.POST['edit'])
-            workout.log('IN_PROGR')
+            log = workout.log('COMPL')
+            
+            return HttpResponseRedirect (reverse ('hamask:log_update', kwargs={'pk':log.id}))
         # Skip workout
         elif 'skip' in request.POST:
             workout = get_object_or_404(Workout, pk=request.POST['skip'])
-            workout.log('SKIPD')
+            log = workout.log('SKIPD')
             
         return HttpResponseRedirect (reverse ('hamask:index'))
     else:
@@ -119,6 +121,11 @@ def program_update(request, pk, template_name='hamask/program.html'):
                 return HttpResponseRedirect (reverse ('hamask:program_update', kwargs={'pk':program.id}))
             elif 'end' in request.POST:
                 program.end()
+                messages.success(request, Notification.success_message, extra_tags=Notification.success_class)
+                return HttpResponseRedirect (reverse ('hamask:program_update', kwargs={'pk':program.id}))
+            elif 'copy_group' in request.POST:
+                group = Workout_Group.objects.get(pk=request.POST['copy_group'])
+                group.copy_group(program=None)
                 messages.success(request, Notification.success_message, extra_tags=Notification.success_class)
                 return HttpResponseRedirect (reverse ('hamask:program_update', kwargs={'pk':program.id}))
         else:
@@ -240,15 +247,84 @@ def delete_exercise(request):
 
 def logs(request):
     lifter = Lifter.objects.get(pk=request.session['lifter'])
-    logs = lifter.get_last_workouts()
-    return render (request, 'hamask/logs.html', {'logs': logs})
     
-def log_create(request):
-    return render (request, 'hamask/log.html')
+    if request.POST:
+        if 'create_log' in request.POST:
+            log = Workout_Log(lifter=lifter, status='COMPL')
+            log.save()
+            
+            return HttpResponseRedirect (reverse ('hamask:log_update', kwargs={'pk':log.id}))
+    else:    
+        logs = lifter.get_last_workouts()
+        return render (request, 'hamask/logs.html', {'logs': logs})
     
-def log_update(request):
-    return render (request, 'hamask/log.html')
+def log_update(request, pk, template_name='hamask/log.html'):
+    log = get_object_or_404(Workout_Log, pk=pk)
+    if log.get_lifter().id != request.session['lifter']:
+        raise Http404("Invalid log.")
     
+    # Build forms
+    form = WorkoutLogForm(request.POST or None, instance=log, prefix='log')
+    ExerciseFormset = modelformset_factory(Workout_Exercise_Log, form=WorkoutExerciseLogForm, can_delete=True)
+    exercise_formset = ExerciseFormset(request.POST or None, prefix='exercise_log', queryset=log.get_exercise_log())
+    
+    if 'delete' in request.POST:
+        log.delete()
+        messages.success(request, Notification.success_message, extra_tags=Notification.success_class)
+        return HttpResponseRedirect (reverse ('hamask:logs'))
+    else:
+        if form.is_valid() and exercise_formset.is_valid():
+            form.save()
+            
+            exercise_formset.save(commit=False)
+            
+            # Update
+            exercises_changed = dict(exercise_formset.changed_objects)
+            for exercise in exercises_changed:
+                exercise.save()
+            
+            # Create
+            for exercise in exercise_formset.new_objects: 
+                exercise.workout_log = log
+                if exercise.order == None:
+                    exercise.order = log.get_next_exercise_order() 
+                exercise.save()
+                
+            # Delete
+            #for exercise in exercise_formset.deleted_objects:
+             #   exercise.delete()
+            
+            messages.success(request, Notification.success_message, extra_tags=Notification.success_class)
+            return HttpResponseRedirect (reverse ('hamask:log_update', kwargs={'pk':log.id}))
+        else:
+            return render (request, template_name, {'form': form
+                                                   , 'exercise_formset': exercise_formset
+                                                   , 'id': log.id})
+
+def reorder_exercise_log(request):
+    exercise_log = Workout_Exercise_Log.objects.get(pk=request.GET.get('exercise_log_id', None))
+    order = request.GET.get('order', None)
+    data = {}
+    
+    try:
+        if order == 'UP':
+            exercise_log.set_order_up()
+        elif order == 'DOWN':
+            exercise_log.set_order_down()
+    except ObjectDoesNotExist:
+        pass
+    else:
+        data = {'exercise_log_id': exercise_log.id}
+    
+    return JsonResponse(data)
+    
+def delete_exercise_log(request):
+    exercise_log = Workout_Exercise_Log.objects.get(pk=request.GET.get('exercise_log_id', None))
+    data = {'exercise_log_id': exercise_log.id}
+    exercise_log.delete()    
+    
+    return JsonResponse(data)
+                                                   
 def stats(request):            
     lifter = Lifter.objects.get(pk=request.session['lifter'])
     maxes = lifter.get_maxes()

@@ -19,6 +19,53 @@
 
     {% csrf_token %}
     
+    <!-- Log -->
+    {{ form.non_field_errors }}
+    <div class="row">
+        {% include 'hamask/form.html' with field=form.workout_date div_class='col-sm-12 col-md-4 col-lg-3' %}
+    </div>    
+    <br/>
+    <!-- Exercise log -->
+    <h3>Exercises</h3>
+    {{ exercise_formset.management_form }}
+    <table>
+        <thead>
+            <tr>
+                <th class="col-sm-3">Exercise</th>
+                <th class="col-sm-1">Sets</th>
+                <th class="col-sm-1">Reps</th>
+                <th class="col-sm-1">Weight</th>
+                <th class="col-sm-1">RPE</th>
+                <th class="col-sm-1">AMRAP</th>
+                <th class="col-sm-1">&nbsp;</th>
+            </tr>
+        </thead>
+                
+        <tbody>
+        {% for formset in exercise_formset %}
+            <tr id="tr_{{ formset.id.value }}" class="formset_exercise">
+                <td>{% include 'hamask/formset.html' with field=formset.exercise div_class='tabular' %}</td>
+                <td>{% include 'hamask/formset.html' with field=formset.sets div_class='tabular' %}</td>
+                <td>{% include 'hamask/formset.html' with field=formset.reps div_class='tabular' %}</td>
+                <td>{% include 'hamask/formset.html' with field=formset.weight div_class='tabular weight' %}</td>
+                <td>{% include 'hamask/formset.html' with field=formset.rpe div_class='tabular rpe' %}</td>
+                <td class="center">{% include 'hamask/formset.html' with field=formset.is_amrap div_class='tabular' %}</td>
+                <td>
+                    {% if formset.id.value != None %}
+                        {% for hidden in formset.hidden_fields %}{{ hidden }}{% endfor %}
+                        <a href="javascript:void(0);" onclick="exercise_log_order({{ formset.id.value }}, 'DOWN');"><i class="fa fa-chevron-down"></i></a>&nbsp;&nbsp;
+                        <a href="javascript:void(0);" onclick="exercise_log_order({{ formset.id.value }}, 'UP');"><i class="fa fa-chevron-up"></i></a>&nbsp;&nbsp;
+                        <a href="javascript:void(0);" onclick="exercise_log_delete({{ formset.id.value }});"><i class="fa fa-times"></i></a>
+                    {% endif %}
+                </td>
+                <td class="can_delete" style="display:none;">{{ formset.DELETE }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    <a id="btn_add_exercise" class="btn btn-primary" href="javascript:void(0);" onclick="formset_add_more('tr.formset_exercise:last', 'exercise_log');">
+        <i class="fa fa-plus"></i>&nbsp;Add Exercise    
+    </a>
     
 </form>
 </div>
@@ -26,11 +73,9 @@
 <!-- Scripts -->
 <script>
     $( function() {
-        exercise_field_display('');
-    });
-
-    $('div.rep_scheme > div > select').on('input', function() { 
-        exercise_field_display(this);
+        $( "#id_log-workout_date" ).datepicker({
+          dateFormat: "yy-mm-dd"
+        });
     });
 </script>
 {% endblock %}

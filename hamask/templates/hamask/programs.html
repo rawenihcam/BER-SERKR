@@ -18,7 +18,6 @@
             <table class="table table-striped">
                 <thead>
                     <tr>
-                        <th class="icon">&nbsp;</th>
                         <th>Name</th>
                         <th class="center">Ready</th>
                         <th class="center">Started</th>
@@ -31,8 +30,7 @@
                 <tbody>
                 {% for program in programs %}
                     <tr>
-                      <td><a href="{% url 'hamask:program_update' program.id %}"><i class="fa fa-pencil"></i></a></td>
-                      <td>{{ program.name }}</td>
+                      <td><a href="{% url 'hamask:program_update' program.id %}">{{ program.name }}</a></td>
                       <td class="center">{% if program.is_ready %}<i class="fa fa-check"></i>{% else %}<i class="fa fa-times"></i>{% endif %}</td>
                       <td class="center">{% if program.start_date %}<i class="fa fa-check"></i>{% else %}<i class="fa fa-times"></i>{% endif %}</td>
                       <td class="center">{% if program.end_date %}<i class="fa fa-check"></i>{% else %}<i class="fa fa-times"></i>{% endif %}</td>

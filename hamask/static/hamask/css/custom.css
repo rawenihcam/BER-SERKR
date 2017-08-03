@@ -131,6 +131,26 @@ button.btn{
     margin-top: 5px;
 }
 
+button.li_button{
+    display: block;
+    padding: 3px 20px;
+    clear: both;
+    font-weight: 400;
+    line-height: 1.42857143;
+    color: #333;
+    white-space: nowrap;
+    background-color: transparent;
+    text-decoration: none;
+    font-size: 14px;
+    border: none;
+}
+
+button.li_button:hover,button.li_button:focus{
+    color: #262626;
+    text-decoration: none;
+    background-color: #f5f5f5;
+}
+
 /* Regions */
 h3 {
     font-size: 20px;

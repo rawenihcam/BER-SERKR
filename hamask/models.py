@@ -3,7 +3,7 @@ import datetime
 from math import floor
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
-from django.db.models import Max
+from django.db.models import Max, Q
 from django.utils import timezone
 
 from .control import IncompleteProgram
@@ -45,7 +45,7 @@ class Lifter (models.Model):
         return workouts
         
     def get_last_workouts(self):
-        workouts = Workout_Log.objects.filter(workout__workout_group__program__lifter__exact=self.id
+        workouts = Workout_Log.objects.filter(Q(workout__workout_group__program__lifter__exact=self.id) | Q(lifter__exact=self.id)
                     ).order_by('-workout_date', '-id')[:50]
         return workouts
     
@@ -130,10 +130,34 @@ class Lifter (models.Model):
 class Exercise (models.Model):
     lifter = models.ForeignKey (Lifter, on_delete=models.CASCADE, blank=True, null=True, editable=False)
     name = models.CharField (max_length=60)
+    category_choices = (
+        ('MAIN', 'Main Lift'),
+        ('MAIN_VARTN', 'Main Lift Variation'),
+        ('COMPN_ACESR', 'Compound Accessory'),
+        ('STRON', 'Strongman'),
+        ('ISOLT_ACESR', 'Isolation'),
+    )
+    category = models.CharField (max_length=30, choices=category_choices, blank=True, null=True)
     has_stats = models.BooleanField (default=True)
     
     def __str__(self):
         return self.name
+        
+    @staticmethod
+    def get_exercise_select():
+        # Create a 2 level list (1. Category, 2. Exercise)
+        select = [['', '---------']]
+        
+        for category in Exercise.category_choices:
+            exercise_list = []
+            
+            for exercise in Exercise.objects.filter(category__exact=category[0]).order_by('name'):
+                exercise_list.append([exercise.id, exercise.name])
+
+            if exercise_list:
+                select.append([category[1], exercise_list])        
+
+        return select
     
 class Program (models.Model):
     lifter = models.ForeignKey (Lifter, on_delete=models.CASCADE)
@@ -168,6 +192,21 @@ class Program (models.Model):
     def end(self):
         self.end_date = timezone.now()
         self.save()
+        
+    def copy_program(self, lifter):
+        if not lifter:
+            lifter = self.lifter
+        
+        program = Program(lifter=lifter
+                            ,rep_scheme=self.rep_scheme
+                            ,name=self.name + ' (Copy)'
+                            ,auto_update_stats=self.auto_update_stats
+                            ,repeatable=self.repeatable
+                            ,rounding=self.rounding)
+        program.save()
+        
+        for group in self.get_workout_groups():
+            group.copy_group(program)
     
     def get_workout_groups(self):
         groups = Workout_Group.objects.filter(program__exact=self.id
@@ -284,8 +323,18 @@ class Workout_Group (models.Model):
         # Call the "real" delete() method
         super(Workout_Group, self).delete(*args, **kwargs)
         
-    #def copy(self, *args, **kwargs):
-        #
+    def copy_group(self, program):
+        # Create new group
+        if not program:
+            program = self.program
+            
+        order = program.get_next_workout_group_order()
+        group = Workout_Group(program=program, name='Block ' + str(order + 1), order=order)
+        group.save()
+        
+        # Copy workouts
+        for workout in self.get_workouts():
+            workout.copy_workout(group)
         
         
     def get_workouts(self):
@@ -363,6 +412,34 @@ class Workout (models.Model):
         # Call the "real" delete() method
         super(Workout, self).delete(*args, **kwargs)
         
+    def copy_workout(self, group):
+        # Create new workout
+        if not group:
+            group = self.workout_group
+        
+        order = group.get_next_workout_order()
+        workout = Workout(workout_group=group
+                            , name='Day ' + str(order + 1)
+                            , order=order
+                            , day_of_week=self.day_of_week)
+        workout.save()
+        
+        # Copy exercises
+        for exercise in self.get_workout_exercises():
+            exercise_copy = Workout_Exercise(workout=workout
+                                            ,exercise=exercise.exercise
+                                            ,rep_scheme=exercise.rep_scheme
+                                            ,order=exercise.order
+                                            ,sets=exercise.sets
+                                            ,reps=exercise.reps
+                                            ,weight=exercise.weight
+                                            ,percentage=exercise.percentage
+                                            ,rpe=exercise.rpe
+                                            ,time=exercise.time
+                                            ,is_amrap=exercise.is_amrap
+                                            ,notes=exercise.notes)
+            exercise_copy.save()
+        
     def get_workout_exercises(self):
         exercises = Workout_Exercise.objects.filter(workout__exact=self.id
                         ).order_by('order')
@@ -377,16 +454,6 @@ class Workout (models.Model):
             order = 0
         
         return order
-        
-    def get_log_create(self):
-        # Get existing log or create new
-        try:
-            log = Workout_Log.objects.get(workout__exact=self.id)
-        except ObjectDoesNotExist:
-            log = Workout_Log(workout=self.id, workout_date=timezone.now(), status='IN_PROGR')
-            log.save()
-        
-        return log
     
     def log(self, status):
         # Create new log
@@ -400,6 +467,8 @@ class Workout (models.Model):
             
         # Check if program is completed
         self.workout_group.program.complete()
+        
+        return log
         
     def full_name(self):
         full_name = self.name
@@ -489,7 +558,7 @@ class Workout_Exercise (models.Model):
                 else:
                     self._loading = ''
             elif self.rep_scheme == 'WEIGHT':
-                if self.weight:
+                if self.weight is not None:
                     self._loading = str(self.weight) + self.workout.workout_group.program.lifter.get_weight_unit()
                 else:
                     self._loading = ''
@@ -531,8 +600,10 @@ class Workout_Exercise (models.Model):
             if self.loading_weight:
                 self._loading_weight_formt = str(self.loading_weight
                     ) + self.workout.workout_group.program.lifter.get_weight_unit()
-            else:
+            elif self.rep_scheme == 'MAX_PERCENTAGE':
                 self._loading_weight_formt = 'No max defined'
+            else:
+                self._loading_weight_formt = ''
         
         return self._loading_weight_formt
         
@@ -550,11 +621,11 @@ class Workout_Exercise (models.Model):
     
 class Workout_Log (models.Model):
     workout = models.ForeignKey (Workout, on_delete=models.SET_NULL, blank=True, null=True)
-    workout_date = models.DateField ()
+    lifter = models.ForeignKey (Lifter, on_delete=models.CASCADE, blank=True, null=True)
+    workout_date = models.DateField (default=datetime.date.today)
     status_choices = (
         ('COMPL', 'Completed'),
         ('SKIPD', 'Skipped'),
-        ('IN_PROGR', 'In Progress'),
     )
     status = models.CharField (max_length=30, choices=status_choices)
     notes = models.TextField (blank=True, null=True)
@@ -566,10 +637,30 @@ class Workout_Log (models.Model):
         return exercise_log
     
     def get_exercise_log_formt(self):
-        exercise_log = self.get_exercise_log
-        list_formt = exercise_log.values_list('exercise', flat=True)
+        exercise_log = self.get_exercise_log()
+        list_formt = ', '.join(list(exercise_log.values_list('exercise__name', flat=True)))
         
         return list_formt
+        
+    def get_next_exercise_order(self):
+        exercises = self.get_exercise_log()
+        
+        if exercises.exists():
+            order = exercises.aggregate(max_order=Max('order'))['max_order'] + 1
+        else:
+            order = 0
+        
+        return order
+        
+    def get_lifter(self):
+        if self.lifter:
+            lifter = self.lifter
+        elif self.workout:
+            lifter = self.workout.workout_group.program.lifter
+        else:
+            lifter = None
+        
+        return lifter
     
 class Workout_Exercise_Log (models.Model):
     workout_log = models.ForeignKey (Workout_Log, on_delete=models.CASCADE)
@@ -613,6 +704,38 @@ class Workout_Exercise_Log (models.Model):
                                 ,weight=self.weight)
                                 
                         stat.save()
+                        
+    def delete(self, *args, **kwargs):
+        # Reorder exercise logs
+        next_logs = Workout_Exercise_Log.objects.filter(workout_log__exact=self.workout_log.id
+                        ).filter(order__gt=self.order)
+                            
+        for log in next_logs:
+            log.order -= 1
+            log.save()
+        
+        # Call the "real" delete() method
+        super(Workout_Exercise_Log, self).delete(*args, **kwargs)
+    
+    def set_order_up(self):
+        previous = Workout_Exercise_Log.objects.filter(workout_log__exact=self.workout_log.id
+                    ).filter(order__exact=self.order - 1
+                    ).get()
+                    
+        previous.order += 1
+        self.order -= 1
+        previous.save()
+        self.save()
+        
+    def set_order_down(self):
+        next = Workout_Exercise_Log.objects.filter(workout_log__exact=self.workout_log.id
+                    ).filter(order__exact=self.order + 1
+                    ).get()
+                  
+        next.order -= 1
+        self.order += 1
+        next.save()
+        self.save()
     
 class Lifter_Stats (models.Model):
     lifter = models.ForeignKey (Lifter, on_delete=models.CASCADE)
