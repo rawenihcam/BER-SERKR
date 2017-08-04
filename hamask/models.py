@@ -104,11 +104,14 @@ class Lifter (models.Model):
     def get_last_prs(self):
         prs = Lifter_Stats.objects.raw('''select * 
                                              from hamask_lifter_stats ls 
-                                            where weight = (select max(ls2.weight) 
+                                            where ls.lifter_id = %s
+                                              and weight = (select max(ls2.weight) 
                                                               from hamask_lifter_stats ls2 
-                                                             where ls2.exercise_id = ls.exercise_id 
+                                                             where ls2.lifter_id = ls.lifter_id
+                                                               and ls2.exercise_id = ls.exercise_id 
                                                                and ls2.reps = ls.reps) 
-                                                             order by ls.entry_date desc''')[:5]
+                                                             order by ls.entry_date desc'''
+                                            , [self.id])[:5]
         
         return prs
         
