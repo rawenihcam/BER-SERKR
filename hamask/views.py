@@ -324,6 +324,37 @@ def delete_exercise_log(request):
     exercise_log.delete()    
     
     return JsonResponse(data)
+    
+def logs_by_exercise(request, exercise='0'):
+    lifter = Lifter.objects.get(pk=request.session['lifter'])
+    form = LogByExerciseForm(request.POST or None)
+    
+    if request.POST:
+        # Create
+        if 'create_log' in request.POST:
+            log = Workout_Log(lifter=lifter, status='COMPL')
+            log.save()
+            
+            return HttpResponseRedirect (reverse ('hamask:log_update', kwargs={'pk':log.id}))
+        
+        # Search
+        else:
+            form = LogByExerciseForm(request.POST)
+            
+            if form.is_valid():
+                exercise = form.cleaned_data['exercise']
+                return HttpResponseRedirect (reverse ('hamask:logs_by_exercise', kwargs={'exercise':exercise}))
+            else:
+                return HttpResponseRedirect (reverse ('hamask:logs_by_exercise'))
+    else:    
+        if exercise != '0':
+            form = LogByExerciseForm(initial={'exercise': exercise})
+            logs = lifter.get_exercise_logs(exercise=exercise)
+        else:
+            form = LogByExerciseForm()
+            logs = None
+            
+        return render (request, 'hamask/logs_by_exercise.html', {'form': form, 'logs': logs})
                                                    
 def stats(request):            
     lifter = Lifter.objects.get(pk=request.session['lifter'])
