@@ -1,0 +1,11 @@
+{
+ "name": "BER-SERKR",
+ "icons": [
+  {
+   "src": "\/favicon.png",
+   "sizes": "512x512",
+   "type": "image\/png",
+   "density": "0.75"
+  }
+ ]
+}

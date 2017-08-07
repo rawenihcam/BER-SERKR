@@ -1,0 +1,71 @@
+{% extends 'hamask/base.html' %}
+
+{% block content %}
+<form id="form" method="post">
+{% csrf_token %}
+
+<div class="col-sm-3 col-md-2 sidebar">
+    <ul class="nav nav-sidebar">
+        <li><a href="{% url 'hamask:logs' %}">Last Workouts</a></li>
+        <li class="active"><a href="#">Exercise Log</a></li>
+    </ul>
+</div>
+
+<div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2">
+
+<div class="row page-header">
+    <div class="col-xs-6">
+        <h1>Exercise log</h1>
+    </div>
+    <div class="col-xs-6">
+        <button type="submit" form="form" name="create_log" class="btn btn-success right"><i class="fa fa-plus"></i>&nbsp;Create</button>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-sm-12">
+        {% include 'hamask/form.html' with field=form.exercise div_class='col-sm-12 col-md-4 col-lg-3' %}
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-sm-12">
+        {% if logs %}
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th class="center">Date</th>
+                        <th class="">Sets</th>
+                        <th class="">Reps</th>
+                        <th class="">Weight</th>                        
+                        <th class="">RPE</th>                        
+                        <th class="">Volume</th>
+                    </tr>
+                </thead>
+                
+                <tbody>
+                {% for log in logs %}
+                    <tr>
+                      <td class="center"><a href="{% url 'hamask:log_update' log.workout_log.id%}">{{ log.workout_log.workout_date }}</a></td>
+                      <td>{{ log.sets }}</td>
+                      <td>{{ log.reps }}</td>
+                      <td>{{ log.weight_formt }}</td>
+                      <td>{% if log.rpe %}{{ log.rpe }}{% endif %}</td>
+                      <td>{{ log.volume }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+    </div>
+</div>
+</div>
+</form>
+
+<!-- Scripts -->
+<script>
+    $('#id_exercise').on('input', function() { 
+        $("#form").submit();
+    });
+</script>
+{% endblock %}

@@ -56,7 +56,10 @@ class WorkoutExerciseLogForm (ModelForm):
        
        # Custom fields
        self.fields['exercise'].choices = Exercise.get_exercise_select()       
-        
+
+class LogByExerciseForm (forms.Form):
+    exercise = forms.ChoiceField (label='Exercise', choices=Exercise.get_exercise_select())
+       
 class StatForm (ModelForm):
     # Redefine constructor to enforce required fields
     def __init__(self, *args, **kwargs):

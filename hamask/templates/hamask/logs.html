@@ -6,7 +6,8 @@
 
 <div class="col-sm-3 col-md-2 sidebar">
     <ul class="nav nav-sidebar">
-        <li class="active"><a href="#">Last workouts</a></li>
+        <li class="active"><a href="#">Last Workouts</a></li>        
+        <li><a href="{% url 'hamask:logs_by_exercise' %}">Exercise Log</a></li>
     </ul>
 </div>
 
@@ -51,7 +52,7 @@
                 </tbody>
             </table>
         {% else %}
-            <p>Start a program or <a href="{% url 'hamask:log_update' log.id %}">enter a log</a></p>
+            <p>Start a program or enter a log</a></p>
         {% endif %}
     </div>
 </div>

@@ -25,7 +25,8 @@ class Lifter (models.Model):
         return self.first_name + ' ' + self.last_name
         
     def get_programs(self):
-        programs = Program.objects.filter(lifter__exact=self.id)
+        programs = Program.objects.filter(lifter__exact=self.id
+                    ).order_by('-end_date', '-start_date')
         return programs
         
     def get_started_programs(self):
@@ -48,6 +49,14 @@ class Lifter (models.Model):
         workouts = Workout_Log.objects.filter(Q(workout__workout_group__program__lifter__exact=self.id) | Q(lifter__exact=self.id)
                     ).order_by('-workout_date', '-id')[:50]
         return workouts
+        
+    def get_exercise_logs(self, exercise):
+        logs = Workout_Exercise_Log.objects.filter(Q(workout_log__workout__workout_group__program__lifter__exact=self.id) | Q(workout_log__lifter__exact=self.id)
+                ).filter(exercise__exact=exercise
+                ).filter(workout_log__status__exact='COMPL'
+                ).order_by('-workout_log__workout_date')[:50]
+                
+        return logs
     
     
     def get_maxes(self):
@@ -594,13 +603,15 @@ class Workout_Exercise (models.Model):
                                 weight = (floor(weight / 10) * 10) + 5                            
                         
                         self._loading_weight = weight
-        
+            elif self.rep_scheme == 'WEIGHT':
+                self._loading_weight = self.weight
+                
         return self._loading_weight
         
     @property
     def loading_weight_formt(self):
         if not hasattr(self, '_loading_weight_formt'):
-            if self.loading_weight:
+            if self.loading_weight and self.rep_scheme != 'WEIGHT':
                 self._loading_weight_formt = str(self.loading_weight
                     ) + self.workout.workout_group.program.lifter.get_weight_unit()
             elif self.rep_scheme == 'MAX_PERCENTAGE':
@@ -739,6 +750,28 @@ class Workout_Exercise_Log (models.Model):
         self.order += 1
         next.save()
         self.save()
+        
+    @property
+    def weight_formt(self):
+        if not hasattr(self, '_weight_formt'):
+            if self.weight:
+                self._weight_formt = str(self.weight
+                    ) + self.workout_log.get_lifter().get_weight_unit()
+            else:
+                self._weight_formt = ''
+        
+        return self._weight_formt
+        
+    @property
+    def volume(self):
+        if not hasattr(self, '_volume'):
+            if self.weight:
+                self._volume = str(self.sets * self.reps * self.weight
+                    ) + self.workout_log.get_lifter().get_weight_unit()
+            else:
+                self._volume = ''
+        
+        return self._volume
     
 class Lifter_Stats (models.Model):
     lifter = models.ForeignKey (Lifter, on_delete=models.CASCADE)
