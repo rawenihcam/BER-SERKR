@@ -292,37 +292,37 @@ class Program (models.Model):
         
     def get_next_workouts(self):
         if self.start_date and not self.end_date:
-            try:
-                group_order = 0
-                order = 0
-                
-                # Get last workout done
-                log = self.get_last_workout_log()
-                if not log:
-                    order = -1
-                else:
-                    group_order = log.workout.workout_group.order
-                    order = log.workout.order
-                
-                # Get next workout according to order
-                workouts = Workout.objects.raw('''select * 
-                                                    from hamask_workout w,
-                                                         hamask_workout_group wg
-                                                   where w.workout_group_id = wg.id
-                                                     and wg.program_id = %s
-                                                     and (wg.order * 10000) + w.order > cast(%s as integer)
-                                                   order by wg.order, w.order'''
-                                            , [self.id, (group_order * 10000) + order])  
+            group_order = 0
+            order = 0
+            
+            # Get last workout done
+            log = self.get_last_workout_log()
+            if not log:
+                order = -1
+            else:
+                group_order = log.workout.workout_group.order
+                order = log.workout.order
+            
+            # Get next workout according to order
+            workouts = Workout.objects.raw('''select * 
+                                                from hamask_workout w,
+                                                     hamask_workout_group wg
+                                               where w.workout_group_id = wg.id
+                                                 and wg.program_id = %s
+                                                 and (wg.order * 10000) + w.order > cast(%s as integer)
+                                               order by wg.order, w.order'''
+                                        , [self.id, (group_order * 10000) + order])  
 
-                print(workouts)
-                if not workouts.exists() and self.repeatable:
-                    print('FUCK')
-                    workouts = self.get_workouts()
-                
+            # Check if last workout
+            try:
+                workout = workouts[0]
+            
             # Last workout of program, repeat if needed
             except IndexError:
-                print('E')
-                workouts = None
+                if self.repeatable:
+                    workouts = self.get_workouts()
+                else:    
+                    workouts = None
                     
         # Program not started or ended
         else:
