@@ -1,0 +1,113 @@
+{% extends 'hamask/base.html' %}
+
+{% block content %}
+
+<div class="col-sm-3 col-md-2 sidebar">
+    <ul class="nav nav-sidebar">
+        <li><a href="{% url 'hamask:logs' %}">Last Workouts</a></li>
+        <li><a href="{% url 'hamask:logs_by_exercise' %}">Work by Exercise</a></li>
+    </ul>
+    <ul class="nav nav-sidebar">
+        <li class="active"><a href="#">Next Workouts</a></li>
+    </ul>
+</div>
+
+<div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2">
+
+<div class="row page-header">
+    <div class="col-xs-6">
+        <h1>Next Workouts</h1>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-sm-12">
+        {% if programs %}
+            {% for program in programs %}
+                <div class="panel panel-default">
+                    <div class="panel-heading">{{ program.name }}</div>
+
+                    {% if workouts|get_item:program.id %}
+                    <table class="table">
+                    <thead>
+                        <tr>
+                            <th class="col-sm-2 invisible"></th>
+                            <th class="col-sm-10 invisible"></th>
+                        </tr>
+                    </thead>
+                    
+                    <tbody>
+                        {% for workout in workouts|get_item:program.id %}
+                            <tr>
+                            <td>{{ workout.full_name }}</td>
+                            <td>
+                                {% if exercises|get_item:workout.id %}
+                                    <table class="table table-condensed table-exercise">
+                                    <thead>
+                                        <tr>
+                                            <th class="col-sm-3 invisible"></th>
+                                            <th class="col-sm-1 invisible"></th>
+                                            <th class="col-sm-1 invisible"></th>
+                                            <th class="col-sm-1 invisible"></th>
+                                            <th class="col-sm-1 invisible"></th>
+                                            <th class="col-sm-6 invisible"></th>
+                                        </tr>
+                                    </thead>
+                    
+                                    <tbody>
+                                        {% for exercise in exercises|get_item:workout.id %}
+                                            <tr>
+                                            <td>{{ exercise.exercise.name }}</td>
+                                            <td>{{ exercise.sets }}</td>
+                                            <td>{{ exercise.reps }}</td>
+                                            <td>{{ exercise.loading }}</td>
+                                            <td>{{ exercise.loading_weight_formt }}</td>
+                                            <td>&nbsp;</td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                    </table>
+                                {% endif %}
+                            </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                    </table>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        {% else %}
+            <p>Start a program</p>
+        {% endif %}
+        
+        {% if logs %}
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th class="center">Date</th>
+                        <th class="">Sets</th>
+                        <th class="">Reps</th>
+                        <th class="">Weight</th>                        
+                        <th class="">RPE</th>                        
+                        <th class="">Volume</th>
+                    </tr>
+                </thead>
+                
+                <tbody>
+                {% for log in logs %}
+                    <tr>
+                      <td class="center"><a href="{% url 'hamask:log_update' log.workout_log.id%}">{{ log.workout_log.workout_date }}</a></td>
+                      <td>{{ log.sets }}</td>
+                      <td>{{ log.reps }}</td>
+                      <td>{{ log.weight_formt }}</td>
+                      <td>{% if log.rpe %}{{ log.rpe }}{% endif %}</td>
+                      <td>{{ log.volume }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+    </div>
+</div>
+</div>
+{% endblock %}

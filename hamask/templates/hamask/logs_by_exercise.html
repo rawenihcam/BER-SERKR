@@ -7,7 +7,10 @@
 <div class="col-sm-3 col-md-2 sidebar">
     <ul class="nav nav-sidebar">
         <li><a href="{% url 'hamask:logs' %}">Last Workouts</a></li>
-        <li class="active"><a href="#">Exercise Log</a></li>
+        <li class="active"><a href="#">Work by Exercise</a></li>
+    </ul>
+    <ul class="nav nav-sidebar">
+        <li><a href="{% url 'hamask:next_workouts' %}">Next Workouts</a></li>
     </ul>
 </div>
 
@@ -15,7 +18,7 @@
 
 <div class="row page-header">
     <div class="col-xs-6">
-        <h1>Exercise log</h1>
+        <h1>Work by Exercise</h1>
     </div>
     <div class="col-xs-6">
         <button type="submit" form="form" name="create_log" class="btn btn-success right"><i class="fa fa-plus"></i>&nbsp;Create</button>

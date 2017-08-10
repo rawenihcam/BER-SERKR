@@ -8,12 +8,16 @@
     {% csrf_token %}
     <h1 class="page-header">BER-SERKR</h1>
 
-    {% for workout in workouts %}
     <div class="row">
-        <div class="col-sm-6">
+    <div class="col-sm-6">
+    
+    {% for workout in workouts %}
+    <div class="row">        
+        <!-- Next workout -->
+        <div class="col-sm-12">
             <div class="panel panel-default">
                 <div class="panel-heading">
-                    <h3 class="panel-title">Your next workout&nbsp;-&nbsp;{{ workout.workout_group.program.name }}</h3>
+                    <h3 class="panel-title">Next workout&nbsp;-&nbsp;{{ workout.workout_group.program.name }}</h3>
                 </div>
                 <div class="panel-body">
                     <b>{{ workout.workout_group.name }}&nbsp;-&nbsp;{{ workout.name }}{% if workout.day_of_week %}&nbsp;({{ workout.get_day_of_week_display }}){% endif %}</b>
@@ -46,10 +50,73 @@
                     <button type="submit" name="edit" value="{{ workout.id }}" class="btn btn-sm btn-warning right"><i class="fa fa-pencil"></i>&nbsp;Edit</button>
                     <button type="submit" name="skip" value="{{ workout.id }}" class="btn btn-sm btn-danger right"><i class="fa fa-times"></i>&nbsp;Skip</button>
                 </div>
-            </div>
+            </div>            
+            <div class="hidden-xs"><span class="right"><a href="{% url 'hamask:next_workouts' %}">See more</a></span></div>
         </div>
+        
+        
     </div>
     {% endfor %}
+    
+    </div>
+    <div class="col-sm-6">
+        {% if last_workout %}
+        <!-- Last workout -->
+        <div class="row">
+        <div class="col-sm-12">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    
+                    {% if last_workout.workout %}
+                        <h3 class="panel-title">Last workout&nbsp;-&nbsp;{{ last_workout.workout.workout_group.program.name }}&nbsp;({{ last_workout.workout_date }})</h3>
+                    {% else %}
+                        <h3 class="panel-title">Last workout&nbsp;({{ last_workout.workout_date }})</h3>
+                    {% endif %}
+                </div>
+                <div class="panel-body">
+                    {% if last_workout.workout %}
+                        <b>{{ last_workout.workout.workout_group.name }}&nbsp;-&nbsp;{{ last_workout.workout.name }}</b>
+                    {% endif %}
+                    
+                    {% if last_exercises|get_item:last_workout.id %}
+                        <table class="table table-condensed table-exercise">
+                        <thead>
+                            <tr>
+                                <th class="col-sm-4 invisible"></th>
+                                <th class="col-sm-1 invisible"></th>
+                                <th class="col-sm-1 invisible"></th>
+                                <th class="col-sm-4 invisible"></th>
+                            </tr>
+                        </thead>
+        
+                        <tbody>
+                            {% for exercise in last_exercises|get_item:last_workout.id %}
+                                <tr>
+                                <td>{{ exercise.exercise.name }}</td>
+                                <td>{{ exercise.sets }}&nbsp;x&nbsp;{{ exercise.reps }}</td>
+                                <td>{{ exercise.loading }}</td>
+                                <td>{{ exercise.weight_formt }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                        </table>
+                    {% endif %}
+                    
+                    <a href="{% url 'hamask:log_update' last_workout.id %}" class="btn btn-sm btn-warning right"><i class="fa fa-pencil"></i>&nbsp;Edit</a>
+                </div>
+            </div>
+            <div class="hidden-xs"><span class="right"><a href="{% url 'hamask:logs' %}"><p>See more</p></a></span></div>
+        </div>
+        </div>
+        {% endif %}
+    </div>
+    </div>
+    
+    <!--<div class="row">
+        <div class="col-sm-6">
+            <div class="ct-chart ct-perfect-fourth"></div>
+        </div>
+    </div>-->
 </form>    
 {% else %}
     <div class="jumbotron">
@@ -69,4 +136,39 @@
     </div>
 {% endif %}
 </div>
+
+<!-- Scripts -->
+<script>
+    /*$( function() {
+        var data = {
+          // A labels array that can contain any sort of values
+          labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
+          // Our series array that contains series objects or in this case series data arrays
+          series: [
+            [5, 2, 4, 2, 0]
+          ]
+        };
+
+        // Create a new line chart object where as first parameter we pass in a selector
+        // that is resolving to our chart container element. The Second parameter
+        // is the actual data object.
+        new Chartist.Line('.ct-chart', data);
+    });*/
+    
+    $('h3.h_group').click(function() { 
+        $(this).hide();
+        h_id = $(this).attr('id');
+
+        group_id = h_id.replace(/^h_group_/, '');   
+        input = $('#group_name_'+group_id);
+
+        $(input).css('display', 'inline-block');
+    });
+    
+    $('input.group_name').on('focusout', function() { 
+        group_name = $(this).val();
+        group_id = $(this).attr('id').replace(/^group_name_/, '');
+        group_change_name(group_id, group_name);
+    });
+</script>
 {% endblock %}

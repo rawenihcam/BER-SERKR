@@ -24,9 +24,11 @@
         <link href="{% static 'hamask/css/bootstrap.min.css' %}" rel="stylesheet">
         <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
         <link href="{% static 'hamask/css/font-awesome.min.css' %}" rel="stylesheet">
+        <link href="{% static 'hamask/css/chartist/chartist.min.css' %}" rel="stylesheet">
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
         <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
         <script src="{% static 'hamask/js/bootstrap.min.js' %}"></script>
+        <script src="{% static 'hamask/js/chartist/chartist.min.js' %}"></script>
         
         <!-- Custom -->
         <link href="{% static 'hamask/css/custom.css' %}" rel="stylesheet">
@@ -48,11 +50,31 @@
             <div id="navbar" class="navbar-collapse collapse">
               <ul class="nav navbar-nav">
                 <li><a href="{% url 'hamask:programs' %}"><i class="fa fa-calendar"></i>&nbsp;Programs</a></li>
-                <li><a href="{% url 'hamask:logs' %}"><i class="fa fa-book"></i>&nbsp;Training Logs</a></li>
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+                        <i class="fa fa-book"></i>&nbsp;Training Logs <span class="caret"></span>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a href="{% url 'hamask:logs' %}">Last Workouts</a></li>
+                        <li><a href="{% url 'hamask:logs_by_exercise' %}">Work by Exercise</a></li>
+                        <li role="separator" class="divider"></li>
+                        <li><a href="{% url 'hamask:next_workouts' %}">Next Workouts</a></li>
+                    </ul>
+                </li>
                 <li><a href="{% url 'hamask:stats' %}"><i class="fa fa-bar-chart"></i>&nbsp;Stats</a></li>
               </ul>
               <ul class="nav navbar-nav navbar-right">
-                <li><a href="{% url 'hamask:logout' %}"><i class="fa fa-sign-out"></i>&nbsp;Logout</a></li>
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+                        <i class="fa fa-user"></i>&nbsp;{{ user }}<span class="caret"></span>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a href="#"><i class="fa fa-vcard-o"></i>&nbsp;Profile</a></li>
+                        <li><a href="#"><i class="fa fa-tachometer"></i>&nbsp;Weight Tracker</a></li>
+                        <li role="separator" class="divider"></li>
+                        <li><a href="{% url 'hamask:logout' %}"><i class="fa fa-sign-out"></i>&nbsp;Logout</a></li>
+                    </ul>
+                </li>
               </ul>
             </div>
           </div>
