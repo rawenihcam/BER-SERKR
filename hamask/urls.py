@@ -22,6 +22,7 @@ urlpatterns = [
 	url(r'^logs/', views.logs, name='logs'),
 	url(r'^logs_by_exercise/(?P<exercise>[0-9]+)', views.logs_by_exercise, name='logs_by_exercise'),
 	url(r'^logs_by_exercise/', views.logs_by_exercise, name='logs_by_exercise'),
+	url(r'^next_workouts/', views.next_workouts, name='next_workouts'),
 	url(r'^stats/stat/(?P<pk>[0-9]+)', views.stat_update, name='stat_update'),
 	url(r'^stats/stat/', views.stat_create, name='stat_create'),
 	url(r'^stats/', views.stats, name='stats'),

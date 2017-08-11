@@ -52,13 +52,22 @@ def index(request):
         else:
             lifter = Lifter.objects.get(pk=request.session['lifter'])
             workouts = lifter.get_next_workouts()
-            exercises = {} 
+            exercises = {}
+            
+            last_workout = lifter.get_last_workout()
+            last_exercises = {}
             
             if workouts:               
                 for workout in workouts:
                     exercises[workout.id] = workout.get_workout_exercises()
+                    
+            if last_workout:
+                last_exercises[last_workout.id] = last_workout.get_exercise_log()
             
-            return render (request, 'hamask/index.html', {'workouts': workouts, 'exercises': exercises,})
+            return render (request, 'hamask/index.html', {'workouts': workouts
+                                                            , 'exercises': exercises
+                                                            , 'last_workout': last_workout
+                                                            , 'last_exercises': last_exercises,})
 
 def logout_view(request):
     logout(request)
@@ -355,6 +364,22 @@ def logs_by_exercise(request, exercise='0'):
             logs = None
             
         return render (request, 'hamask/logs_by_exercise.html', {'form': form, 'logs': logs})
+        
+def next_workouts(request):
+    lifter = Lifter.objects.get(pk=request.session['lifter'])
+    programs = lifter.get_started_programs()
+    workouts = {}
+    exercises = {}
+    
+    for program in programs:
+        workouts[program.id] = program.get_next_workouts() 
+    
+        for workout in workouts[program.id]:
+            exercises[workout.id] = workout.get_workout_exercises()
+    
+    return render (request, 'hamask/next_workouts.html', {'programs': programs
+                                                            , 'workouts': workouts
+                                                            , 'exercises': exercises,})
                                                    
 def stats(request):            
     lifter = Lifter.objects.get(pk=request.session['lifter'])

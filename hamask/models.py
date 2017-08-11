@@ -45,6 +45,12 @@ class Lifter (models.Model):
             
         return workouts
         
+    def get_last_workout(self):
+        workouts = Workout_Log.objects.filter(Q(workout__workout_group__program__lifter__exact=self.id) | Q(lifter__exact=self.id)
+                    ).filter(status__exact='COMPL'
+                    ).order_by('-workout_date', '-id').first()
+        return workouts
+    
     def get_last_workouts(self):
         workouts = Workout_Log.objects.filter(Q(workout__workout_group__program__lifter__exact=self.id) | Q(lifter__exact=self.id)
                     ).order_by('-workout_date', '-id')[:50]
@@ -56,8 +62,7 @@ class Lifter (models.Model):
                 ).filter(workout_log__status__exact='COMPL'
                 ).order_by('-workout_log__workout_date')[:50]
                 
-        return logs
-    
+        return logs    
     
     def get_maxes(self):
         s = Lifter_Stats.objects.filter(lifter__exact=self.id
@@ -285,6 +290,46 @@ class Program (models.Model):
             
         return workout
         
+    def get_next_workouts(self):
+        if self.start_date and not self.end_date:
+            group_order = 0
+            order = 0
+            
+            # Get last workout done
+            log = self.get_last_workout_log()
+            if not log:
+                order = -1
+            else:
+                group_order = log.workout.workout_group.order
+                order = log.workout.order
+            
+            # Get next workout according to order
+            workouts = Workout.objects.raw('''select * 
+                                                from hamask_workout w,
+                                                     hamask_workout_group wg
+                                               where w.workout_group_id = wg.id
+                                                 and wg.program_id = %s
+                                                 and (wg.order * 10000) + w.order > cast(%s as integer)
+                                               order by wg.order, w.order'''
+                                        , [self.id, (group_order * 10000) + order])  
+
+            # Check if last workout
+            try:
+                workout = workouts[0]
+            
+            # Last workout of program, repeat if needed
+            except IndexError:
+                if self.repeatable:
+                    workouts = self.get_workouts()
+                else:    
+                    workouts = None
+                    
+        # Program not started or ended
+        else:
+            workouts = None
+            
+        return workouts
+        
     def is_ready(self):
         ready = False
         
@@ -483,6 +528,13 @@ class Workout (models.Model):
         return log
         
     def full_name(self):
+        full_name = self.name
+        if self.day_of_week:
+            full_name += ' - ' + self.get_day_of_week_display()
+            
+        return full_name
+        
+    def expected_date(self):
         full_name = self.name
         if self.day_of_week:
             full_name += ' - ' + self.get_day_of_week_display()
@@ -751,6 +803,18 @@ class Workout_Exercise_Log (models.Model):
         next.save()
         self.save()
         
+    @property
+    def loading(self):
+        if not hasattr(self, '_loading'):
+            if self.rpe: 
+                self._loading = 'RPE ' + str(self.rpe)
+            elif self.percentage:
+                self._loading = str(self.percentage) + '%'
+            else:
+                self._loading = ''
+        
+        return self._loading
+    
     @property
     def weight_formt(self):
         if not hasattr(self, '_weight_formt'):

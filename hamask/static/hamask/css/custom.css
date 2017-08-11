@@ -213,3 +213,7 @@ input.group_name {
 button.btn-form {
     margin-top: 25px;
 }
+
+span.right {
+    float: right;
+}
