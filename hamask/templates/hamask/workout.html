@@ -5,16 +5,20 @@
   
 <form method="post">
 <div class="row page-header">
-    <div class="col-xs-6">
-        <h1>Workout</h1>
+<div class="col-sm-12">    
+    <div class="d-flex justify-content-between">
+    <div class="p2">
+        <h2>Workout</h2>
     </div>
-    <div class="col-xs-6 right">
-        <button type="submit" name="save" value="save" class="btn btn-success right"><i class="fa fa-save"></i>&nbsp;Save</button>
+    <div class="p-2">
+        <a href="{% url 'hamask:program_update' program_id %}" class="btn btn-light"><i class="fa fa-arrow-left"></i>&nbsp;Back</a>
         {% if id %}
-            <button type="submit" name="delete" value="delete" class="btn btn-danger right"><i class="fa fa-trash"></i>&nbsp;Delete</button>
+            <button type="submit" name="delete" value="delete" class="btn btn-danger"><i class="fa fa-trash"></i>&nbsp;Delete</button>
         {% endif %}
-        <a href="{% url 'hamask:program_update' program_id %}" class="btn btn-default right"><i class="fa fa-arrow-left"></i>&nbsp;Back</a>
+        <button type="submit" name="save" value="save" class="btn btn-success"><i class="fa fa-save"></i>&nbsp;Save</button>
     </div>
+    </div>
+</div>
 </div>
 
     {% csrf_token %}
@@ -27,20 +31,19 @@
     </div>    
     <br/>
     <!-- Exercises -->
-    <h3>Exercises</h3>
     {{ exercise_formset.management_form }}
     <table>
         <thead>
             <tr>
-                <th class="col-sm-3">Exercise</th>
-                <th class="col-sm-1">Sets</th>
-                <th class="col-sm-1">Reps</th>
-                <th class="col-sm-2">Loading</th>
-                <th class="col-sm-1">% of Max</th>
-                <th class="col-sm-1">RPE</th>
-                <th class="col-sm-1">Weight</th>
-                <th class="col-sm-1">AMRAP</th>
-                <th class="col-sm-1">&nbsp;</th>
+                <th class="w-3">Exercise</th>
+                <th class="w-1">Sets</th>
+                <th class="w-1">Reps</th>
+                <th class="w-2">Loading</th>
+                <th class="w-1">% of Max</th>
+                <th class="w-1">RPE</th>
+                <th class="w-1">Weight</th>
+                <th class="w-1">AMRAP</th>
+                <th class="w-1">&nbsp;</th>
             </tr>
         </thead>
                 

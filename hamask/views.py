@@ -428,3 +428,78 @@ def stat_update(request, pk, template_name='hamask/stat.html'):
                 return HttpResponseRedirect (reverse ('hamask:stats'))
         else:
             return render (request, template_name, {'form': form, 'id': lifter_stat.id,})
+            
+def profile(request):
+    lifter = Lifter.objects.get(pk=request.session['lifter'])
+    
+    form = ProfileForm(request.POST or None, instance=lifter, prefix='lifter')
+    password_form = ChangePasswordForm(request.POST or None, prefix='password')
+    
+    if 'save' in request.POST:
+        if form.is_valid():
+            form.save()
+            
+            messages.success(request, Notification.success_message, extra_tags=Notification.success_class)
+            return HttpResponseRedirect (reverse ('hamask:profile'))
+    elif 'change_password' in request.POST:
+        if password_form.is_valid():
+            password = password_form.cleaned_data['password']
+            confirm = password_form.cleaned_data['confirm_password']
+            
+            if password and confirm:
+                if password == confirm:
+                    user = User.objects.get(username=lifter.email)
+                    user.set_password(password)
+                    user.save()
+                    
+                    login (request, user)
+                    request.session['lifter'] = lifter.id
+            
+                    messages.success(request, Notification.success_message, extra_tags=Notification.success_class)
+                else:
+                    messages.error(request, 'Password and confirmation must match.', extra_tags=Notification.error_class)
+            else:
+                messages.error(request, 'Password and confirmation are required.', extra_tags=Notification.error_class)
+
+            return HttpResponseRedirect (reverse ('hamask:profile'))                
+    else:
+        return render (request, 'hamask/profile.html', {'form': form, 'password_form': password_form})
+        
+def bodyweight(request):
+    lifter = Lifter.objects.get(pk=request.session['lifter'])
+    logs = lifter.get_all_bodyweights()
+    
+    form = BodyweightForm(request.POST or None, prefix='bodyweight')
+    
+    if form.is_valid():
+        bodyweight = form.save(commit=False)
+        bodyweight.lifter = lifter
+        bodyweight.save()
+            
+        messages.success(request, Notification.success_message, extra_tags=Notification.success_class)
+        return HttpResponseRedirect (reverse ('hamask:bodyweight'))
+    else:
+        return render (request, 'hamask/bodyweight.html', {'form': form, 'logs': logs})
+        
+def bodyweight_update(request, pk, template_name='hamask/bodyweight.html'):
+    lifter = Lifter.objects.get(pk=request.session['lifter'])
+    bodyweight = get_object_or_404(Lifter_Weight, pk=pk)    
+    if bodyweight.lifter.id != lifter.id:
+        raise Http404("Invalid request.")
+        
+    
+    logs = lifter.get_all_bodyweights()    
+    form = BodyweightForm(request.POST or None, instance=bodyweight)
+    
+    if 'delete' in request.POST:
+        bodyweight.delete()
+        messages.success(request, Notification.success_message, extra_tags=Notification.success_class)
+        return HttpResponseRedirect (reverse ('hamask:bodyweight'))
+    else:
+        if form.is_valid():
+            form.save()                    
+            
+            messages.success(request, Notification.success_message, extra_tags=Notification.success_class)
+            return HttpResponseRedirect (reverse ('hamask:bodyweight'))
+        else:
+            return render (request, template_name, {'form': form, 'logs': logs, 'id': bodyweight.id})

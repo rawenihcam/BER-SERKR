@@ -25,5 +25,8 @@ urlpatterns = [
 	url(r'^next_workouts/', views.next_workouts, name='next_workouts'),
 	url(r'^stats/stat/(?P<pk>[0-9]+)', views.stat_update, name='stat_update'),
 	url(r'^stats/stat/', views.stat_create, name='stat_create'),
+	url(r'^profile/', views.profile, name='profile'),
+	url(r'^bodyweight/(?P<pk>[0-9]+)', views.bodyweight_update, name='bodyweight_update'),
+	url(r'^bodyweight/', views.bodyweight, name='bodyweight'),
 	url(r'^stats/', views.stats, name='stats'),
 ]

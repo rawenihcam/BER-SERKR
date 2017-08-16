@@ -60,6 +60,26 @@ class WorkoutExerciseLogForm (ModelForm):
 class LogByExerciseForm (forms.Form):
     exercise = forms.ChoiceField (label='Exercise', choices=Exercise.get_exercise_select())
        
+class ProfileForm (ModelForm):
+    # Redefine constructor to customize
+    def __init__(self, *args, **kwargs):
+        super(ProfileForm, self).__init__(*args, **kwargs)
+        
+        self.fields['email'].disabled = True
+    
+    class Meta:
+        model = Lifter
+        fields = ['email', 'first_name', 'last_name', 'age', 'sex', 'measurement_system']
+        
+class ChangePasswordForm (forms.Form):
+    password = forms.CharField (label='New password', required=False, widget=forms.PasswordInput)
+    confirm_password = forms.CharField (label='Confirm password', required=False, widget=forms.PasswordInput)
+    
+class BodyweightForm (ModelForm):
+    class Meta:
+        model = Lifter_Weight
+        fields = ['entry_date', 'weight']
+
 class StatForm (ModelForm):
     # Redefine constructor to enforce required fields
     def __init__(self, *args, **kwargs):

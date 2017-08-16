@@ -2,15 +2,25 @@
 
 {% block content %}
 <div class="container">
-<a href="{% url 'hamask:stat_create' %}" class="head btn btn-success"><i class="fa fa-plus"></i>&nbsp;Add</a>
-<h1 class="page-header">Stats</h1>
+<div class="row page-header">
+<div class="col-sm-12">    
+    <div class="d-flex justify-content-between">
+    <div class="p2">
+        <h2>Stats</h2>
+    </div>
+    <div class="p-2">
+        <a href="{% url 'hamask:stat_create' %}" class="head btn btn-success"><i class="fa fa-plus"></i>&nbsp;Add</a>
+    </div>
+    </div>
+</div>
+</div>
+
 
 <!-- Maxes & PRs -->
 <div class="row">
     <!-- PRs -->
     <div class="col-sm-12 col-md-6">
-    <div class="panel panel-default">
-        <div class="panel-heading"><h4>Your last PRs</h4></div>
+        <h5>Your last PRs</h5>
         {% if prs %}
             <table class="table table-striped">
                 <thead>
@@ -34,17 +44,15 @@
                 </tbody>
             </table>
         {% else %}
-            <div class="panel-body">
+            <div class="">
                 <p>No PRs</p>
             </div>
         {% endif %}
     </div>
-    </div>
     
     <!-- Maxes -->
     <div class="col-sm-12 col-md-6">
-    <div class="panel panel-default">
-        <div class="panel-heading"><h4>Your maxes</h4></div>
+        <h5>Your maxes</h5>
         {% if maxes %}
             <table class="table table-striped">
                 <thead>
@@ -66,11 +74,10 @@
                 </tbody>
             </table>
         {% else %}
-            <div class="panel-body">
+            <div class="">
                 <p>No maxes</p>
             </div>
         {% endif %}
-    </div>
     </div>
 </div>
 
@@ -82,7 +89,7 @@
             <br/>&nbsp;
             <div id="full-stats" style="display: none;">
             <div class="panel panel-default">
-                <div class="panel-heading"><h4>All stats</h4></div>
+                <div class="panel-heading"><h5>All stats</h5></div>
                 
                 <table class="table table-striped">
                     <thead>
