@@ -9,27 +9,27 @@
     <h1 class="page-header">BER-SERKR</h1>
 
     <div class="row">
-    <div class="col-sm-6">
+    <div class="col-md-6">
     
     {% for workout in workouts %}
     <div class="row">        
         <!-- Next workout -->
         <div class="col-sm-12">
-            <div class="panel panel-default">
-                <div class="panel-heading">
-                    <h3 class="panel-title">Next workout&nbsp;-&nbsp;{{ workout.workout_group.program.name }}</h3>
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="panel-title">Next workout&nbsp;-&nbsp;{{ workout.workout_group.program.name }}</h5>
                 </div>
-                <div class="panel-body">
+                <div class="card-body">
                     <b>{{ workout.workout_group.name }}&nbsp;-&nbsp;{{ workout.name }}{% if workout.day_of_week %}&nbsp;({{ workout.get_day_of_week_display }}){% endif %}</b>
                     
                     {% if exercises|get_item:workout.id %}
-                        <table class="table table-condensed table-exercise">
+                        <table class="table table-sm table-responsive table-exercise">
                         <thead>
-                            <tr>
-                                <th class="col-sm-4 invisible"></th>
-                                <th class="col-sm-1 invisible"></th>
-                                <th class="col-sm-1 invisible"></th>
-                                <th class="col-sm-4 invisible"></th>
+                            <tr class="row">
+                                <th class="col-4 invisible"></th>
+                                <th class="col-2 invisible"></th>
+                                <th class="col-2 invisible"></th>
+                                <th class="col-4 invisible"></th>
                             </tr>
                         </thead>
         
@@ -51,7 +51,7 @@
                     <button type="submit" name="skip" value="{{ workout.id }}" class="btn btn-sm btn-danger right"><i class="fa fa-times"></i>&nbsp;Skip</button>
                 </div>
             </div>            
-            <div class="hidden-xs"><span class="right"><a href="{% url 'hamask:next_workouts' %}">See more</a></span></div>
+            <div class="hidden-sm-down"><span class="float-right"><a href="{% url 'hamask:next_workouts' %}">See more</a></span></div>
         </div>
         
         
@@ -59,33 +59,32 @@
     {% endfor %}
     
     </div>
-    <div class="col-sm-6">
+    <div class="col-md-6">
         {% if last_workout %}
         <!-- Last workout -->
         <div class="row">
         <div class="col-sm-12">
-            <div class="panel panel-default">
-                <div class="panel-heading">
-                    
+            <div class="card">
+                <div class="card-header text-secondary">
                     {% if last_workout.workout %}
-                        <h3 class="panel-title">Last workout&nbsp;-&nbsp;{{ last_workout.workout.workout_group.program.name }}&nbsp;({{ last_workout.workout_date }})</h3>
+                        <h5 class="panel-title">Last workout&nbsp;-&nbsp;{{ last_workout.workout.workout_group.program.name }}&nbsp;({{ last_workout.workout_date }})</h5>
                     {% else %}
-                        <h3 class="panel-title">Last workout&nbsp;({{ last_workout.workout_date }})</h3>
+                        <h5 class="panel-title">Last workout&nbsp;({{ last_workout.workout_date }})</h5>
                     {% endif %}
                 </div>
-                <div class="panel-body">
+                <div class="card-body text-secondary">
                     {% if last_workout.workout %}
                         <b>{{ last_workout.workout.workout_group.name }}&nbsp;-&nbsp;{{ last_workout.workout.name }}</b>
                     {% endif %}
                     
                     {% if last_exercises|get_item:last_workout.id %}
-                        <table class="table table-condensed table-exercise">
+                        <table class="table table-sm table-responsive table-exercise">
                         <thead>
-                            <tr>
-                                <th class="col-sm-4 invisible"></th>
-                                <th class="col-sm-1 invisible"></th>
-                                <th class="col-sm-1 invisible"></th>
-                                <th class="col-sm-4 invisible"></th>
+                            <tr class="row">
+                                <th class="col-4 invisible"></th>
+                                <th class="col-2 invisible"></th>
+                                <th class="col-2 invisible"></th>
+                                <th class="col-4 invisible"></th>
                             </tr>
                         </thead>
         
@@ -105,7 +104,7 @@
                     <a href="{% url 'hamask:log_update' last_workout.id %}" class="btn btn-sm btn-warning right"><i class="fa fa-pencil"></i>&nbsp;Edit</a>
                 </div>
             </div>
-            <div class="hidden-xs"><span class="right"><a href="{% url 'hamask:logs' %}"><p>See more</p></a></span></div>
+            <div class="hidden-sm-down"><span class="right"><a href="{% url 'hamask:logs' %}"><p>See more</p></a></span></div>
         </div>
         </div>
         {% endif %}

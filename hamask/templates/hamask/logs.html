@@ -4,36 +4,39 @@
 <form id="form" method="post">
 {% csrf_token %}
 
-<div class="col-sm-3 col-md-2 sidebar">
-    <ul class="nav nav-sidebar">
-        <li class="active"><a href="#">Last Workouts</a></li>        
-        <li><a href="{% url 'hamask:logs_by_exercise' %}">Work by Exercise</a></li>        
+<nav class="col-md-3 col-lg-2 sidebar">
+    <ul class="nav nav-pills flex-column">
+        <li class="nav-item"><a class="nav-link active" href="#">Last Workouts</a></li>        
+        <li class="nav-item"><a class="nav-link" href="{% url 'hamask:logs_by_exercise' %}">Work by Exercise</a></li>        
     </ul>
-    <ul class="nav nav-sidebar">
-        <li><a href="{% url 'hamask:next_workouts' %}">Next Workouts</a></li>
+    <ul class="nav nav-pills flex-column">
+        <li class="nav-item"><a class="nav-link" href="{% url 'hamask:next_workouts' %}">Next Workouts</a></li>
     </ul>
-</div>
+</nav>
 
-<div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2">
+<div class="col-md-9 ml-md-auto col-lg-10 ml-lg-auto">
 
 <div class="row page-header">
-    <div class="col-xs-6">
-        <h1>Last Workouts</h1>
+<div class="col-sm-12">    
+    <div class="d-flex justify-content-between">
+    <div class="p2">
+        <h2>Last Workouts</h2>
     </div>
-    <div class="col-xs-6">
+    <div class="p-2">
         <button type="submit" form="form" name="create_log" class="btn btn-success right"><i class="fa fa-plus"></i>&nbsp;Create</button>
     </div>
+    </div>
+</div>
 </div>
 
 <div class="row">
-    <div class="col-sm-12">
+    <div class="col-sm-12 overflow">
         {% if logs %}
-            <table class="table table-striped">
+            <table class="table min-width-xs">
                 <thead>
                     <tr>
-                        <th class="col-sm-1 center">Date</th>
-                        <th class="col-sm-6">Workout</th>
-                        <th class="icon center">Done</th>
+                        <th class="w-2 center">Date</th>
+                        <th class="w-10">Workout</th>
                     </tr>
                 </thead>
                 
@@ -47,9 +50,12 @@
                                 {% if log.workout.day_of_week %}&nbsp;({{ log.workout.get_day_of_week_display }}){% endif %}
                             {% else %}
                                 {{ log.get_exercise_log_formt }}
+                            {% endif %}&nbsp;
+                            
+                            {% if log.status != 'COMPL' %}
+                                <span class="badge badge-secondary">Skipped</span>
                             {% endif %}
                       </td>
-                      <td class="center">{% if log.status == 'COMPL' %}<i class="fa fa-check"></i>{% else %}<i class="fa fa-times"></i>{% endif %}</td>
                     </tr>
                 {% endfor %}
                 </tbody>

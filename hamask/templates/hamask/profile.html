@@ -1,0 +1,64 @@
+{% extends 'hamask/base.html' %}
+
+{% block content %}
+<div class="container">
+  
+<form method="post">
+<div class="row page-header">
+<div class="col-sm-12">    
+    <div class="d-flex justify-content-between">
+    <div class="p2">
+        <h2>Profile</h2>
+    </div>
+    <div class="p-2">
+        <a href="{% url 'hamask:index' %}" class="btn btn-secondary"><i class="fa fa-arrow-left"></i>&nbsp;Back</a>
+        <button type="submit" name="save" value="save" class="btn btn-success"><i class="fa fa-save"></i>&nbsp;Save</button>
+    </div>
+    </div>
+</div>
+</div>
+
+    {% csrf_token %}
+    
+    <!-- Profile -->
+    {{ form.non_field_errors }}
+    <div class="row">
+        {% include 'hamask/form.html' with field=form.email div_class='col-sm-12 col-md-6 col-lg-4' %}
+    </div>
+    <div class="row">
+        {% include 'hamask/form.html' with field=form.first_name div_class='col-sm-12 col-md-6 col-lg-4' %}
+        {% include 'hamask/form.html' with field=form.last_name div_class='col-sm-12 col-md-6 col-lg-4' %}
+    </div>
+    <div class="row">
+        {% include 'hamask/form.html' with field=form.age div_class='col-sm-12 col-md-4 col-lg-2' %}
+        {% include 'hamask/form.html' with field=form.sex div_class='col-sm-12 col-md-4 col-lg-2' %}
+        {% include 'hamask/form.html' with field=form.measurement_system div_class='col-sm-12 col-md-4 col-lg-4' %}
+    </div>
+    
+    <!-- Password -->
+    <div class="row page-header">
+    <div class="col-sm-12">    
+        <h5>Change Password</h5>
+    </div>
+    </div>
+    
+    {{ password_form.non_field_errors }}
+    <div class="row">
+        {% include 'hamask/form.html' with field=password_form.password div_class='col-sm-12 col-md-6 col-lg-4' %}
+        {% include 'hamask/form.html' with field=password_form.confirm_password div_class='col-sm-12 col-md-6 col-lg-4' %}
+        <div class="col-sm-12 col-md-6 col-lg-4">
+            <button type="submit" name="change_password" value="change_password" class="btn btn-warning btn-form">
+                <i class="fa fa-key"></i>&nbsp;Change Password
+            </button>
+        </div>
+    </div>
+    
+</div>
+</div>
+</form>
+</div>
+
+<!-- Scripts -->
+<script>
+</script>
+{% endblock %}

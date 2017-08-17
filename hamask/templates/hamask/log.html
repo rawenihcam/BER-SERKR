@@ -5,16 +5,20 @@
   
 <form method="post">
 <div class="row page-header">
-    <div class="col-xs-6">
-        <h1>Workout</h1>
+<div class="col-sm-12">    
+    <div class="d-flex justify-content-between">
+    <div class="p2">
+        <h2>Workout</h2>
     </div>
-    <div class="col-xs-6 right">
-        <button type="submit" name="save" value="save" class="btn btn-success right"><i class="fa fa-save"></i>&nbsp;Save</button>
+    <div class="p-2">
+        <a href="{% url 'hamask:logs' %}" class="btn btn-secondary"><i class="fa fa-arrow-left"></i>&nbsp;Back</a>
         {% if id %}
-            <button type="submit" name="delete" value="delete" class="btn btn-danger right"><i class="fa fa-trash"></i>&nbsp;Delete</button>
+            <button type="submit" name="delete" value="delete" class="btn btn-danger"><i class="fa fa-trash"></i>&nbsp;Delete</button>
         {% endif %}
-        <a href="{% url 'hamask:logs' %}" class="btn btn-default right"><i class="fa fa-arrow-left"></i>&nbsp;Back</a>
+        <button type="submit" name="save" value="save" class="btn btn-success"><i class="fa fa-save"></i>&nbsp;Save</button>
     </div>
+    </div>
+</div>
 </div>
 
     {% csrf_token %}
@@ -26,18 +30,19 @@
     </div>    
     <br/>
     <!-- Exercise log -->
-    <h3>Exercises</h3>
+    <div class="row">
+    <div class="col-sm-12 overflow">
     {{ exercise_formset.management_form }}
-    <table>
+    <table class="min-width-sm">
         <thead>
             <tr>
-                <th class="col-sm-3">Exercise</th>
-                <th class="col-sm-1">Sets</th>
-                <th class="col-sm-1">Reps</th>
-                <th class="col-sm-1">Weight</th>
-                <th class="col-sm-1">RPE</th>
-                <th class="col-sm-1">AMRAP</th>
-                <th class="col-sm-1">&nbsp;</th>
+                <th class="w-3">Exercise</th>
+                <th class="w-1">Sets</th>
+                <th class="w-1">Reps</th>
+                <th class="w-1">Weight</th>
+                <th class="w-1">RPE</th>
+                <th class="w-1 center">AMRAP</th>
+                <th class="w-1 col-tab-icon">&nbsp;</th>
             </tr>
         </thead>
                 
@@ -63,10 +68,14 @@
         {% endfor %}
         </tbody>
     </table>
+    </div></div>
+    
+    <div class="row">
+    <div class="col-sm-12">
     <a id="btn_add_exercise" class="btn btn-primary" href="javascript:void(0);" onclick="formset_add_more('tr.formset_exercise:last', 'exercise_log');">
         <i class="fa fa-plus"></i>&nbsp;Add Exercise    
     </a>
-    
+    </div></div>
 </form>
 </div>
 

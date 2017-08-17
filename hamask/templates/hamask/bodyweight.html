@@ -1,0 +1,78 @@
+{% extends 'hamask/base.html' %}
+
+{% block content %}
+<div class="container">
+  
+<form method="post">
+<div class="row page-header">
+<div class="col-sm-12">    
+    <div class="d-flex justify-content-between">
+    <div class="p2">
+        <h2>Bodyweight</h2>
+    </div>
+    <div class="p-2">
+        <a href="{% url 'hamask:index' %}" class="btn btn-secondary"><i class="fa fa-arrow-left"></i>&nbsp;Back</a>
+        {% if id %}
+            <button type="submit" name="delete" value="delete" class="btn btn-danger"><i class="fa fa-trash"></i>&nbsp;Delete</button>
+        {% endif %}
+        <button type="submit" name="save" value="save" class="btn btn-success"><i class="fa fa-save"></i>&nbsp;Save</button>
+    </div>
+    </div>
+</div>
+</div>
+
+    {% csrf_token %}
+    
+    <!-- Bodyweight -->
+    {{ form.non_field_errors }}
+    <div class="row">
+        {% include 'hamask/form.html' with field=form.entry_date div_class='col-sm-12 col-md-6 col-lg-4' %}
+        {% include 'hamask/form.html' with field=form.weight div_class='col-sm-12 col-md-6 col-lg-4' %}
+    </div>
+    
+    <!-- History -->
+    {% if logs %}
+        <div class="row page-header">
+        <div class="col-sm-6">    
+            <h5>History</h5>
+        </div>
+        </div>
+    
+        
+        <div class="row">
+        <div class="col-sm-6"> 
+        <table class="table">
+            <thead>
+                <tr>
+                    <th class="w-2 center">Date</th>
+                    <th class="w-2">Weight</th>
+                </tr>
+            </thead>
+            
+            <tbody>
+            {% for log in logs %}
+                <tr>
+                  <td class="center"><a href="{% url 'hamask:bodyweight_update' log.id%}">{{ log.entry_date }}</a></td>
+                  <td>{{ log.weight_formt }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        </div>
+        </div>
+    {% endif %}
+    
+</div>
+</div>
+</form>
+</div>
+
+<!-- Scripts -->
+<script>
+    $( function() {
+        $( "#id_bodyweight-entry_date" ).datepicker({
+          dateFormat: "yy-mm-dd"
+        });
+    });
+</script>
+{% endblock %}

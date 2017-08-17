@@ -135,6 +135,17 @@ class Lifter (models.Model):
                     
         return stats
         
+    def get_all_bodyweights(self):
+        weights = Lifter_Weight.objects.filter(lifter__exact=self.id
+                    ).order_by('-entry_date','-id')[:50]
+                    
+        return weights
+        
+    def get_current_bodyweight(self):
+        weight = self.get_all_bodyweights().first()
+        
+        return weight
+        
     def get_weight_unit(self):
         unit = ''
         if self.measurement_system == 'METRC':
@@ -143,6 +154,21 @@ class Lifter (models.Model):
             unit = 'lbs'
             
         return unit;
+    
+class Lifter_Weight (models.Model):
+    lifter = models.ForeignKey (Lifter, on_delete=models.CASCADE)
+    entry_date = models.DateField ()
+    weight = models.FloatField ()
+    
+    def __str__(self):
+        return self.weight + self.lifter.get_weight_unit()
+    
+    @property
+    def weight_formt(self):
+        if not hasattr(self, '_weight_formt'):
+            self._weight_formt = str(self.weight) + self.lifter.get_weight_unit()
+        
+        return self._weight_formt
     
 class Exercise (models.Model):
     lifter = models.ForeignKey (Lifter, on_delete=models.CASCADE, blank=True, null=True, editable=False)
@@ -747,7 +773,7 @@ class Workout_Exercise_Log (models.Model):
         super(Workout_Exercise_Log, self).save(*args, **kwargs)
         
         # Log PR if applicable
-        if self.workout_exercise and self.workout_log.status == 'COMPL':
+        if self.weight and self.workout_exercise and self.workout_log.status == 'COMPL':
             program = Program.objects.get(pk=self.workout_exercise.workout.workout_group.program.id)
             
             if program.auto_update_stats:
@@ -761,15 +787,14 @@ class Workout_Exercise_Log (models.Model):
                 
                 #Log PR
                 pr = program.lifter.get_pr(self.exercise, self.reps)
-                if pr and self.weight:
-                    if self.weight > pr.weight:
-                        stat = Lifter_Stats(lifter=program.lifter
-                                ,exercise=self.exercise
-                                ,workout_exercise_log=self.id
-                                ,reps=self.reps
-                                ,weight=self.weight)
-                                
-                        stat.save()
+                if (pr and self.weight > pr.weight) or not pr:
+                    stat = Lifter_Stats(lifter=program.lifter
+                            ,exercise=self.exercise
+                            ,workout_exercise_log=self
+                            ,reps=self.reps
+                            ,weight=self.weight)
+                            
+                    stat.save()
                         
     def delete(self, *args, **kwargs):
         # Reorder exercise logs

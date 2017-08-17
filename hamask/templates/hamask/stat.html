@@ -5,17 +5,21 @@
 <form method="post">
 
 <div class="row page-header">
-    <div class="col-xs-6">
-        <h1>Log your PRs</h1>
+<div class="col-sm-12">    
+    <div class="d-flex justify-content-between">
+    <div class="p2">
+        <h2>Log your PRs</h2>
     </div>
-    <div class="col-xs-6 right">
-        <button type="submit" name="save" value="save" class="btn btn-primary right"><i class="fa fa-save"></i>&nbsp;Save</button>
-        <button type="submit" name="saveadd" value="saveadd" class="btn btn-primary right"><i class="fa fa-plus"></i>&nbsp;Save and Add</button>        
+    <div class="p-2">
+        <a href="{% url 'hamask:stats' %}" class="btn btn-secondary"><i class="fa fa-arrow-left"></i>&nbsp;Back</a>  
         {% if id %}
-            <button type="submit" name="delete" value="delete" class="btn btn-danger right"><i class="fa fa-trash"></i>&nbsp;Delete</button>
+            <button type="submit" name="delete" value="delete" class="btn btn-danger"><i class="fa fa-trash"></i>&nbsp;Delete</button>
         {% endif %}
-        <a href="{% url 'hamask:stats' %}" class="btn btn-default right"><i class="fa fa-arrow-left"></i>&nbsp;Back</a>
+        <button type="submit" name="saveadd" value="saveadd" class="btn btn-primary"><i class="fa fa-plus"></i>&nbsp;Save and Add</button>
+        <button type="submit" name="save" value="save" class="btn btn-primary"><i class="fa fa-save"></i>&nbsp;Save</button>
     </div>
+    </div>
+</div>
 </div>
 
     {% csrf_token %}

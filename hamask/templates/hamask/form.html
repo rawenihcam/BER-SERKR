@@ -1,7 +1,7 @@
 <div class="{{ div_class }} {% if field.errors %}has-error{% endif %}">
-{% if field %}
-    {{ field.label_tag }}
-    <div class="input-group">
+{% if field %}    
+    <div class="form-group">
+        {{ field.label_tag }}
         {{ field }}
     </div>
     {% if field.errors %}
