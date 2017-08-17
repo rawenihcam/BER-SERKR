@@ -23,8 +23,8 @@
                 <thead>
                     <tr>
                         <th>Name</th>
-                        <th>Start</th>
-                        <th>End</th>
+                        <th class="d-none d-sm-table-cell">Start</th>
+                        <th class="d-none d-sm-table-cell">End</th>
                     </tr>
                 </thead>
                 
@@ -43,8 +43,8 @@
                           <span class="badge badge-secondary">Draft</span>
                         {% endif %}
                       </td>
-                      <td>{% if program.start_date %}{{ program.start_date }}{% endif %}</td>
-                      <td>{% if program.end_date %}{{ program.end_date }}{% endif %}</td>
+                      <td class="d-none d-sm-table-cell">{% if program.start_date %}{{ program.start_date }}{% endif %}</td>
+                      <td class="d-none d-sm-table-cell">{% if program.end_date %}{{ program.end_date }}{% endif %}</td>
                     </tr>
                 {% endfor %}
                 </tbody>

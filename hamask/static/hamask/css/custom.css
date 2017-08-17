@@ -5,6 +5,7 @@ div.block-content {
 
 div.main {
     padding-top: 71px; /* Navbar + 20px */
+    padding-bottom: 1rem;
 }
 
 div.message-box {
@@ -101,8 +102,7 @@ span.label {
 
 .sidebar .nav-item > a:hover,
 .sidebar .nav-item > a:focus {
-    color: #fff;
-    background-color: #8bacc7;
+    background-color: #e8e8e8;
 }
 
 .sidebar .nav-item > a.active:hover,
@@ -169,6 +169,18 @@ h3 {
     margin-top: 10px;
 }
 
+div.overflow {
+    overflow-x: auto;
+}
+
+div.min-width-sm {
+    min-width: 768px;
+}
+
+div.min-width-xs {
+    min-width: 576px;
+}
+
 /* Lists */
 th.icon {
     width: 30px;
@@ -208,6 +220,14 @@ table.table.table-sm.table-exercise>tbody>tr>td {
 
 th.col-tab-icon {
     min-width: 75px;
+}
+
+table.min-width-sm {
+    min-width: 768px;
+}
+
+table.min-width-xs {
+    min-width: 576px;
 }
 
 /* Forms */

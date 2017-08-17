@@ -11,7 +11,7 @@
         <h2>Workout</h2>
     </div>
     <div class="p-2">
-        <a href="{% url 'hamask:program_update' program_id %}" class="btn btn-light"><i class="fa fa-arrow-left"></i>&nbsp;Back</a>
+        <a href="{% url 'hamask:program_update' program_id %}" class="btn btn-secondary"><i class="fa fa-arrow-left"></i>&nbsp;Back</a>
         {% if id %}
             <button type="submit" name="delete" value="delete" class="btn btn-danger"><i class="fa fa-trash"></i>&nbsp;Delete</button>
         {% endif %}
@@ -32,7 +32,9 @@
     <br/>
     <!-- Exercises -->
     {{ exercise_formset.management_form }}
-    <table>
+    <div class="row">
+    <div class="col-sm-12 overflow">
+    <table class="min-width-sm">
         <thead>
             <tr>
                 <th class="w-3">Exercise</th>
@@ -43,7 +45,7 @@
                 <th class="w-1">RPE</th>
                 <th class="w-1">Weight</th>
                 <th class="w-1">AMRAP</th>
-                <th class="w-1">&nbsp;</th>
+                <th class="w-1 col-tab-icon">&nbsp;</th>
             </tr>
         </thead>
                 
@@ -71,9 +73,16 @@
         {% endfor %}
         </tbody>
     </table>
-    <a id="btn_add_exercise" class="btn btn-primary" href="javascript:void(0);" onclick="formset_add_more('tr.formset_exercise:last', 'exercise');">
-        <i class="fa fa-plus"></i>&nbsp;Add Exercise    
-    </a>
+    </div>
+    </div>
+    
+    <div class="row">
+    <div class="col-sm-12 overflow">
+        <a id="btn_add_exercise" class="btn btn-primary" href="javascript:void(0);" onclick="formset_add_more('tr.formset_exercise:last', 'exercise');">
+            <i class="fa fa-plus"></i>&nbsp;Add Exercise    
+        </a>
+    </div>
+    </div>
 </form>
 </div>
 
