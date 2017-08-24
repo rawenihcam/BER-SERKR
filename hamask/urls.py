@@ -5,6 +5,7 @@ from . import views
 app_name = 'hamask'
 urlpatterns = [
 	url(r'^$', views.index, name='index'),
+	url(r'^index/', views.index, name='index'),
 	url(r'^login/', views.index, name='index'),
 	url(r'^logout/', views.logout_view, name='logout'),
 	url(r'^programs/program/workout/(?P<pk>[0-9]+)', views.workout_update, name='workout_update'),
@@ -25,8 +26,9 @@ urlpatterns = [
 	url(r'^next_workouts/', views.next_workouts, name='next_workouts'),
 	url(r'^stats/stat/(?P<pk>[0-9]+)', views.stat_update, name='stat_update'),
 	url(r'^stats/stat/', views.stat_create, name='stat_create'),
+	url(r'^stats/', views.stats, name='stats'),
+	url(r'^max_progression/', views.max_progression, name='max_progression'),
 	url(r'^profile/', views.profile, name='profile'),
 	url(r'^bodyweight/(?P<pk>[0-9]+)', views.bodyweight_update, name='bodyweight_update'),
 	url(r'^bodyweight/', views.bodyweight, name='bodyweight'),
-	url(r'^stats/', views.stats, name='stats'),
 ]

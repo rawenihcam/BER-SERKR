@@ -383,7 +383,7 @@ def next_workouts(request):
                                                    
 def stats(request):            
     lifter = Lifter.objects.get(pk=request.session['lifter'])
-    maxes = lifter.get_maxes()
+    maxes = lifter.get_pl_maxes()
     prs = lifter.get_last_prs()
     stats = lifter.get_stats()
     return render (request, 'hamask/stats.html', {'maxes': maxes, 'prs': prs, 'stats': stats,})
@@ -428,6 +428,16 @@ def stat_update(request, pk, template_name='hamask/stat.html'):
                 return HttpResponseRedirect (reverse ('hamask:stats'))
         else:
             return render (request, template_name, {'form': form, 'id': lifter_stat.id,})
+            
+def max_progression(request):            
+    lifter = Lifter.objects.get(pk=request.session['lifter'])
+    
+    
+    e = Exercise.objects.get(name__exact='Squat')
+    s = lifter.get_maxes_chart(e)
+    d = Custom.get_chartist_data(s)
+    
+    return render (request, 'hamask/max_progression.html', {'d': d})
             
 def profile(request):
     lifter = Lifter.objects.get(pk=request.session['lifter'])

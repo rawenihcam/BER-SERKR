@@ -64,7 +64,7 @@ class Lifter (models.Model):
                 
         return logs    
     
-    def get_maxes(self):
+    def get_pl_maxes(self):
         s = Lifter_Stats.objects.filter(lifter__exact=self.id
                 ).filter(reps__exact=1
                 ).filter(exercise__name__exact='Squat'
@@ -82,12 +82,27 @@ class Lifter (models.Model):
         
         return maxes
         
+    def get_maxes_chart(self, exercise):
+        """maxes = Lifter_Stats.objects.filter(lifter__exact=self.id
+                    ).filter(reps__exact=1
+                    ).filter(exercise__exact=exercise.id
+                    ).order_by('-entry_date', '-weight')"""
+                    
+        maxes = Lifter_Stats.objects.raw('''select ls.id, ls.entry_date x, ls.weight y
+                                             from hamask_lifter_stats ls 
+                                            where ls.lifter_id = %s
+                                              and ls.reps = 1
+                                              and ls.exercise_id = %s'''
+                                            , [self.id, exercise.id])          
+                    
+                    
+        return maxes
+        
     def get_max(self, exercise):
         max = Lifter_Stats.objects.filter(lifter__exact=self.id
-                ).filter(reps__exact=1
-                ).filter(exercise__exact=exercise.id
-                ).order_by('-entry_date', '-weight'
-                ).first()
+                    ).filter(reps__exact=1
+                    ).filter(exercise__exact=exercise.id
+                    ).order_by('-entry_date', '-weight').first()
                 
         return max
         
