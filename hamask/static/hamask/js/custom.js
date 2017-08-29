@@ -195,3 +195,14 @@ function formset_add_more(p_selector, p_type) {
     $('#id_' + p_type + '-TOTAL_FORMS').val(total);
     $(p_selector).after(newElement);
 }
+
+/* Misc */
+function escapeHtml(text) {
+    'use strict';
+    return text.replace(/[\"&'\/<>]/g, function (a) {
+        return {
+            '"': '&quot;', '&': '&amp;', "'": '&#39;',
+            '/': '&#47;',  '<': '&lt;',  '>': '&gt;'
+        }[a];
+    });
+}

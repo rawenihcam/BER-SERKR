@@ -1,4 +1,5 @@
 from django.template.defaulttags import register
+from django.db.models import *
 
 # Custom classes
 class Notification():
@@ -12,7 +13,26 @@ class Notification():
 class IncompleteProgram(Exception):
     pass
     
-# Custom functions    
-@register.filter
-def get_item(dictionary, key):
-    return dictionary.get(key)
+class Custom():
+    # Custom functions    
+    @register.filter
+    def get_item(dictionary, key):
+        return dictionary.get(key)
+        
+    # Chartist
+    
+    # "x" (date) and "y" (number) field required. Return JS object ready for eval()
+    def get_chartist_data(exercise_name, query):
+        data = '{name: "' + exercise_name +'", data: ['
+        exists = False
+        
+        for value in query:
+            data += '{x: new Date("' + str(value.x) + '"), y:' + str(value.y) + '},'
+            exists = True
+        
+        if exists:
+            data = data[:-1] + ']}'
+        else:
+            data += ']}'
+            
+        return data

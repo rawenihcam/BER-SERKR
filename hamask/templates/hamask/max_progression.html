@@ -1,0 +1,76 @@
+{% extends 'hamask/base.html' %}
+
+{% block content %}
+<nav class="col-md-3 col-lg-2 sidebar">
+    <ul class="nav nav-pills flex-column">
+        <li class="nav-item"><a class="nav-link" href="{% url 'hamask:stats' %}">Stats</a></li>        
+    </ul>
+    <ul class="nav nav-pills flex-column">
+        <li class="nav-item"><a class="nav-link active" href="#">Max Progression</a></li>
+        <li class="nav-item"><a class="nav-link" href="#">Volume by exercise</a></li>
+    </ul>
+</nav>
+
+<div class="col-md-9 ml-md-auto col-lg-10 ml-lg-auto">
+
+<div class="row page-header">
+<div class="col-sm-12">    
+    <div class="d-flex justify-content-between">
+    <div class="p2">
+        <h2>Max Progression</h2>
+    </div>
+    <div class="p-2">
+    </div>
+    </div>
+</div>
+</div>
+
+<!-- Maxes & PRs -->
+<div class="row">
+    <!-- PRs -->
+    <div class="col-sm-12 col-md-8">
+        <div class="ct-chart ct-perfect-fourth"></div>
+    </div>
+</div>
+
+</div>
+
+<!-- Custom JS -->
+<script type="text/javascript">
+    var data = {
+      series: eval('{{ data }}'.replace(/&quot;/g, '"'))
+    }
+
+    var options = {
+      width: '80%',
+      chartPadding: {
+        right: 40
+      },
+      axisX: {
+        type: Chartist.AutoScaleAxis,
+        scaleMinSpace: 75,
+        labelInterpolationFnc: function(value) {
+          return "'" + moment(value).format('YY MMM D');
+        }
+      },
+      axisY: {
+        type: Chartist.AutoScaleAxis,
+        scaleMinSpace: 25,
+        low: 0
+      },
+      plugins: [
+        Chartist.plugins.legend({
+          className: 'ct-legend-inside'
+        }),
+        Chartist.plugins.tooltip({
+          transformTooltipTextFnc: function(value) {
+            return moment(parseInt(value.substring(0, value.indexOf(',')))).format('YYYY-MM-DD')
+              + ', ' + value.substring(value.indexOf(',') + 1);
+          }
+        })
+      ]
+    };
+    
+    new Chartist.Line('.ct-chart', data, options);
+</script>
+{% endblock %}
