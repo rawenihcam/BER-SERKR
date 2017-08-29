@@ -433,11 +433,16 @@ def max_progression(request):
     lifter = Lifter.objects.get(pk=request.session['lifter'])
     
     
-    e = Exercise.objects.get(name__exact='Squat')
-    s = lifter.get_maxes_chart(e)
-    d = Custom.get_chartist_data(s)
+    exercises = Exercise.get_exercises('MAIN')
+    data = '['
     
-    return render (request, 'hamask/max_progression.html', {'d': d})
+    for exercise in exercises:
+        query = lifter.get_maxes_chart(exercise)
+        data += Custom.get_chartist_data(exercise.name, query) + ','
+        
+    data = data[:-1] + ']'
+    print(data)
+    return render (request, 'hamask/max_progression.html', {'data': data})
             
 def profile(request):
     lifter = Lifter.objects.get(pk=request.session['lifter'])

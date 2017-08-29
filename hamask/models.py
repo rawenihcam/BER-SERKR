@@ -83,16 +83,12 @@ class Lifter (models.Model):
         return maxes
         
     def get_maxes_chart(self, exercise):
-        """maxes = Lifter_Stats.objects.filter(lifter__exact=self.id
-                    ).filter(reps__exact=1
-                    ).filter(exercise__exact=exercise.id
-                    ).order_by('-entry_date', '-weight')"""
-                    
         maxes = Lifter_Stats.objects.raw('''select ls.id, ls.entry_date x, ls.weight y
                                              from hamask_lifter_stats ls 
                                             where ls.lifter_id = %s
                                               and ls.reps = 1
-                                              and ls.exercise_id = %s'''
+                                              and ls.exercise_id = %s
+                                            order by ls.entry_date, ls.weight'''
                                             , [self.id, exercise.id])          
                     
                     
@@ -107,17 +103,22 @@ class Lifter (models.Model):
         return max
         
     def get_prs(self):
-        stats = Lifter_Stats.objects.filter(lifter__exact=self.id)
-        exercise_combos = stats.values('exercise','reps').annotate(max_weight=Max('weight'))
-        prs = Lifter_Stats.objects.filter(lifter__exact=0)
-                            
-        # Possibly a way to do this without loop and with queryset, but idk, TODO
-        for exercise_combo in exercise_combos:
-            pr = stats.filter(exercise__exact=exercise_combo['exercise']
-                    ).filter(reps__exact=exercise_combo['reps']
-                    ).filter(weight__exact=exercise_combo['max_weight'])
-                    
-            prs = prs.union (pr, all=True)
+        prs = Lifter_Stats.objects.raw('''select ls.id,
+                                                  ls.entry_date,
+                                                  e.name exercise,
+                                                  ls.weight,
+                                                  ls.reps
+                                             from hamask_lifter_stats ls,
+                                                  hamask_exercise e                                             
+                                            where ls.lifter_id = %s
+                                              and e.id = ls.exercise_id
+                                              and weight = (select max(ls2.weight) 
+                                                              from hamask_lifter_stats ls2 
+                                                             where ls2.lifter_id = ls.lifter_id
+                                                               and ls2.exercise_id = ls.exercise_id 
+                                                               and ls2.reps = ls.reps) 
+                                            order by ls.entry_date desc'''
+                                            , [self.id])
         
         return prs
         
@@ -139,7 +140,7 @@ class Lifter (models.Model):
                                                              where ls2.lifter_id = ls.lifter_id
                                                                and ls2.exercise_id = ls.exercise_id 
                                                                and ls2.reps = ls.reps) 
-                                                             order by ls.entry_date desc'''
+                                            order by ls.entry_date desc'''
                                             , [self.id])[:5]
         
         return prs
@@ -200,7 +201,11 @@ class Exercise (models.Model):
     
     def __str__(self):
         return self.name
-        
+    
+    @staticmethod
+    def get_exercises(category):
+        return Exercise.objects.filter(category__exact=category).order_by('name')
+    
     @staticmethod
     def get_exercise_select():
         # Create a 2 level list (1. Category, 2. Exercise)
