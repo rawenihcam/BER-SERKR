@@ -29,6 +29,9 @@ class WorkoutForm (ModelForm):
         fields = ['name', 'day_of_week']
         
 class WorkoutExerciseForm (ModelForm):
+    loading = forms.IntegerField(required=True, min_value=0)
+    notes_formt = forms.CharField(required=False)
+    
     class Meta:
         model = Workout_Exercise
         fields = ['id', 'exercise', 'sets', 'reps', 'rep_scheme', 'weight', 'percentage', 'rpe', 'is_amrap', 'notes']
@@ -39,13 +42,42 @@ class WorkoutExerciseForm (ModelForm):
        
         # Custom fields
         self.fields['exercise'].choices = Exercise.get_exercise_select()
+        self.fields['notes_formt'].initial = self.instance.notes_formt()
+        
+        # Manage loading
+        if self.instance.rep_scheme == 'MAX_PERCENTAGE':
+            self.fields['loading'].initial = self.instance.percentage
+        elif self.instance.rep_scheme == 'RPE':
+            self.fields['loading'].initial = self.instance.rpe
+        elif self.instance.rep_scheme == 'WEIGHT':
+            self.fields['loading'].initial = self.instance.weight
+
+    def save(self, commit=True):
+        # Manage loading
+        print(self.instance)
+        if self.cleaned_data['rep_scheme'] == 'MAX_PERCENTAGE':
+            self.instance.percentage = self.cleaned_data['loading']
+            self.instance.rpe = None
+            self.instance.weight = None
+        elif self.cleaned_data['rep_scheme'] == 'RPE':
+            self.instance.rpe = self.cleaned_data['loading']
+            self.instance.percentage = None
+            self.instance.weight = None
+        elif self.cleaned_data['rep_scheme'] == 'WEIGHT':
+            self.instance.weight = self.cleaned_data['loading']
+            self.instance.percentage = None
+            self.instance.rpe = None
+        
+        return super(WorkoutExerciseForm, self).save(commit=commit)
         
 class WorkoutLogForm (ModelForm):
     class Meta:
         model = Workout_Log
         fields = ['workout_date']
         
-class WorkoutExerciseLogForm (ModelForm):
+class WorkoutExerciseLogForm (ModelForm):    
+    notes_formt = forms.CharField(required=False)
+    
     class Meta:
         model = Workout_Exercise_Log
         fields = ['id', 'exercise', 'sets', 'reps', 'weight', 'rpe', 'is_amrap', 'notes']
@@ -55,7 +87,8 @@ class WorkoutExerciseLogForm (ModelForm):
        super(WorkoutExerciseLogForm, self).__init__(*args, **kwargs)
        
        # Custom fields
-       self.fields['exercise'].choices = Exercise.get_exercise_select()       
+       self.fields['exercise'].choices = Exercise.get_exercise_select() 
+       self.fields['notes_formt'].initial = self.instance.notes_formt()      
 
 class LogByExerciseForm (forms.Form):
     exercise = forms.ChoiceField (label='Exercise', choices=Exercise.get_exercise_select())

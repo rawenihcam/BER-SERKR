@@ -107,7 +107,8 @@
                                             <th class="w-1 invisible"></th>
                                             <th class="w-1 invisible"></th>
                                             <th class="w-1 invisible"></th>
-                                            <th class="w-7 invisible"></th>
+                                            <th class="w-1 invisible"></th>
+                                            <th class="w-6 invisible"></th>
                                         </tr>
                                     </thead>
                     
@@ -118,6 +119,7 @@
                                             <td>{{ exercise.sets }}</td>
                                             <td>{{ exercise.reps }}</td>
                                             <td>{{ exercise.loading }}</td>
+                                            <td class="notes" data-notes="{{ exercise.notes }}">{% if exercise.notes %}<i class="fa fa-comment"></i>{% endif %}</td>
                                             <td>&nbsp;</td>
                                             </tr>
                                         {% endfor %}
@@ -138,6 +140,9 @@
 </div>
 </div>
 </div>
+
+<!-- Modal -->
+{% include 'hamask/notes_modal.html' with readonly=True %}
 
 <!-- Scripts -->
 <script>
@@ -161,6 +166,12 @@
         group_name = $(this).val();
         group_id = $(this).attr('id').replace(/^group_name_/, '');
         group_change_name(group_id, group_name);
+    });
+    
+    $('td.notes').click(function() { 
+        $('#modal-notes').text(this.getAttribute("data-notes"));
+        
+        $('#exampleModal').modal()
     });
 </script>
 {% endblock %}

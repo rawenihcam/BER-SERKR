@@ -730,6 +730,17 @@ class Workout_Exercise (models.Model):
                     self._is_pr = True
         
         return self._is_pr
+        
+    def notes_formt(self):
+        notes = ''
+        
+        if self.notes:
+            if len(self.notes) > 10:
+                notes = self.notes[:7] + '...'
+            else:
+                notes = self.notes
+                
+        return notes
     
 class Workout_Log (models.Model):
     workout = models.ForeignKey (Workout, on_delete=models.SET_NULL, blank=True, null=True)
@@ -881,6 +892,17 @@ class Workout_Exercise_Log (models.Model):
                 self._volume = ''
         
         return self._volume
+        
+    def notes_formt(self):
+        notes = ''
+        
+        if self.notes:
+            if len(self.notes) > 10:
+                notes = self.notes[:7] + '...'
+            else:
+                notes = self.notes
+                
+        return notes
     
 class Lifter_Stats (models.Model):
     lifter = models.ForeignKey (Lifter, on_delete=models.CASCADE)
