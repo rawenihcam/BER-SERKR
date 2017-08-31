@@ -46,7 +46,8 @@
                         <th class="w-1">Reps</th>
                         <th class="w-1">Weight</th>                        
                         <th class="w-1">RPE</th>                        
-                        <th class="w-2">Volume</th>
+                        <th class="w-1">Volume</th>                        
+                        <th class="w-1 center">Notes</th>  
                     </tr>
                 </thead>
                 
@@ -59,6 +60,7 @@
                       <td>{{ log.weight_formt }}</td>
                       <td>{% if log.rpe %}{{ log.rpe }}{% endif %}</td>
                       <td>{{ log.volume }}</td>
+                      <td class="notes center" data-notes="{{ log.notes }}">{% if log.notes %}<i class="fa fa-comment"></i>{% endif %}</td>
                     </tr>
                 {% endfor %}
                 </tbody>
@@ -69,10 +71,36 @@
 </div>
 </form>
 
+<!-- Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Notes</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p id="modal-notes"></p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal"><i class="fa fa-times"></i>&nbsp;Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Scripts -->
 <script>
     $('#id_exercise').on('input', function() { 
         $("#form").submit();
+    });
+    
+    $('td.notes').click(function() { 
+        $('#modal-notes').text(this.getAttribute("data-notes"));
+        
+        $('#exampleModal').modal()
     });
 </script>
 {% endblock %}

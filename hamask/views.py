@@ -214,13 +214,16 @@ def workout_update(request, pk, template_name='hamask/workout.html'):
             # Create
             for exercise in exercise_formset.new_objects: 
                 exercise.workout = workout
+                
+                # Manage order
                 if exercise.order == None:
-                    exercise.order = workout.get_next_exercise_order() 
+                    exercise.order = workout.get_next_exercise_order()
+                    
                 exercise.save()
                 
             # Delete
             #for exercise in exercise_formset.deleted_objects:
-             #   exercise.delete()
+                #exercise.delete()
             
             messages.success(request, Notification.success_message, extra_tags=Notification.success_class)
             return HttpResponseRedirect (reverse ('hamask:workout_update', kwargs={'pk':workout.id}))
@@ -253,6 +256,13 @@ def delete_exercise(request):
     exercise.delete()    
     
     return JsonResponse(data)
+    
+def update_workout_notes(request):
+    exercise = Workout_Exercise.objects.get(pk=request.GET.get('workout_exercise_id', None))
+    exercise.notes = request.GET.get('notes', None)
+    exercise.save()    
+    
+    return JsonResponse({'notes_formt': exercise.notes_formt()})
 
 def logs(request):
     lifter = Lifter.objects.get(pk=request.session['lifter'])
@@ -333,6 +343,13 @@ def delete_exercise_log(request):
     exercise_log.delete()    
     
     return JsonResponse(data)
+    
+def update_log_notes(request):
+    exercise_log = Workout_Exercise_Log.objects.get(pk=request.GET.get('workout_exercise_log_id', None))
+    exercise_log.notes = request.GET.get('notes', None)
+    exercise_log.save()    
+    
+    return JsonResponse({'notes_formt': exercise_log.notes_formt()})
     
 def logs_by_exercise(request, exercise='0'):
     lifter = Lifter.objects.get(pk=request.session['lifter'])

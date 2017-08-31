@@ -42,6 +42,7 @@
                 <th class="w-1">Weight</th>
                 <th class="w-1">RPE</th>
                 <th class="w-1 center">AMRAP</th>
+                <th class="w-1">Notes</th>
                 <th class="w-1 col-tab-icon">&nbsp;</th>
             </tr>
         </thead>
@@ -53,8 +54,13 @@
                 <td>{% include 'hamask/formset.html' with field=formset.sets div_class='tabular' %}</td>
                 <td>{% include 'hamask/formset.html' with field=formset.reps div_class='tabular' %}</td>
                 <td>{% include 'hamask/formset.html' with field=formset.weight div_class='tabular weight' %}</td>
-                <td>{% include 'hamask/formset.html' with field=formset.rpe div_class='tabular rpe' %}</td>
-                <td class="center">{% include 'hamask/formset.html' with field=formset.is_amrap div_class='tabular' %}</td>
+                <td>{% include 'hamask/formset.html' with field=formset.rpe div_class='tabular rpe' %}</td>                
+                <td class="center">{% include 'hamask/formset.html' with field=formset.is_amrap div_class='tabular' %}</td>                
+                <td id="td_notes_{{ formset.id.value }}" class="notes" data-id="{{ formset.id.value }}" data-notes="{% if formset.notes.value %}{{ formset.notes.value }}{% endif %}">
+                    {% if formset.id.value %}
+                        <span id="notes_formt_{{ formset.id.value }}">{{ formset.notes_formt.value }}</span>&nbsp;<i class="fa fa-pencil fa-small"></i>
+                    {% endif %}
+                </td>
                 <td>
                     {% if formset.id.value != None %}
                         {% for hidden in formset.hidden_fields %}{{ hidden }}{% endfor %}
@@ -79,12 +85,22 @@
 </form>
 </div>
 
+<!-- Modal -->
+{% include 'hamask/notes_modal.html' with function='update_log_notes' %}
+
 <!-- Scripts -->
 <script>
     $( function() {
         $( "#id_log-workout_date" ).datepicker({
           dateFormat: "yy-mm-dd"
         });
+    });
+    
+    $('td.notes').click(function() { 
+        $('#modal-id').val(this.getAttribute("data-id"));
+        $('#modal-notes').val(this.getAttribute("data-notes"));
+        
+        $('#exampleModal').modal()
     });
 </script>
 {% endblock %}

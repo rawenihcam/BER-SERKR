@@ -182,6 +182,14 @@ div.min-width-xs {
     min-width: 576px;
 }
 
+div.modal {
+    top: 60px;
+}
+
+td.notes {
+    cursor: pointer;
+}
+
 /* Lists */
 th.icon {
     width: 30px;

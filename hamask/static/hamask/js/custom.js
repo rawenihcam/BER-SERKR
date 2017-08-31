@@ -135,6 +135,21 @@ function exercise_field_display(p_field) {
     }
 }
 
+function update_workout_notes(p_id, p_notes) {
+    $.ajax({
+        url: '/ajax/update_workout_notes/',
+        data: {
+          'workout_exercise_id': p_id,
+          'notes': p_notes
+        },
+        dataType: 'json',
+        success: function (data) {
+            $('#notes_formt_'+p_id).text(data.notes_formt);
+            $('#td_notes_'+p_id).attr('data-notes', p_notes);
+        }
+    });    
+}
+
 /* Workout_Log */
 function exercise_log_order(p_id, p_order) {
     $.ajax({
@@ -172,6 +187,21 @@ function exercise_log_delete(p_id) {
             }
         }
     });
+}
+
+function update_log_notes(p_id, p_notes) {
+    $.ajax({
+        url: '/ajax/update_log_notes/',
+        data: {
+          'workout_exercise_log_id': p_id,
+          'notes': p_notes
+        },
+        dataType: 'json',
+        success: function (data) {
+            $('#notes_formt_'+p_id).text(data.notes_formt);
+            $('#td_notes_'+p_id).attr('data-notes', p_notes);
+        }
+    });    
 }
 
 /*** GLOBAL ****/

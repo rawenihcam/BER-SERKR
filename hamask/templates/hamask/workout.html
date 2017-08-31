@@ -41,10 +41,9 @@
                 <th class="w-1">Sets</th>
                 <th class="w-1">Reps</th>
                 <th class="w-2">Loading</th>
-                <th class="w-1">% of Max</th>
-                <th class="w-1">RPE</th>
-                <th class="w-1">Weight</th>
+                <th class="w-1">&nbsp;</th>
                 <th class="w-1">AMRAP</th>
+                <th class="w-1">Notes</th>
                 <th class="w-1 col-tab-icon">&nbsp;</th>
             </tr>
         </thead>
@@ -56,12 +55,15 @@
                 <td>{% include 'hamask/formset.html' with field=formset.sets div_class='tabular' %}</td>
                 <td>{% include 'hamask/formset.html' with field=formset.reps div_class='tabular' %}</td>
                 <td>{% include 'hamask/formset.html' with field=formset.rep_scheme div_class='tabular rep_scheme' %}</td>
-                <td>{% include 'hamask/formset.html' with field=formset.percentage div_class='tabular percentage' %}</td>
-                <td>{% include 'hamask/formset.html' with field=formset.rpe div_class='tabular rpe' %}</td>
-                <td>{% include 'hamask/formset.html' with field=formset.weight div_class='tabular weight' %}</td>
+                <td>{% include 'hamask/formset.html' with field=formset.loading div_class='tabular' %}</td>
                 <td class="center">{% include 'hamask/formset.html' with field=formset.is_amrap div_class='tabular' %}</td>
+                <td id="td_notes_{{ formset.id.value }}" class="notes" data-id="{{ formset.id.value }}" data-notes="{% if formset.notes.value %}{{ formset.notes.value }}{% endif %}">
+                    {% if formset.id.value %}
+                        <span id="notes_formt_{{ formset.id.value }}">{{ formset.notes_formt.value }}</span>&nbsp;<i class="fa fa-pencil fa-small"></i>
+                    {% endif %}
+                </td>
                 <td>
-                    {% if formset.id.value != None %}
+                    {% if formset.id.value %}
                         {% for hidden in formset.hidden_fields %}{{ hidden }}{% endfor %}
                         <a href="javascript:void(0);" onclick="exercise_order({{ formset.id.value }}, 'DOWN');"><i class="fa fa-chevron-down"></i></a>&nbsp;&nbsp;
                         <a href="javascript:void(0);" onclick="exercise_order({{ formset.id.value }}, 'UP');"><i class="fa fa-chevron-up"></i></a>&nbsp;&nbsp;
@@ -86,14 +88,16 @@
 </form>
 </div>
 
+<!-- Modal -->
+{% include 'hamask/notes_modal.html' with function='update_workout_notes' %}
+
 <!-- Scripts -->
 <script>
-    $( function() {
-        exercise_field_display('');
-    });
-
-    $('div.rep_scheme > div > select').on('input', function() { 
-        exercise_field_display(this);
+    $('td.notes').click(function() { 
+        $('#modal-id').val(this.getAttribute("data-id"));
+        $('#modal-notes').val(this.getAttribute("data-notes"));
+        
+        $('#exampleModal').modal()
     });
 </script>
 {% endblock %}

@@ -26,10 +26,11 @@
                         <table class="table table-sm table-responsive table-exercise">
                         <thead>
                             <tr class="row">
-                                <th class="col-4 invisible"></th>
-                                <th class="col-2 invisible"></th>
-                                <th class="col-2 invisible"></th>
-                                <th class="col-4 invisible"></th>
+                                <th class="w-4 invisible"></th>
+                                <th class="w-2 invisible"></th>
+                                <th class="w-2 invisible"></th>
+                                <th class="w-3 invisible"></th>
+                                <th class="w-1 invisible"></th>
                             </tr>
                         </thead>
         
@@ -40,6 +41,7 @@
                                 <td>{{ exercise.sets }}&nbsp;x&nbsp;{{ exercise.reps }}</td>
                                 <td>{{ exercise.loading }}</td>
                                 <td>{{ exercise.loading_weight_formt }}</td>
+                                <td class="notes" data-notes="{{ exercise.notes }}">{% if exercise.notes %}<i class="fa fa-comment"></i>{% endif %}</td>
                                 </tr>
                             {% endfor %}
                         </tbody>
@@ -81,10 +83,11 @@
                         <table class="table table-sm table-responsive table-exercise">
                         <thead>
                             <tr class="row">
-                                <th class="col-4 invisible"></th>
-                                <th class="col-2 invisible"></th>
-                                <th class="col-2 invisible"></th>
-                                <th class="col-4 invisible"></th>
+                                <th class="w-4 invisible"></th>
+                                <th class="w-2 invisible"></th>
+                                <th class="w-2 invisible"></th>
+                                <th class="w-3 invisible"></th>
+                                <th class="w-1 invisible"></th>
                             </tr>
                         </thead>
         
@@ -95,6 +98,7 @@
                                 <td>{{ exercise.sets }}&nbsp;x&nbsp;{{ exercise.reps }}</td>
                                 <td>{{ exercise.loading }}</td>
                                 <td>{{ exercise.weight_formt }}</td>
+                                <td class="notes" data-notes="{{ exercise.notes }}">{% if exercise.notes %}<i class="fa fa-comment"></i>{% endif %}</td>
                                 </tr>
                             {% endfor %}
                         </tbody>
@@ -136,38 +140,15 @@
 {% endif %}
 </div>
 
+<!-- Modal -->
+{% include 'hamask/notes_modal.html' with readonly=True %}
+
 <!-- Scripts -->
 <script>
-    /*$( function() {
-        var data = {
-          // A labels array that can contain any sort of values
-          labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
-          // Our series array that contains series objects or in this case series data arrays
-          series: [
-            [5, 2, 4, 2, 0]
-          ]
-        };
-
-        // Create a new line chart object where as first parameter we pass in a selector
-        // that is resolving to our chart container element. The Second parameter
-        // is the actual data object.
-        new Chartist.Line('.ct-chart', data);
-    });*/
-    
-    $('h3.h_group').click(function() { 
-        $(this).hide();
-        h_id = $(this).attr('id');
-
-        group_id = h_id.replace(/^h_group_/, '');   
-        input = $('#group_name_'+group_id);
-
-        $(input).css('display', 'inline-block');
-    });
-    
-    $('input.group_name').on('focusout', function() { 
-        group_name = $(this).val();
-        group_id = $(this).attr('id').replace(/^group_name_/, '');
-        group_change_name(group_id, group_name);
+    $('td.notes').click(function() { 
+        $('#modal-notes').text(this.getAttribute("data-notes"));
+        
+        $('#exampleModal').modal()
     });
 </script>
 {% endblock %}
