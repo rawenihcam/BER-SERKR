@@ -3,7 +3,7 @@ import datetime
 from math import floor
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
-from django.db.models import Max, Q
+from django.db.models import Max, Avg, Q
 from django.utils import timezone
 
 from .control import IncompleteProgram
@@ -203,18 +203,25 @@ class Exercise (models.Model):
         return self.name
     
     @staticmethod
-    def get_exercises(category):
-        return Exercise.objects.filter(category__exact=category).order_by('name')
+    def get_exercises(category, lifter_id):
+        return Exercise.objects.filter(category__exact=category
+                ).filter(Q(lifter__exact=lifter_id) | Q(lifter__isnull=True)
+                ).order_by('name')
     
     @staticmethod
-    def get_exercise_select():
+    def get_lifter_exercises(lifter):
+        return Exercise.objects.filter(lifter__exact=lifter.id
+                ).order_by('name')
+    
+    @staticmethod
+    def get_exercise_select(lifter_id=None):
         # Create a 2 level list (1. Category, 2. Exercise)
         select = [['', '---------']]
         
         for category in Exercise.category_choices:
             exercise_list = []
             
-            for exercise in Exercise.objects.filter(category__exact=category[0]).order_by('name'):
+            for exercise in Exercise.get_exercises(category[0], lifter_id):
                 exercise_list.append([exercise.id, exercise.name])
 
             if exercise_list:
@@ -375,6 +382,26 @@ class Program (models.Model):
             workouts = None
             
         return workouts
+        
+    def get_workouts_count(self):
+        count = Workout.objects.filter(workout_group__program__exact=self.id).count()
+        return count
+    
+    def get_intensity_chart(self):
+        intensity = Lifter_Stats.objects.raw('''select w.id, ((wg.order + 1) * 10000) + w.order x, avg(we.percentage) y
+                                             from hamask_workout_group wg,
+                                                  hamask_workout w,
+                                                  hamask_workout_exercise we
+                                            where wg.program_id = %s
+                                              and w.workout_group_id = wg.id
+                                              and we.workout_id = w.id
+                                              and we.percentage is not null
+                                            group by wg.order, w.id, w.order
+                                            order by w.order'''
+                                            , [self.id])          
+                    
+                    
+        return intensity
         
     def is_ready(self):
         ready = False
@@ -557,6 +584,12 @@ class Workout (models.Model):
             order = 0
         
         return order
+        
+    def get_average_intensity(self):
+        intensity = Workout_Exercise.objects.filter(workout__exact=self.id
+                        ).filter(percentage__isnull=False
+                        ).aggregate(intensity=Avg('percentage'))
+        return intensity
     
     def log(self, status):
         # Create new log
@@ -804,7 +837,7 @@ class Workout_Exercise_Log (models.Model):
         super(Workout_Exercise_Log, self).save(*args, **kwargs)
         
         # Log PR if applicable
-        if self.weight and self.workout_exercise and self.workout_log.status == 'COMPL':
+        if self.weight and self.workout_exercise and self.exercise.has_stats and self.workout_log.status == 'COMPL':
             program = Program.objects.get(pk=self.workout_exercise.workout.workout_group.program.id)
             
             if program.auto_update_stats:

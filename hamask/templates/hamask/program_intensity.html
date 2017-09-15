@@ -6,8 +6,8 @@
         <li class="nav-item"><a class="nav-link" href="{% url 'hamask:stats' %}">Stats</a></li>        
     </ul>
     <ul class="nav nav-pills flex-column">
-        <li class="nav-item"><a class="nav-link active" href="#">Max Progression</a></li>
-        <li class="nav-item"><a class="nav-link" href="{% url 'hamask:program_intensity' %}">Program Intensity/Volume</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'hamask:max_progression' %}">Max Progression</a></li>
+        <li class="nav-item"><a class="nav-link active" href="{% url 'hamask:program_intensity' %}">Program Intensity/Volume</a></li>
     </ul>
 </nav>
 
@@ -17,7 +17,7 @@
 <div class="col-sm-12">    
     <div class="d-flex justify-content-between">
     <div class="p2">
-        <h2>Max Progression</h2>
+        <h2>Program Intensity/Volume</h2>
     </div>
     <div class="p-2">
     </div>
@@ -25,7 +25,7 @@
 </div>
 </div>
 
-<!-- Maxes -->
+<!-- Program Intensity/Volume -->
 <div class="row">
     <!-- Chart -->
     <div class="col-sm-12 col-md-8">
@@ -47,11 +47,7 @@
         right: 40
       },
       axisX: {
-        type: Chartist.AutoScaleAxis,
-        scaleMinSpace: 75,
-        labelInterpolationFnc: function(value) {
-          return "'" + moment(value).format('YY MMM D');
-        }
+        type: Chartist.AutoScaleAxis
       },
       axisY: {
         type: Chartist.AutoScaleAxis,
@@ -64,8 +60,7 @@
         }),
         Chartist.plugins.tooltip({
           transformTooltipTextFnc: function(value) {
-            return moment(parseInt(value.substring(0, value.indexOf(',')))).format('YYYY-MM-DD')
-              + ', ' + value.substring(value.indexOf(',') + 1);
+            return value;
           }
         })
       ]
