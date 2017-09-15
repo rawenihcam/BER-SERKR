@@ -397,7 +397,7 @@ class Program (models.Model):
                                               and we.workout_id = w.id
                                               and we.percentage is not null
                                             group by wg.order, w.id, w.order
-                                            order by w.order'''
+                                            order by ((wg.order + 1) * 10000) + w.order'''
                                             , [self.id])          
                     
                     
