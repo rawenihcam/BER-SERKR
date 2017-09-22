@@ -388,7 +388,9 @@ class Program (models.Model):
         return count
     
     def get_intensity_chart(self):
-        intensity = Lifter_Stats.objects.raw('''select w.id, ((wg.order + 1) * 10000) + w.order x, avg(we.percentage) y
+        intensity = Lifter_Stats.objects.raw('''select w.id,
+                                                       row_number() over (order by ((wg.order + 1) * 10000) + w.order) x,
+                                                       round(avg(we.percentage), 2) y
                                              from hamask_workout_group wg,
                                                   hamask_workout w,
                                                   hamask_workout_exercise we
@@ -400,6 +402,38 @@ class Program (models.Model):
                                             order by ((wg.order + 1) * 10000) + w.order'''
                                             , [self.id])          
                     
+        return intensity
+    
+    def get_volume_chart(self): #TODOOOOOOO
+        intensity = Lifter_Stats.objects.raw('''select s.id, s.x, round((cast(s.y as decimal) / max_volume.volume) * 100, 2) y
+                                                  from (select w.id,
+                                                               row_number() over (order by ((wg.order + 1) * 10000) + w.order) x,
+                                                               sum(we.sets * we.reps * we.percentage) y
+                                                          from hamask_workout_group wg,
+                                                               hamask_workout w,
+                                                               hamask_workout_exercise we
+                                                         where wg.program_id = %s
+                                                           and w.workout_group_id = wg.id
+                                                           and we.workout_id = w.id
+                                                           and we.percentage is not null
+                                                           and we.sets is not null
+                                                           and we.reps is not null
+                                                         group by wg.id, wg.order, w.id, w.order
+                                                         order by ((wg.order + 1) * 10000) + w.order) s,
+                                                       (select max(s2.volume) volume
+                                                          from (select sum(we.sets * we.reps * we.percentage) volume
+                                                                  from hamask_workout_group wg,
+                                                                       hamask_workout w,
+                                                                       hamask_workout_exercise we
+                                                                 where wg.program_id = %s
+                                                                   and w.workout_group_id = wg.id
+                                                                   and we.workout_id = w.id
+                                                                   and we.percentage is not null
+                                                                   and we.sets is not null
+                                                                   and we.reps is not null
+                                                                 group by we.workout_id) s2) max_volume
+                                                order by s.x'''
+                                            , [self.id, self.id])          
                     
         return intensity
         

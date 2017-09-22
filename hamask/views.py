@@ -476,14 +476,22 @@ def max_progression(request):
             
 def program_intensity(request):            
     lifter = Lifter.objects.get(pk=request.session['lifter'])    
-    program = Program.objects.get(pk=1) #TODO
+    program = Program.objects.get(pk=2) #TODO
+    
+    # Intensity
     data = '['
     
     query = program.get_intensity_chart()
-    data += Custom.get_chartist_data_number('Program todo', query) + ','
+    data += Custom.get_chartist_data_number('Intensity', query) + ','
+        
+    data = data[:-1] + ', '
+
+    # Volume
+    query = program.get_volume_chart()
+    data += Custom.get_chartist_data_number('Volume', query) + ','
         
     data = data[:-1] + ']'
-    print(data)
+
     return render (request, 'hamask/program_intensity.html', {'data': data})
             
 def profile(request):

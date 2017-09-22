@@ -29,7 +29,7 @@
 <div class="row">
     <!-- Chart -->
     <div class="col-sm-12 col-md-8">
-        <div class="ct-chart ct-perfect-fourth"></div>
+      <div id="chart" class="ct-perfect-fourth"></div>
     </div>
 </div>
 
@@ -37,6 +37,7 @@
 
 <!-- Custom JS -->
 <script type="text/javascript">
+    /* Intensity Chart */
     var data = {
       series: eval('{{ data }}'.replace(/&quot;/g, '"'))
     }
@@ -47,12 +48,14 @@
         right: 40
       },
       axisX: {
-        type: Chartist.AutoScaleAxis
+        type: Chartist.AutoScaleAxis,
+        low: 1,
+        onlyInteger: true
       },
       axisY: {
         type: Chartist.AutoScaleAxis,
-        scaleMinSpace: 25,
-        low: 0
+        low: 0,
+        onlyInteger: true
       },
       plugins: [
         Chartist.plugins.legend({
@@ -60,12 +63,13 @@
         }),
         Chartist.plugins.tooltip({
           transformTooltipTextFnc: function(value) {
-            return value;
+            return 'Workout ' + value.substring(0, value.indexOf(',')) + ': '
+              + value.substring(value.indexOf(',') + 1) + '%';
           }
         })
       ]
     };
     
-    new Chartist.Line('.ct-chart', data, options);
+    new Chartist.Line('#chart', data, options);
 </script>
 {% endblock %}
