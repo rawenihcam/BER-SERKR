@@ -362,7 +362,7 @@ def update_log_notes(request):
     
 def logs_by_exercise(request, exercise='0'):
     lifter = Lifter.objects.get(pk=request.session['lifter'])
-    form = LogByExerciseForm(request.POST or None)
+    form = LogByExerciseForm(request.POST or None, lifter = lifter.id)
     
     if request.POST:
         # Create
@@ -374,7 +374,7 @@ def logs_by_exercise(request, exercise='0'):
         
         # Search
         else:
-            form = LogByExerciseForm(request.POST)
+            form = LogByExerciseForm(request.POST, lifter = lifter.id)
             
             if form.is_valid():
                 exercise = form.cleaned_data['exercise']
@@ -383,10 +383,10 @@ def logs_by_exercise(request, exercise='0'):
                 return HttpResponseRedirect (reverse ('hamask:logs_by_exercise'))
     else:    
         if exercise != '0':
-            form = LogByExerciseForm(initial={'exercise': exercise})
+            form = LogByExerciseForm(initial={'exercise': exercise}, lifter = lifter.id)
             logs = lifter.get_exercise_logs(exercise=exercise)
         else:
-            form = LogByExerciseForm()
+            form = LogByExerciseForm(lifter = lifter.id)
             logs = None
             
         return render (request, 'hamask/logs_by_exercise.html', {'form': form, 'logs': logs})
@@ -474,25 +474,91 @@ def max_progression(request):
     data = data[:-1] + ']'
     return render (request, 'hamask/max_progression.html', {'data': data})
             
-def program_intensity(request):            
-    lifter = Lifter.objects.get(pk=request.session['lifter'])    
-    program = Program.objects.get(pk=2) #TODO
-    
-    # Intensity
-    data = '['
-    
-    query = program.get_intensity_chart()
-    data += Custom.get_chartist_data_number('Intensity', query) + ','
-        
-    data = data[:-1] + ', '
+def work_intensity(request, pk=None):            
+    lifter = Lifter.objects.get(pk=request.session['lifter'])
+    program = None
 
-    # Volume
-    query = program.get_volume_chart()
-    data += Custom.get_chartist_data_number('Volume', query) + ','
-        
-    data = data[:-1] + ']'
+    """if pk:
+        program = get_object_or_404(Program, pk=pk)
 
-    return render (request, 'hamask/program_intensity.html', {'data': data})
+        if program.lifter != lifter:
+         raise Http404("Invalid program.")
+    
+    
+    if program:
+        form = ProgramIntensityForm(request.POST or None, lifter = lifter.id, program = program.id)
+    else:
+        form = ProgramIntensityForm(request.POST or None, lifter = lifter.id, program = '')
+
+    if request.POST:
+        if form.is_valid():
+            program = form.cleaned_data['program']
+            
+            if program == '0':
+                return HttpResponseRedirect (reverse ('hamask:program_intensity'))
+
+            return HttpResponseRedirect (reverse ('hamask:program_intensity', kwargs={'pk':program}))                
+    else:
+        data = ''
+        if program:
+            # Intensity
+            data = '['
+            
+            query = program.get_intensity_chart()
+            data += Custom.get_chartist_data_number('Intensity', query) + ','
+                
+            data = data[:-1] + ', '
+
+            # Volume
+            query = program.get_volume_chart()
+            data += Custom.get_chartist_data_number('Volume', query) + ','
+                
+            data = data[:-1] + ']'"""
+
+    return render (request, 'hamask/work_intensity.html')
+            
+def program_intensity(request, pk=None):            
+    lifter = Lifter.objects.get(pk=request.session['lifter'])
+    program = None
+
+    if pk:
+        program = get_object_or_404(Program, pk=pk)
+
+        if program.lifter != lifter:
+         raise Http404("Invalid program.")
+    
+    
+    if program:
+        form = ProgramIntensityForm(request.POST or None, lifter = lifter.id, program = program.id)
+    else:
+        form = ProgramIntensityForm(request.POST or None, lifter = lifter.id, program = '')
+
+    if request.POST:
+        if form.is_valid():
+            program = form.cleaned_data['program']
+            
+            if program == '0':
+                return HttpResponseRedirect (reverse ('hamask:program_intensity'))
+
+            return HttpResponseRedirect (reverse ('hamask:program_intensity', kwargs={'pk':program}))                
+    else:
+        data = ''
+        if program:
+            # Intensity
+            data = '['
+            
+            query = program.get_intensity_chart()
+            data += Custom.get_chartist_data_number('Intensity', query) + ','
+                
+            data = data[:-1] + ', '
+
+            # Volume
+            query = program.get_volume_chart()
+            data += Custom.get_chartist_data_number('Volume', query) + ','
+                
+            data = data[:-1] + ']'
+
+        return render (request, 'hamask/program_intensity.html', {'form': form, 'data': data})
             
 def profile(request):
     lifter = Lifter.objects.get(pk=request.session['lifter'])

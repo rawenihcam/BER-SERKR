@@ -93,7 +93,40 @@ class WorkoutExerciseLogForm (ModelForm):
        self.fields['notes_formt'].initial = self.instance.notes_formt()      
 
 class LogByExerciseForm (forms.Form):
-    exercise = forms.ChoiceField (label='Exercise', choices=Exercise.get_exercise_select())
+    exercise = forms.ChoiceField (label='Exercise')
+        
+    def __init__(self, *args, **kwargs):
+       # Calling Django's init
+       lifter_id = kwargs.pop('lifter')
+       super(LogByExerciseForm, self).__init__(*args, **kwargs)
+       
+       # Custom fields
+       self.fields['exercise'].choices = Exercise.get_exercise_select(lifter_id)
+
+class WorkIntensityForm (forms.Form):
+    exercise = forms.ChoiceField (label='Exercise')
+
+    def __init__(self, *args, **kwargs):
+        lifter_id = pk=kwargs.pop('lifter')
+        exercise_id = kwargs.pop('exercise')
+
+        super(WorkIntensityForm, self).__init__(*args, **kwargs)
+        
+        self.fields['exercise'].choices = Exercise.get_exercise_select(lifter_id) 
+        self.fields['exercise'].initial = exercise_id 
+
+class ProgramIntensityForm (forms.Form):
+    program = forms.ChoiceField (label='Program')
+
+    def __init__(self, *args, **kwargs):
+        lifter = Lifter.objects.get(pk=kwargs.pop('lifter'))
+        program_id = kwargs.pop('program')
+
+        super(ProgramIntensityForm, self).__init__(*args, **kwargs)
+        
+        self.fields['program'].choices = lifter.get_programs().values_list('id', 'name')
+        self.fields['program'].choices.insert(0, (0,'---------' ) )
+        self.fields['program'].initial = program_id         
        
 class ProfileForm (ModelForm):
     # Redefine constructor to customize
