@@ -107,7 +107,7 @@ class WorkIntensityForm (forms.Form):
     exercise = forms.ChoiceField (label='Exercise')
 
     def __init__(self, *args, **kwargs):
-        lifter_id = pk=kwargs.pop('lifter')
+        lifter_id = kwargs.pop('lifter')
         exercise_id = kwargs.pop('exercise')
 
         super(WorkIntensityForm, self).__init__(*args, **kwargs)

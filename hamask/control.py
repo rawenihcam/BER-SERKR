@@ -27,7 +27,7 @@ class Custom():
         exists = False
         
         for value in query:
-            data += '{x: new Date("' + str(value.x) + '"), y:' + str(value.y) + '},'
+            data += '{x: new Date("' + str(value.x).replace('-', '/') + '"), y:' + str(value.y) + '},'
             exists = True
         
         if exists:

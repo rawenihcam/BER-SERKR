@@ -146,72 +146,122 @@ class Lifter (models.Model):
         return prs
         
     def get_exercise_volume_chart(self, exercise):
-        volume = Lifter_Stats.objects.raw('''select s.id, s.x, s.y
-                                               from (select wl.id, wl.entry_date x, sum(wel.sets * wel.reps * wel.weight) y
-                                                     from hamask_workout_log wl,
-                                                          hamask_workout_exercise_log wel 
-                                                    where wl.lifter_id = %s
-                                                      and wl.status = 'COMPL'
-                                                      and wel.workout_log_id = wl.id
-                                                      and wel.exercise_id = %s
-                                                      and wel.weight is not null
-                                                    group by wl.id, wl.entry_date
-                                                    union all
-                                                    select wl.id, wl.entry_date, sum(we.sets * we.reps * we.percentage) volume
-                                                      from hamask_program p,
-                                                           hamask_workout_group wg,
-                                                           hamask_workout w,
-                                                           hamask_workout_log wl,
-                                                           hamask_workout_exercise_log wel
-                                                     where p.lifter_id = %s
-                                                       and wg.program_id = p.id
-                                                       and w.workout_group_id = wg.id
-                                                       and wl.workout_id = w.id
-                                                       and wl.status = 'COMPL'
-                                                       and wel.workout_log_id = wl.id
-                                                       and wel.exercise_id = %s
-                                                       and wel.weight is not null
-                                                     group by wl.id, wl.entry_date) s,
-                                                       (select max(m.volume) volume
-                                                          from (select sum(we.sets * we.reps * we.percentage) volume
-                                                                  from hamask_workout_log wl,
-                                                                       hamask_workout_exercise_log wel
-                                                                 where wl.lifter_id = %s
-                                                                   and wl.status = 'COMPL'
-                                                                   and wel.workout_log_id = wl.id
-                                                                   and wel.exercise_id = %s
-                                                                   and wel.weight is not null
-                                                                 group by wel.workout_log_id
-                                                                 union all
-                                                                 select sum(we.sets * we.reps * we.percentage) volume
-                                                                  from hamask_program p,
-                                                                       hamask_workout_group wg,
-                                                                       hamask_workout w,
-                                                                       hamask_workout_log wl,
-                                                                       hamask_workout_exercise_log wel
-                                                                 where p.lifter_id = %s
-                                                                   and wg.program_id = p.id
-                                                                   and w.workout_group_id = wg.id
-                                                                   and wl.workout_id = w.id
-                                                                   and wl.status = 'COMPL'
-                                                                   and wel.workout_log_id = wl.id
-                                                                   and wel.exercise_id = %s
-                                                                   and wel.weight is not null
-                                                                 group by wel.workout_log_id) m) max_volume
-                                            order by s.x'''
-                                            , [self.id, exercise.id])          
+        volume = Workout_Log.objects.raw('''  select s.id,
+                                                         s.x,
+                                                         round ( (cast (s.y as decimal) / cast (max_volume.volume as decimal)) * 100) y
+                                                    from (  select wl.id, wl.workout_date x, sum (wel.sets * wel.reps * wel.weight) y
+                                                              from hamask_workout_log wl, hamask_workout_exercise_log wel
+                                                             where wl.lifter_id = %(p_lifter)s
+                                                               and wl.status = 'COMPL'
+                                                               and wel.workout_log_id = wl.id
+                                                               and wel.exercise_id = %(p_exercise)s
+                                                               and wel.weight is not null
+                                                          group by wl.id, wl.workout_date
+                                                          union all
+                                                            select wl.id,
+                                                                   wl.workout_date,
+                                                                   sum (wel.sets * wel.reps * wel.weight) y
+                                                              from hamask_program p,
+                                                                   hamask_workout_group wg,
+                                                                   hamask_workout w,
+                                                                   hamask_workout_log wl,
+                                                                   hamask_workout_exercise_log wel
+                                                             where p.lifter_id = %(p_lifter)s
+                                                               and wg.program_id = p.id
+                                                               and w.workout_group_id = wg.id
+                                                               and wl.workout_id = w.id
+                                                               and wl.status = 'COMPL'
+                                                               and wel.workout_log_id = wl.id
+                                                               and wel.exercise_id = %(p_exercise)s
+                                                               and wel.weight is not null
+                                                          group by wl.id, wl.workout_date) s,
+                                                         (select max (m.volume) volume
+                                                            from (  select sum (wel.sets * wel.reps * wel.weight) volume
+                                                                      from hamask_workout_log wl, hamask_workout_exercise_log wel
+                                                                     where wl.lifter_id = %(p_lifter)s
+                                                                       and wl.status = 'COMPL'
+                                                                       and wel.workout_log_id = wl.id
+                                                                       and wel.exercise_id = %(p_exercise)s
+                                                                       and wel.weight is not null
+                                                                  group by wel.workout_log_id
+                                                                  union all
+                                                                    select sum (wel.sets * wel.reps * wel.weight) volume
+                                                                      from hamask_program p,
+                                                                           hamask_workout_group wg,
+                                                                           hamask_workout w,
+                                                                           hamask_workout_log wl,
+                                                                           hamask_workout_exercise_log wel
+                                                                     where p.lifter_id = %(p_lifter)s
+                                                                       and wg.program_id = p.id
+                                                                       and w.workout_group_id = wg.id
+                                                                       and wl.workout_id = w.id
+                                                                       and wl.status = 'COMPL'
+                                                                       and wel.workout_log_id = wl.id
+                                                                       and wel.exercise_id = %(p_exercise)s
+                                                                       and wel.weight is not null
+                                                                  group by wel.workout_log_id) m) max_volume
+                                                  where s.y is not null
+                                                  order by s.x'''
+                                            , {'p_lifter': self.id, 'p_exercise': exercise.id})          
                     
                     
         return volume
         
     def get_exercise_intensity_chart(self, exercise):
-        intensity = Lifter_Stats.objects.raw('''select ls.id, ls.entry_date x, ls.weight y
-                                             from hamask_lifter_stats ls 
-                                            where ls.lifter_id = %s
-                                              and ls.reps = 1
-                                              and ls.exercise_id = %s
-                                            order by ls.entry_date, ls.weight'''
-                                            , [self.id, exercise.id])          
+        intensity = Workout_Log.objects.raw('''  select wl.id,
+                                                         wl.workout_date x,
+                                                         round (
+                                                           sum (wel.sets * wel.reps * wel.weight)
+                                                           / (sum (wel.reps)
+                                                              * (select max (max.weight)
+                                                                   from (select ls.weight,
+                                                                                rank () over (order by ls.entry_date desc)
+                                                                                  stat_order
+                                                                           from hamask_lifter_stats ls
+                                                                          where ls.lifter_id = wl.lifter_id
+                                                                            and ls.exercise_id = %(p_exercise)s
+                                                                            and ls.reps = 1
+                                                                            and ls.entry_date <= wl.workout_date) max
+                                                                  where stat_order = 1))
+                                                           * 100)
+                                                           y
+                                                    from hamask_workout_log wl, hamask_workout_exercise_log wel
+                                                   where wl.lifter_id = %(p_lifter)s
+                                                     and wl.status = 'COMPL'
+                                                     and wel.workout_log_id = wl.id
+                                                     and wel.exercise_id = %(p_exercise)s
+                                                     and wel.weight is not null
+                                                group by wl.id, wl.workout_date
+                                                union all
+                                                select wl.id, wl.workout_date, round (
+                                                           sum (wel.sets * wel.reps * wel.weight)
+                                                           / (sum (wel.sets * wel.reps)
+                                                              * (select max (max.weight)
+                                                                   from (select ls.weight,
+                                                                                rank () over (order by ls.entry_date desc)
+                                                                                  stat_order
+                                                                           from hamask_lifter_stats ls
+                                                                          where ls.lifter_id = %(p_lifter)s
+                                                                            and ls.exercise_id = %(p_exercise)s
+                                                                            and ls.reps = 1
+                                                                            and ls.entry_date <= wl.workout_date) max
+                                                                  where stat_order = 1))
+                                                           * 100) y
+                                                  from hamask_program p,
+                                                       hamask_workout_group wg,
+                                                       hamask_workout w,
+                                                       hamask_workout_log wl,
+                                                       hamask_workout_exercise_log wel
+                                                 where p.lifter_id = %(p_lifter)s
+                                                   and wg.program_id = p.id
+                                                   and w.workout_group_id = wg.id
+                                                   and wl.workout_id = w.id
+                                                   and wl.status = 'COMPL'
+                                                   and wel.workout_log_id = wl.id
+                                                   and wel.exercise_id = %(p_exercise)s
+                                                   and wel.weight is not null
+                                                   group by wl.id, wl.workout_date'''
+                        , {'p_lifter': self.id, 'p_exercise': exercise.id})          
                     
                     
         return intensity

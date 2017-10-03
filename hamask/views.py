@@ -476,46 +476,42 @@ def max_progression(request):
             
 def work_intensity(request, pk=None):            
     lifter = Lifter.objects.get(pk=request.session['lifter'])
-    program = None
+    exercise = None
 
-    """if pk:
-        program = get_object_or_404(Program, pk=pk)
-
-        if program.lifter != lifter:
-         raise Http404("Invalid program.")
+    if pk:
+        exercise = get_object_or_404(Exercise, pk=pk)    
     
-    
-    if program:
-        form = ProgramIntensityForm(request.POST or None, lifter = lifter.id, program = program.id)
+    if exercise:
+        form = WorkIntensityForm(request.POST or None, lifter = lifter.id, exercise = exercise.id)
     else:
-        form = ProgramIntensityForm(request.POST or None, lifter = lifter.id, program = '')
+        form = WorkIntensityForm(request.POST or None, lifter = lifter.id, exercise = '')
 
     if request.POST:
         if form.is_valid():
-            program = form.cleaned_data['program']
+            exercise = form.cleaned_data['exercise']
             
-            if program == '0':
-                return HttpResponseRedirect (reverse ('hamask:program_intensity'))
+            if exercise == '0':
+                return HttpResponseRedirect (reverse ('hamask:work_intensity'))
 
-            return HttpResponseRedirect (reverse ('hamask:program_intensity', kwargs={'pk':program}))                
+            return HttpResponseRedirect (reverse ('hamask:work_intensity', kwargs={'pk': exercise}))                
     else:
         data = ''
-        if program:
+        if exercise:
             # Intensity
             data = '['
             
-            query = program.get_intensity_chart()
-            data += Custom.get_chartist_data_number('Intensity', query) + ','
+            query = lifter.get_exercise_intensity_chart(exercise)
+            data += Custom.get_chartist_data('Intensity', query) + ','
                 
             data = data[:-1] + ', '
-
+            print(data)
             # Volume
-            query = program.get_volume_chart()
-            data += Custom.get_chartist_data_number('Volume', query) + ','
+            query = lifter.get_exercise_volume_chart(exercise)
+            data += Custom.get_chartist_data('Volume', query) + ','
                 
-            data = data[:-1] + ']'"""
+            data = data[:-1] + ']'
 
-    return render (request, 'hamask/work_intensity.html')
+        return render (request, 'hamask/work_intensity.html', {'form': form, 'data': data})
             
 def program_intensity(request, pk=None):            
     lifter = Lifter.objects.get(pk=request.session['lifter'])

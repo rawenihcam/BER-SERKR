@@ -34,6 +34,7 @@
   <!-- Profile -->
   {{ form.non_field_errors }}
   <div class="row">
+    {% include 'hamask/form.html' with field=form.exercise div_class='col-sm-12 col-md-6 col-lg-4' %}
   </div>
 
 <div class="row">
@@ -47,8 +48,7 @@
 
 <!-- Custom JS -->
 <script type="text/javascript">
-    /*{% if data %}
-    /* Intensity Chart 
+  {% if data %}
     var data = {
       series: eval('{{ data }}'.replace(/&quot;/g, '"'))
     }
@@ -60,11 +60,14 @@
       },
       axisX: {
         type: Chartist.AutoScaleAxis,
-        low: 1,
-        onlyInteger: true
+        scaleMinSpace: 75,
+        labelInterpolationFnc: function(value) {
+          return "'" + moment(value).format('YY MMM D');
+        }
       },
       axisY: {
         type: Chartist.AutoScaleAxis,
+        scaleMinSpace: 25,
         low: 0,
         onlyInteger: true
       },
@@ -74,18 +77,18 @@
         }),
         Chartist.plugins.tooltip({
           transformTooltipTextFnc: function(value) {
-            return 'Workout ' + value.substring(0, value.indexOf(',')) + ': '
-              + value.substring(value.indexOf(',') + 1) + '%';
+            return moment(parseInt(value.substring(0, value.indexOf(',')))).format('YYYY-MM-DD')
+              + ', ' + value.substring(value.indexOf(',') + 1) + '%';
           }
         })
       ]
     };
     
     new Chartist.Line('#chart', data, options);
-    {% endif %}
+  {% endif %}
 
-    $('#id_exercise').on('change',function(){
-      this.form.submit();
-    });*/
+  $('#id_exercise').on('change',function(){
+    this.form.submit();
+  });
 </script>
 {% endblock %}
