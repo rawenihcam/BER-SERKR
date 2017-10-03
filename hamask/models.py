@@ -3,7 +3,7 @@ import datetime
 from math import floor
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
-from django.db.models import Max, Q
+from django.db.models import Max, Avg, Q
 from django.utils import timezone
 
 from .control import IncompleteProgram
@@ -145,6 +145,127 @@ class Lifter (models.Model):
         
         return prs
         
+    def get_exercise_volume_chart(self, exercise):
+        volume = Workout_Log.objects.raw('''  select s.id,
+                                                         s.x,
+                                                         round ( (cast (s.y as decimal) / cast (max_volume.volume as decimal)) * 100) y
+                                                    from (  select wl.id, wl.workout_date x, sum (wel.sets * wel.reps * wel.weight) y
+                                                              from hamask_workout_log wl, hamask_workout_exercise_log wel
+                                                             where wl.lifter_id = %(p_lifter)s
+                                                               and wl.status = 'COMPL'
+                                                               and wel.workout_log_id = wl.id
+                                                               and wel.exercise_id = %(p_exercise)s
+                                                               and wel.weight is not null
+                                                          group by wl.id, wl.workout_date
+                                                          union all
+                                                            select wl.id,
+                                                                   wl.workout_date,
+                                                                   sum (wel.sets * wel.reps * wel.weight) y
+                                                              from hamask_program p,
+                                                                   hamask_workout_group wg,
+                                                                   hamask_workout w,
+                                                                   hamask_workout_log wl,
+                                                                   hamask_workout_exercise_log wel
+                                                             where p.lifter_id = %(p_lifter)s
+                                                               and wg.program_id = p.id
+                                                               and w.workout_group_id = wg.id
+                                                               and wl.workout_id = w.id
+                                                               and wl.status = 'COMPL'
+                                                               and wel.workout_log_id = wl.id
+                                                               and wel.exercise_id = %(p_exercise)s
+                                                               and wel.weight is not null
+                                                          group by wl.id, wl.workout_date) s,
+                                                         (select max (m.volume) volume
+                                                            from (  select sum (wel.sets * wel.reps * wel.weight) volume
+                                                                      from hamask_workout_log wl, hamask_workout_exercise_log wel
+                                                                     where wl.lifter_id = %(p_lifter)s
+                                                                       and wl.status = 'COMPL'
+                                                                       and wel.workout_log_id = wl.id
+                                                                       and wel.exercise_id = %(p_exercise)s
+                                                                       and wel.weight is not null
+                                                                  group by wel.workout_log_id
+                                                                  union all
+                                                                    select sum (wel.sets * wel.reps * wel.weight) volume
+                                                                      from hamask_program p,
+                                                                           hamask_workout_group wg,
+                                                                           hamask_workout w,
+                                                                           hamask_workout_log wl,
+                                                                           hamask_workout_exercise_log wel
+                                                                     where p.lifter_id = %(p_lifter)s
+                                                                       and wg.program_id = p.id
+                                                                       and w.workout_group_id = wg.id
+                                                                       and wl.workout_id = w.id
+                                                                       and wl.status = 'COMPL'
+                                                                       and wel.workout_log_id = wl.id
+                                                                       and wel.exercise_id = %(p_exercise)s
+                                                                       and wel.weight is not null
+                                                                  group by wel.workout_log_id) m) max_volume
+                                                  where s.y is not null
+                                                  order by s.x'''
+                                            , {'p_lifter': self.id, 'p_exercise': exercise.id})          
+                    
+                    
+        return volume
+        
+    def get_exercise_intensity_chart(self, exercise):
+        intensity = Workout_Log.objects.raw('''  select wl.id,
+                                                         wl.workout_date x,
+                                                         round (
+                                                           sum (wel.sets * wel.reps * wel.weight)
+                                                           / (sum (wel.reps)
+                                                              * (select max (max.weight)
+                                                                   from (select ls.weight,
+                                                                                rank () over (order by ls.entry_date desc)
+                                                                                  stat_order
+                                                                           from hamask_lifter_stats ls
+                                                                          where ls.lifter_id = wl.lifter_id
+                                                                            and ls.exercise_id = %(p_exercise)s
+                                                                            and ls.reps = 1
+                                                                            and ls.entry_date <= wl.workout_date) max
+                                                                  where stat_order = 1))
+                                                           * 100)
+                                                           y
+                                                    from hamask_workout_log wl, hamask_workout_exercise_log wel
+                                                   where wl.lifter_id = %(p_lifter)s
+                                                     and wl.status = 'COMPL'
+                                                     and wel.workout_log_id = wl.id
+                                                     and wel.exercise_id = %(p_exercise)s
+                                                     and wel.weight is not null
+                                                group by wl.id, wl.workout_date
+                                                union all
+                                                select wl.id, wl.workout_date, round (
+                                                           sum (wel.sets * wel.reps * wel.weight)
+                                                           / (sum (wel.sets * wel.reps)
+                                                              * (select max (max.weight)
+                                                                   from (select ls.weight,
+                                                                                rank () over (order by ls.entry_date desc)
+                                                                                  stat_order
+                                                                           from hamask_lifter_stats ls
+                                                                          where ls.lifter_id = %(p_lifter)s
+                                                                            and ls.exercise_id = %(p_exercise)s
+                                                                            and ls.reps = 1
+                                                                            and ls.entry_date <= wl.workout_date) max
+                                                                  where stat_order = 1))
+                                                           * 100) y
+                                                  from hamask_program p,
+                                                       hamask_workout_group wg,
+                                                       hamask_workout w,
+                                                       hamask_workout_log wl,
+                                                       hamask_workout_exercise_log wel
+                                                 where p.lifter_id = %(p_lifter)s
+                                                   and wg.program_id = p.id
+                                                   and w.workout_group_id = wg.id
+                                                   and wl.workout_id = w.id
+                                                   and wl.status = 'COMPL'
+                                                   and wel.workout_log_id = wl.id
+                                                   and wel.exercise_id = %(p_exercise)s
+                                                   and wel.weight is not null
+                                                   group by wl.id, wl.workout_date'''
+                        , {'p_lifter': self.id, 'p_exercise': exercise.id})          
+                    
+                    
+        return intensity
+        
     def get_stats(self):
         stats = Lifter_Stats.objects.filter(lifter__exact=self.id
                     ).order_by('-entry_date', 'exercise__name')
@@ -203,18 +324,25 @@ class Exercise (models.Model):
         return self.name
     
     @staticmethod
-    def get_exercises(category):
-        return Exercise.objects.filter(category__exact=category).order_by('name')
+    def get_exercises(category, lifter_id):
+        return Exercise.objects.filter(category__exact=category
+                ).filter(Q(lifter__exact=lifter_id) | Q(lifter__isnull=True)
+                ).order_by('name')
     
     @staticmethod
-    def get_exercise_select():
+    def get_lifter_exercises(lifter):
+        return Exercise.objects.filter(lifter__exact=lifter.id
+                ).order_by('name')
+    
+    @staticmethod
+    def get_exercise_select(lifter_id=None):
         # Create a 2 level list (1. Category, 2. Exercise)
         select = [['', '---------']]
         
         for category in Exercise.category_choices:
             exercise_list = []
             
-            for exercise in Exercise.objects.filter(category__exact=category[0]).order_by('name'):
+            for exercise in Exercise.get_exercises(category[0], lifter_id):
                 exercise_list.append([exercise.id, exercise.name])
 
             if exercise_list:
@@ -375,6 +503,60 @@ class Program (models.Model):
             workouts = None
             
         return workouts
+        
+    def get_workouts_count(self):
+        count = Workout.objects.filter(workout_group__program__exact=self.id).count()
+        return count
+    
+    def get_intensity_chart(self):
+        intensity = Lifter_Stats.objects.raw('''select w.id,
+                                                       row_number() over (order by ((wg.order + 1) * 10000) + w.order) x,
+                                                       round(avg(we.percentage), 2) y
+                                             from hamask_workout_group wg,
+                                                  hamask_workout w,
+                                                  hamask_workout_exercise we
+                                            where wg.program_id = %s
+                                              and w.workout_group_id = wg.id
+                                              and we.workout_id = w.id
+                                              and we.percentage is not null
+                                            group by wg.order, w.id, w.order
+                                            order by ((wg.order + 1) * 10000) + w.order'''
+                                            , [self.id])          
+                    
+        return intensity
+    
+    def get_volume_chart(self): #TODOOOOOOO
+        intensity = Lifter_Stats.objects.raw('''select s.id, s.x, round((cast(s.y as decimal) / max_volume.volume) * 100, 2) y
+                                                  from (select w.id,
+                                                               row_number() over (order by ((wg.order + 1) * 10000) + w.order) x,
+                                                               sum(we.sets * we.reps * we.percentage) y
+                                                          from hamask_workout_group wg,
+                                                               hamask_workout w,
+                                                               hamask_workout_exercise we
+                                                         where wg.program_id = %s
+                                                           and w.workout_group_id = wg.id
+                                                           and we.workout_id = w.id
+                                                           and we.percentage is not null
+                                                           and we.sets is not null
+                                                           and we.reps is not null
+                                                         group by wg.id, wg.order, w.id, w.order
+                                                         order by ((wg.order + 1) * 10000) + w.order) s,
+                                                       (select max(s2.volume) volume
+                                                          from (select sum(we.sets * we.reps * we.percentage) volume
+                                                                  from hamask_workout_group wg,
+                                                                       hamask_workout w,
+                                                                       hamask_workout_exercise we
+                                                                 where wg.program_id = %s
+                                                                   and w.workout_group_id = wg.id
+                                                                   and we.workout_id = w.id
+                                                                   and we.percentage is not null
+                                                                   and we.sets is not null
+                                                                   and we.reps is not null
+                                                                 group by we.workout_id) s2) max_volume
+                                                order by s.x'''
+                                            , [self.id, self.id])          
+                    
+        return intensity
         
     def is_ready(self):
         ready = False
@@ -557,6 +739,12 @@ class Workout (models.Model):
             order = 0
         
         return order
+        
+    def get_average_intensity(self):
+        intensity = Workout_Exercise.objects.filter(workout__exact=self.id
+                        ).filter(percentage__isnull=False
+                        ).aggregate(intensity=Avg('percentage'))
+        return intensity
     
     def log(self, status):
         # Create new log
@@ -804,7 +992,7 @@ class Workout_Exercise_Log (models.Model):
         super(Workout_Exercise_Log, self).save(*args, **kwargs)
         
         # Log PR if applicable
-        if self.weight and self.workout_exercise and self.workout_log.status == 'COMPL':
+        if self.weight and self.workout_exercise and self.exercise.has_stats and self.workout_log.status == 'COMPL':
             program = Program.objects.get(pk=self.workout_exercise.workout.workout_group.program.id)
             
             if program.auto_update_stats:

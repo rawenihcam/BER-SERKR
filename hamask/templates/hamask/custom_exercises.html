@@ -1,0 +1,71 @@
+{% extends 'hamask/base.html' %}
+
+{% block content %}
+<div class="container">
+  
+<form method="post">
+<div class="row page-header">
+<div class="col-sm-12">    
+    <div class="d-flex justify-content-between">
+    <div class="p2">
+        <h2>Exercises</h2>
+    </div>
+    <div class="p-2">
+        <a href="{% url 'hamask:index' %}" class="btn btn-secondary"><i class="fa fa-arrow-left"></i>&nbsp;Back</a>
+        <button type="submit" name="save" value="save" class="btn btn-success"><i class="fa fa-save"></i>&nbsp;Save</button>
+    </div>
+    </div>
+</div>
+</div>
+
+    {% csrf_token %}
+    
+    <!-- Exercises -->
+    {{ exercise_formset.management_form }}
+    <div class="row">
+    <div class="col-sm-12 overflow">
+    <table class="min-width-sm">
+        <thead>
+            <tr>
+                <th class="w-4">Exercise</th>
+                <th class="w-4">Category</th>
+                <th class="w-3">Manage stats</th>
+                <th class="w-1 col-tab-icon">&nbsp;</th>
+            </tr>
+        </thead>
+                
+        <tbody>
+        {% for formset in exercise_formset %}
+            <tr id="tr_{{ formset.id.value }}" class="formset_exercise">
+                <td>{% include 'hamask/formset.html' with field=formset.name div_class='tabular' %}</td>
+                <td>{% include 'hamask/formset.html' with field=formset.category div_class='tabular' %}</td>
+                <td>{% include 'hamask/formset.html' with field=formset.has_stats div_class='tabular' %}</td>
+                <td>
+                    {% if formset.id.value %}
+                        {% for hidden in formset.hidden_fields %}{{ hidden }}{% endfor %}
+                        <a href="javascript:void(0);" onclick="custom_exercise_delete({{ formset.id.value }});"><i class="fa fa-times"></i></a>
+                    {% endif %}
+                </td>
+                <td class="can_delete" style="display:none;">{{ formset.DELETE }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    </div>
+    </div>
+    
+    <div class="row">
+    <div class="col-sm-12 overflow">
+        <a id="btn_add_exercise" class="btn btn-primary" href="javascript:void(0);" onclick="formset_add_more('tr.formset_exercise:last', 'custom_exercise');">
+            <i class="fa fa-plus"></i>&nbsp;Add Exercise    
+        </a>
+    </div>
+    </div>
+    
+</form>
+</div>
+
+<!-- Scripts -->
+<script>
+</script>
+{% endblock %}

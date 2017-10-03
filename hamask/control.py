@@ -22,12 +22,28 @@ class Custom():
     # Chartist
     
     # "x" (date) and "y" (number) field required. Return JS object ready for eval()
-    def get_chartist_data(exercise_name, query):
-        data = '{name: "' + exercise_name +'", data: ['
+    def get_chartist_data(name, query):
+        data = '{name: "' + name +'", data: ['
         exists = False
         
         for value in query:
-            data += '{x: new Date("' + str(value.x) + '"), y:' + str(value.y) + '},'
+            data += '{x: new Date("' + str(value.x).replace('-', '/') + '"), y:' + str(value.y) + '},'
+            exists = True
+        
+        if exists:
+            data = data[:-1] + ']}'
+        else:
+            data += ']}'
+            
+        return data
+    
+    # "x" (number) and "y" (number) field required. Return JS object ready for eval()
+    def get_chartist_data_number(name, query):
+        data = '{name: "' + name +'", data: ['
+        exists = False
+        
+        for value in query:
+            data += '{x: ' + str(value.x) + ', y:' + str(value.y) + '},'
             exists = True
         
         if exists:

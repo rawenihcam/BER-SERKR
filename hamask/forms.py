@@ -38,10 +38,11 @@ class WorkoutExerciseForm (ModelForm):
         
     def __init__(self, *args, **kwargs):
         # Calling Django's init
+        lifter_id = kwargs.pop('lifter')
         super(WorkoutExerciseForm, self).__init__(*args, **kwargs)
        
         # Custom fields
-        self.fields['exercise'].choices = Exercise.get_exercise_select()
+        self.fields['exercise'].choices = Exercise.get_exercise_select(lifter_id)
         self.fields['notes_formt'].initial = self.instance.notes_formt()
         
         # Manage loading
@@ -69,7 +70,7 @@ class WorkoutExerciseForm (ModelForm):
             self.instance.rpe = None
         
         return super(WorkoutExerciseForm, self).save(commit=commit)
-        
+    
 class WorkoutLogForm (ModelForm):
     class Meta:
         model = Workout_Log
@@ -84,14 +85,48 @@ class WorkoutExerciseLogForm (ModelForm):
         
     def __init__(self, *args, **kwargs):
        # Calling Django's init
+       lifter_id = kwargs.pop('lifter')
        super(WorkoutExerciseLogForm, self).__init__(*args, **kwargs)
        
        # Custom fields
-       self.fields['exercise'].choices = Exercise.get_exercise_select() 
+       self.fields['exercise'].choices = Exercise.get_exercise_select(lifter_id) 
        self.fields['notes_formt'].initial = self.instance.notes_formt()      
 
 class LogByExerciseForm (forms.Form):
-    exercise = forms.ChoiceField (label='Exercise', choices=Exercise.get_exercise_select())
+    exercise = forms.ChoiceField (label='Exercise')
+        
+    def __init__(self, *args, **kwargs):
+       # Calling Django's init
+       lifter_id = kwargs.pop('lifter')
+       super(LogByExerciseForm, self).__init__(*args, **kwargs)
+       
+       # Custom fields
+       self.fields['exercise'].choices = Exercise.get_exercise_select(lifter_id)
+
+class WorkIntensityForm (forms.Form):
+    exercise = forms.ChoiceField (label='Exercise')
+
+    def __init__(self, *args, **kwargs):
+        lifter_id = kwargs.pop('lifter')
+        exercise_id = kwargs.pop('exercise')
+
+        super(WorkIntensityForm, self).__init__(*args, **kwargs)
+        
+        self.fields['exercise'].choices = Exercise.get_exercise_select(lifter_id) 
+        self.fields['exercise'].initial = exercise_id 
+
+class ProgramIntensityForm (forms.Form):
+    program = forms.ChoiceField (label='Program')
+
+    def __init__(self, *args, **kwargs):
+        lifter = Lifter.objects.get(pk=kwargs.pop('lifter'))
+        program_id = kwargs.pop('program')
+
+        super(ProgramIntensityForm, self).__init__(*args, **kwargs)
+        
+        self.fields['program'].choices = lifter.get_programs().values_list('id', 'name')
+        self.fields['program'].choices.insert(0, (0,'---------' ) )
+        self.fields['program'].initial = program_id         
        
 class ProfileForm (ModelForm):
     # Redefine constructor to customize
@@ -112,15 +147,28 @@ class BodyweightForm (ModelForm):
     class Meta:
         model = Lifter_Weight
         fields = ['entry_date', 'weight']
+        
+class CustomExerciseForm (ModelForm):    
+    class Meta:
+        model = Exercise
+        fields = ['id', 'name', 'category', 'has_stats']
+        
+    def __init__(self, *args, **kwargs):
+       # Calling Django's init
+       super(CustomExerciseForm, self).__init__(*args, **kwargs)
+       
+       # Custom fields
+       self.fields['has_stats'].label = 'Manage stats'
 
 class StatForm (ModelForm):
     # Redefine constructor to enforce required fields
     def __init__(self, *args, **kwargs):
+        lifter_id = kwargs.pop('lifter')
         super(StatForm, self).__init__(*args, **kwargs)
         
         self.fields['weight'].required = True
         self.fields['reps'].required = True
-        self.fields['exercise'].choices = Exercise.get_exercise_select()         
+        self.fields['exercise'].choices = Exercise.get_exercise_select(lifter_id)         
     
     class Meta:
         model = Lifter_Stats

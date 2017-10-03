@@ -204,6 +204,23 @@ function update_log_notes(p_id, p_notes) {
     });    
 }
 
+/* Custom Exercises */
+function custom_exercise_delete(p_id) {
+    $.ajax({
+        url: '/ajax/delete_custom_exercise/',
+        data: {
+          'exercise_id': p_id
+        },
+        dataType: 'json',
+        success: function (data) {
+            if (typeof data.exercise_id !== "undefined"){
+                $('#tr_'+p_id).hide("fast");
+                $('#tr_'+p_id+' > td.can_delete > input').prop('checked', true);
+            }
+        }
+    });
+}
+
 /*** GLOBAL ****/
 /* Formsets */
 function formset_add_more(p_selector, p_type) {

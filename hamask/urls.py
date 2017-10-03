@@ -30,7 +30,13 @@ urlpatterns = [
 	url(r'^stats/stat/', views.stat_create, name='stat_create'),
 	url(r'^stats/', views.stats, name='stats'),
 	url(r'^max_progression/', views.max_progression, name='max_progression'),
+	url(r'^work_intensity/(?P<pk>[0-9]+)', views.work_intensity, name='work_intensity'),
+	url(r'^work_intensity/', views.work_intensity, name='work_intensity'),
+	url(r'^program_intensity/(?P<pk>[0-9]+)', views.program_intensity, name='program_intensity'),
+	url(r'^program_intensity/', views.program_intensity, name='program_intensity'),
 	url(r'^profile/', views.profile, name='profile'),
 	url(r'^bodyweight/(?P<pk>[0-9]+)', views.bodyweight_update, name='bodyweight_update'),
 	url(r'^bodyweight/', views.bodyweight, name='bodyweight'),
+	url(r'^custom_exercises/', views.custom_exercises, name='custom_exercises'),
+	url(r'^ajax/delete_custom_exercise/', views.delete_custom_exercise, name='delete_custom_exercise')
 ]

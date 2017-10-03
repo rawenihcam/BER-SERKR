@@ -187,13 +187,18 @@ def update_group(request):
     
 def workout_update(request, pk, template_name='hamask/workout.html'):
     workout = get_object_or_404(Workout, pk=pk)
-    if workout.workout_group.program.lifter.id != request.session['lifter']:
+    lifter_id = request.session['lifter']
+    
+    if workout.workout_group.program.lifter.id != lifter_id:
          raise Http404("Invalid workout.")
     
     # Build forms
     form = WorkoutForm(request.POST or None, instance=workout, prefix='workout')
     ExerciseFormset = modelformset_factory(Workout_Exercise, form=WorkoutExerciseForm, can_delete=True)
-    exercise_formset = ExerciseFormset(request.POST or None, prefix='exercise', queryset=workout.get_workout_exercises())
+    exercise_formset = ExerciseFormset(request.POST or None
+                        , prefix='exercise'
+                        , queryset=workout.get_workout_exercises()
+                        , form_kwargs={'lifter': lifter_id})
     
     if 'delete' in request.POST:
         program = workout.workout_group.program
@@ -278,14 +283,18 @@ def logs(request):
         return render (request, 'hamask/logs.html', {'logs': logs})
     
 def log_update(request, pk, template_name='hamask/log.html'):
+    lifter_id = request.session['lifter']
     log = get_object_or_404(Workout_Log, pk=pk)
-    if log.get_lifter().id != request.session['lifter']:
+    if log.get_lifter().id != lifter_id:
         raise Http404("Invalid log.")
     
     # Build forms
     form = WorkoutLogForm(request.POST or None, instance=log, prefix='log')
     ExerciseFormset = modelformset_factory(Workout_Exercise_Log, form=WorkoutExerciseLogForm, can_delete=True)
-    exercise_formset = ExerciseFormset(request.POST or None, prefix='exercise_log', queryset=log.get_exercise_log())
+    exercise_formset = ExerciseFormset(request.POST or None
+                        , prefix='exercise_log'
+                        , queryset=log.get_exercise_log()
+                        , form_kwargs={'lifter': lifter_id})
     
     if 'delete' in request.POST:
         log.delete()
@@ -353,7 +362,7 @@ def update_log_notes(request):
     
 def logs_by_exercise(request, exercise='0'):
     lifter = Lifter.objects.get(pk=request.session['lifter'])
-    form = LogByExerciseForm(request.POST or None)
+    form = LogByExerciseForm(request.POST or None, lifter = lifter.id)
     
     if request.POST:
         # Create
@@ -365,7 +374,7 @@ def logs_by_exercise(request, exercise='0'):
         
         # Search
         else:
-            form = LogByExerciseForm(request.POST)
+            form = LogByExerciseForm(request.POST, lifter = lifter.id)
             
             if form.is_valid():
                 exercise = form.cleaned_data['exercise']
@@ -374,10 +383,10 @@ def logs_by_exercise(request, exercise='0'):
                 return HttpResponseRedirect (reverse ('hamask:logs_by_exercise'))
     else:    
         if exercise != '0':
-            form = LogByExerciseForm(initial={'exercise': exercise})
+            form = LogByExerciseForm(initial={'exercise': exercise}, lifter = lifter.id)
             logs = lifter.get_exercise_logs(exercise=exercise)
         else:
-            form = LogByExerciseForm()
+            form = LogByExerciseForm(lifter = lifter.id)
             logs = None
             
         return render (request, 'hamask/logs_by_exercise.html', {'form': form, 'logs': logs})
@@ -406,7 +415,9 @@ def stats(request):
     return render (request, 'hamask/stats.html', {'maxes': maxes, 'prs': prs, 'stats': stats,})
     
 def stat_create(request, template_name='hamask/stat.html'):
-    form = StatForm(request.POST or None)
+    lifter_id = request.session['lifter']
+    form = StatForm(request.POST or None
+            , lifter = lifter_id)
         
     if form.is_valid():
         stat = form.save(commit=False)
@@ -423,11 +434,15 @@ def stat_create(request, template_name='hamask/stat.html'):
         return render (request, template_name, {'form': form})
 
 def stat_update(request, pk, template_name='hamask/stat.html'):
+    lifter_id = request.session['lifter']
     lifter_stat = get_object_or_404(Lifter_Stats, pk=pk)
-    if lifter_stat.lifter.id != request.session['lifter']:
+    
+    if lifter_stat.lifter.id != lifter_id:
          raise Http404("Invalid stat.")
     
-    form = StatForm(request.POST or None, instance=lifter_stat)
+    form = StatForm(request.POST or None
+            , instance=lifter_stat
+            , lifter = lifter_id)
     
     if 'delete' in request.POST:
         lifter_stat.delete()
@@ -447,10 +462,9 @@ def stat_update(request, pk, template_name='hamask/stat.html'):
             return render (request, template_name, {'form': form, 'id': lifter_stat.id,})
             
 def max_progression(request):            
-    lifter = Lifter.objects.get(pk=request.session['lifter'])
+    lifter = Lifter.objects.get(pk=request.session['lifter'])    
     
-    
-    exercises = Exercise.get_exercises('MAIN')
+    exercises = Exercise.get_exercises('MAIN', lifter)
     data = '['
     
     for exercise in exercises:
@@ -458,8 +472,89 @@ def max_progression(request):
         data += Custom.get_chartist_data(exercise.name, query) + ','
         
     data = data[:-1] + ']'
-    print(data)
     return render (request, 'hamask/max_progression.html', {'data': data})
+            
+def work_intensity(request, pk=None):            
+    lifter = Lifter.objects.get(pk=request.session['lifter'])
+    exercise = None
+
+    if pk:
+        exercise = get_object_or_404(Exercise, pk=pk)    
+    
+    if exercise:
+        form = WorkIntensityForm(request.POST or None, lifter = lifter.id, exercise = exercise.id)
+    else:
+        form = WorkIntensityForm(request.POST or None, lifter = lifter.id, exercise = '')
+
+    if request.POST:
+        if form.is_valid():
+            exercise = form.cleaned_data['exercise']
+            
+            if exercise == '0':
+                return HttpResponseRedirect (reverse ('hamask:work_intensity'))
+
+            return HttpResponseRedirect (reverse ('hamask:work_intensity', kwargs={'pk': exercise}))                
+    else:
+        data = ''
+        if exercise:
+            # Intensity
+            data = '['
+            
+            query = lifter.get_exercise_intensity_chart(exercise)
+            data += Custom.get_chartist_data('Intensity', query) + ','
+                
+            data = data[:-1] + ', '
+            print(data)
+            # Volume
+            query = lifter.get_exercise_volume_chart(exercise)
+            data += Custom.get_chartist_data('Volume', query) + ','
+                
+            data = data[:-1] + ']'
+
+        return render (request, 'hamask/work_intensity.html', {'form': form, 'data': data})
+            
+def program_intensity(request, pk=None):            
+    lifter = Lifter.objects.get(pk=request.session['lifter'])
+    program = None
+
+    if pk:
+        program = get_object_or_404(Program, pk=pk)
+
+        if program.lifter != lifter:
+         raise Http404("Invalid program.")
+    
+    
+    if program:
+        form = ProgramIntensityForm(request.POST or None, lifter = lifter.id, program = program.id)
+    else:
+        form = ProgramIntensityForm(request.POST or None, lifter = lifter.id, program = '')
+
+    if request.POST:
+        if form.is_valid():
+            program = form.cleaned_data['program']
+            
+            if program == '0':
+                return HttpResponseRedirect (reverse ('hamask:program_intensity'))
+
+            return HttpResponseRedirect (reverse ('hamask:program_intensity', kwargs={'pk':program}))                
+    else:
+        data = ''
+        if program:
+            # Intensity
+            data = '['
+            
+            query = program.get_intensity_chart()
+            data += Custom.get_chartist_data_number('Intensity', query) + ','
+                
+            data = data[:-1] + ', '
+
+            # Volume
+            query = program.get_volume_chart()
+            data += Custom.get_chartist_data_number('Volume', query) + ','
+                
+            data = data[:-1] + ']'
+
+        return render (request, 'hamask/program_intensity.html', {'form': form, 'data': data})
             
 def profile(request):
     lifter = Lifter.objects.get(pk=request.session['lifter'])
@@ -535,3 +630,35 @@ def bodyweight_update(request, pk, template_name='hamask/bodyweight.html'):
             return HttpResponseRedirect (reverse ('hamask:bodyweight'))
         else:
             return render (request, template_name, {'form': form, 'logs': logs, 'id': bodyweight.id})
+    
+def custom_exercises(request, template_name='hamask/custom_exercises.html'):
+    lifter = get_object_or_404(Lifter, pk=request.session['lifter'])
+    
+    # Build forms
+    ExerciseFormset = modelformset_factory(Exercise, form=CustomExerciseForm, can_delete=True)
+    exercise_formset = ExerciseFormset(request.POST or None, prefix='custom_exercise', queryset=Exercise.get_lifter_exercises(lifter))
+    
+    if exercise_formset.is_valid():
+        exercise_formset.save(commit=False)
+        
+        # Update
+        exercises_changed = dict(exercise_formset.changed_objects)
+        for exercise in exercises_changed:
+            exercise.save()
+        
+        # Create
+        for exercise in exercise_formset.new_objects: 
+            exercise.lifter = lifter
+            exercise.save()
+        
+        messages.success(request, Notification.success_message, extra_tags=Notification.success_class)
+        return HttpResponseRedirect (reverse ('hamask:custom_exercises'))
+    else:
+        return render (request, template_name, {'exercise_formset': exercise_formset})
+            
+def delete_custom_exercise(request):
+    exercise = Exercise.objects.get(pk=request.GET.get('exercise_id', None))
+    data = {'exercise_id': exercise.id}
+    exercise.delete()    
+    
+    return JsonResponse(data)

@@ -6,8 +6,8 @@
         <li class="nav-item"><a class="nav-link" href="{% url 'hamask:stats' %}">Stats</a></li>        
     </ul>
     <ul class="nav nav-pills flex-column">
-        <li class="nav-item"><a class="nav-link active" href="#">Max Progression</a></li>
-        <li class="nav-item"><a class="nav-link" href="{% url 'hamask:work_intensity' %}">Work Intensity/Volume</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'hamask:max_progression' %}">Max Progression</a></li>
+        <li class="nav-item"><a class="nav-link active" href="{% url 'hamask:work_intensity' %}">Work Intensity/Volume</a></li>
         <li class="nav-item"><a class="nav-link" href="{% url 'hamask:program_intensity' %}">Program Intensity/Volume</a></li>
     </ul>
 </nav>
@@ -18,7 +18,7 @@
 <div class="col-sm-12">    
     <div class="d-flex justify-content-between">
     <div class="p2">
-        <h2>Max Progression</h2>
+        <h2>Work Intensity/Volume</h2>
     </div>
     <div class="p-2">
     </div>
@@ -26,18 +26,29 @@
 </div>
 </div>
 
-<!-- Maxes -->
+<!-- Program Intensity/Volume -->
+<form method="post">
+
+  {% csrf_token %}
+  
+  <!-- Profile -->
+  {{ form.non_field_errors }}
+  <div class="row">
+    {% include 'hamask/form.html' with field=form.exercise div_class='col-sm-12 col-md-6 col-lg-4' %}
+  </div>
+
 <div class="row">
     <!-- Chart -->
     <div class="col-sm-12 col-md-8">
-        <div class="ct-chart ct-perfect-fourth"></div>
+      <div id="chart" class="ct-perfect-fourth"></div>
     </div>
 </div>
-
+</form>
 </div>
 
 <!-- Custom JS -->
 <script type="text/javascript">
+  {% if data %}
     var data = {
       series: eval('{{ data }}'.replace(/&quot;/g, '"'))
     }
@@ -57,7 +68,8 @@
       axisY: {
         type: Chartist.AutoScaleAxis,
         scaleMinSpace: 25,
-        low: 0
+        low: 0,
+        onlyInteger: true
       },
       plugins: [
         Chartist.plugins.legend({
@@ -66,12 +78,17 @@
         Chartist.plugins.tooltip({
           transformTooltipTextFnc: function(value) {
             return moment(parseInt(value.substring(0, value.indexOf(',')))).format('YYYY-MM-DD')
-              + ', ' + value.substring(value.indexOf(',') + 1);
+              + ', ' + value.substring(value.indexOf(',') + 1) + '%';
           }
         })
       ]
     };
     
-    new Chartist.Line('.ct-chart', data, options);
+    new Chartist.Line('#chart', data, options);
+  {% endif %}
+
+  $('#id_exercise').on('change',function(){
+    this.form.submit();
+  });
 </script>
 {% endblock %}
