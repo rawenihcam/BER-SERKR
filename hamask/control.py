@@ -27,6 +27,9 @@ class Custom():
         exists = False
         
         for value in query:
+            if not value.y:
+                value.y = 'null'
+
             data += '{x: new Date("' + str(value.x).replace('-', '/') + '"), y:' + str(value.y) + '},'
             exists = True
         
@@ -43,6 +46,9 @@ class Custom():
         exists = False
         
         for value in query:
+            if not value.y:
+                value.y = 'null'
+
             data += '{x: ' + str(value.x) + ', y:' + str(value.y) + '},'
             exists = True
         

@@ -201,6 +201,7 @@ class Lifter (models.Model):
                                                                        and wel.weight is not null
                                                                   group by wel.workout_log_id) m) max_volume
                                                   where s.y is not null
+                                                    and coalesce(max_volume.volume, 0) != 0
                                                   order by s.x'''
                                             , {'p_lifter': self.id, 'p_exercise': exercise.id})          
                     
@@ -262,8 +263,7 @@ class Lifter (models.Model):
                                                    and wel.weight is not null
                                                    group by wl.id, wl.workout_date'''
                         , {'p_lifter': self.id, 'p_exercise': exercise.id})          
-                    
-                    
+                        
         return intensity
         
     def get_stats(self):
@@ -384,20 +384,28 @@ class Program (models.Model):
         self.end_date = timezone.now()
         self.save()
         
-    def copy_program(self, lifter):
+    def copy_program(self, lifter=None):
         if not lifter:
             lifter = self.lifter
         
         program = Program(lifter=lifter
                             ,rep_scheme=self.rep_scheme
-                            ,name=self.name + ' (Copy)'
+                            ,name=self.name
                             ,auto_update_stats=self.auto_update_stats
                             ,repeatable=self.repeatable
                             ,rounding=self.rounding)
+        if self.end_date:
+            self.name += ' (' + str(self.end_date) + ')'
+            self.save()
+        else:
+            program.name += ' (Copy)'
+
         program.save()
-        
+
         for group in self.get_workout_groups():
             group.copy_group(program)
+
+        return program
     
     def get_workout_groups(self):
         groups = Workout_Group.objects.filter(program__exact=self.id
@@ -574,7 +582,7 @@ class Program (models.Model):
                         raise IncompleteProgram
                         
                     # If block uses % of max, lifter must have maxes (though will not validate per exercise)
-                    if group.uses_max() and not self.lifter.get_maxes().exists():
+                    if group.uses_max() and not self.lifter.get_pl_maxes().exists():
                         raise IncompleteProgram
             
         except IncompleteProgram:

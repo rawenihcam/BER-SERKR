@@ -1,5 +1,9 @@
 {
  "name": "BER-SERKR",
+ "short_name": "BER-SERKR",
+ "start_url": ".",
+ "display": "standalone",
+ "background_color": "#FFEB3B",
  "icons": [
   {
    "src": "\/favicon.png",

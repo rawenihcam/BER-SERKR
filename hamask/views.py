@@ -20,13 +20,13 @@ def index(request):
         if 'login' in request.POST:
             form = LoginForm (request.POST)
             if form.is_valid():
-                email = request.POST['email']
+                email = request.POST['email'].lower()
                 password = request.POST['password']            
                 user = authenticate (request, username=email, password=password)
                 
                 if user is not None:
                     login (request, user)
-                    request.session['lifter'] = Lifter.objects.get(email=email).id
+                    request.session['lifter'] = Lifter.objects.get(email__exact=email).id
                 
         # Log workout
         elif 'log' in request.POST:
@@ -132,6 +132,14 @@ def program_update(request, pk, template_name='hamask/program.html'):
                 program.end()
                 messages.success(request, Notification.success_message, extra_tags=Notification.success_class)
                 return HttpResponseRedirect (reverse ('hamask:program_update', kwargs={'pk':program.id}))
+            elif 'restart' in request.POST:
+                new_program = program.copy_program()
+                messages.success(request, Notification.success_message, extra_tags=Notification.success_class)
+                return HttpResponseRedirect (reverse ('hamask:program_update', kwargs={'pk':new_program.id}))
+            elif 'copy' in request.POST:
+                new_program = program.copy_program()
+                messages.success(request, Notification.success_message, extra_tags=Notification.success_class)
+                return HttpResponseRedirect (reverse ('hamask:program_update', kwargs={'pk':new_program.id}))
             elif 'copy_group' in request.POST:
                 group = Workout_Group.objects.get(pk=request.POST['copy_group'])
                 group.copy_group(program=None)
@@ -510,7 +518,7 @@ def work_intensity(request, pk=None):
             data += Custom.get_chartist_data('Volume', query) + ','
                 
             data = data[:-1] + ']'
-
+            print(data)
         return render (request, 'hamask/work_intensity.html', {'form': form, 'data': data})
             
 def program_intensity(request, pk=None):            
