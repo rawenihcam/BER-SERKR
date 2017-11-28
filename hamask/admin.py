@@ -4,7 +4,7 @@ from django.contrib import admin
 from .models import Exercise, Lifter
 
 class ExerciseAdmin(admin.ModelAdmin):
-    list_display = ('name', 'category', 'has_stats')
+    list_display = ('name', 'category', 'has_stats', 'lifter')
     ordering = ['name']
     
 class LifterAdmin(admin.ModelAdmin):

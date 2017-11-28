@@ -1,0 +1,41 @@
+{% extends 'hamask/base.html' %}
+
+{% block content %}
+<div class="container">
+    
+<!-- Program -->
+<form id="form" method="post">
+<div class="row page-header">
+<div class="col-sm-12">    
+    <div class="d-flex justify-content-between">
+    <div class="p2">
+        <h2>Import Public Program</h2>
+    </div>
+    <div class="p-2">
+        <a href="{% url 'hamask:programs' %}" class="btn btn-secondary"><i class="fa fa-arrow-left"></i>&nbsp;Back</a>
+    </div>
+    </div>
+</div>
+</div>
+
+    {% csrf_token %}
+    
+    {{ form.non_field_errors }}
+    <div class="row">
+        {% include 'hamask/form.html' with field=form.program div_class='col-sm-12 col-md-4 col-lg-3' %}
+        
+        <div class="col-sm-12 col-md-4 col-lg-3">
+        {% if not program.start_date %}
+            <button type="submit" name="import" value="import" class="btn btn-primary btn-form">
+                <i class="fa fa-upload"></i>&nbsp;Import
+            </button>
+        {% endif %}
+        </div>
+    </div> 
+</form>
+</div>
+
+<!-- Scripts -->
+<script>
+</script>
+{% endblock %}

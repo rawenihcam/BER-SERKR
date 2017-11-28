@@ -49,6 +49,7 @@
         {% include 'hamask/form.html' with field=form.rounding div_class='col-sm-12 col-md-4 col-lg-3' %}
         {% include 'hamask/form.html' with field=form.auto_update_stats div_class='col-sm-12 col-md-3 col-lg-2' %}
         {% include 'hamask/form.html' with field=form.repeatable div_class='col-sm-12 col-md-3 col-lg-2' %}
+        {% include 'hamask/form.html' with field=form.is_public div_class='col-sm-12 col-md-3 col-lg-2' %}
     </div>
     
     <br/>
@@ -60,7 +61,7 @@
 <div class="col-sm-12">
     {% if groups %}
         {% for group in groups %}
-            <div id="div_{{ group.id }}" class="row overflow">
+            <div id="div_{{ group.id }}" class="row overflow min-height-dropdown">
                 <div class="col-sm-12">
                 <div class="d-flex justify-content-between min-width-sm">
                     <div class="p2">

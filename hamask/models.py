@@ -361,9 +361,9 @@ class Program (models.Model):
     name = models.CharField (max_length=60)
     start_date = models.DateField (blank=True, null=True)
     end_date = models.DateField (blank=True, null=True)
-    is_current = models.BooleanField (default=False)
     auto_update_stats = models.BooleanField (default=True)
     repeatable = models.BooleanField (default=False)
+    is_public = models.BooleanField (default=False)
     rounding_choices = (
         ('NO', 'No rounding'),
         ('0.5', '0.5'),
@@ -595,6 +595,10 @@ class Program (models.Model):
     def complete(self):
         if not self.get_next_workout():
             self.end()
+
+    def get_public_programs():
+        programs = Program.objects.filter(is_public__exact=True).order_by('name')
+        return programs
     
 class Workout_Group (models.Model):
     program = models.ForeignKey (Program, on_delete=models.CASCADE)
@@ -795,9 +799,9 @@ class Workout_Exercise (models.Model):
     order = models.PositiveIntegerField ()
     sets = models.PositiveIntegerField (blank=True, null=True)
     reps = models.PositiveIntegerField (blank=True, null=True)
-    weight = models.PositiveIntegerField (blank=True, null=True)
+    weight = models.FloatField (blank=True, null=True)
     percentage = models.PositiveIntegerField (blank=True, null=True)
-    rpe = models.PositiveIntegerField (blank=True, null=True)
+    rpe = models.FloatField (blank=True, null=True)
     time = models.PositiveIntegerField (blank=True, null=True)
     is_amrap = models.BooleanField (default=False)
     notes = models.TextField (blank=True, null=True)
@@ -860,7 +864,7 @@ class Workout_Exercise (models.Model):
                     self._loading = ''
             elif self.rep_scheme == 'RPE':
                 if self.rpe:
-                    self._loading = 'RPE ' + str(self.rpe)
+                    self._loading = 'RPE ' + (str(self.rpe)[:-2] if str(self.rpe)[-2:] == '.0' else str(self.rpe))
                 else:
                     self._loading = ''
             elif self.rep_scheme == 'WEIGHT':
@@ -957,7 +961,9 @@ class Workout_Log (models.Model):
     
     def get_exercise_log_formt(self):
         exercise_log = self.get_exercise_log()
-        list_formt = ', '.join(list(exercise_log.values_list('exercise__name', flat=True)))
+        list_formt = ', '.join(list(exercise_log.order_by('exercise__name'
+                        ).values_list('exercise__name', flat=True
+                        ).distinct('exercise__name')))
         
         return list_formt
         
@@ -990,7 +996,7 @@ class Workout_Exercise_Log (models.Model):
     reps = models.PositiveIntegerField (blank=True, null=True)
     weight = models.FloatField (blank=True, null=True)
     percentage = models.PositiveIntegerField (blank=True, null=True)
-    rpe = models.PositiveIntegerField (blank=True, null=True)
+    rpe = models.FloatField (blank=True, null=True)
     time = models.PositiveIntegerField (blank=True, null=True)
     is_amrap = models.BooleanField (default=False)
     notes = models.TextField (blank=True, null=True)
@@ -1059,7 +1065,7 @@ class Workout_Exercise_Log (models.Model):
     def loading(self):
         if not hasattr(self, '_loading'):
             if self.rpe: 
-                self._loading = 'RPE ' + str(self.rpe)
+                self._loading = 'RPE ' + (str(self.rpe)[:-2] if str(self.rpe)[-2:] == '.0' else str(self.rpe))
             elif self.percentage:
                 self._loading = str(self.percentage) + '%'
             else:

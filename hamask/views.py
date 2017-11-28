@@ -192,6 +192,21 @@ def update_group(request):
     data = {'group_id': group.id}    
     
     return JsonResponse(data)
+
+def program_import(request):            
+    lifter = Lifter.objects.get(pk=request.session['lifter'])    
+    
+    form = ProgramImportForm(request.POST or None)
+
+    if form.is_valid():
+        program = Program.objects.get(pk=form.cleaned_data['program'])
+        copy = program.copy_program(lifter)
+        copy.save()
+            
+        messages.success(request, Notification.success_message, extra_tags=Notification.success_class)
+        return HttpResponseRedirect (reverse ('hamask:programs'))
+    else:
+        return render (request, 'hamask/program_import.html', {'form': form})
     
 def workout_update(request, pk, template_name='hamask/workout.html'):
     workout = get_object_or_404(Workout, pk=pk)
@@ -670,3 +685,15 @@ def delete_custom_exercise(request):
     exercise.delete()    
     
     return JsonResponse(data)
+
+def rm_calculator(request):            
+    lifter = Lifter.objects.get(pk=request.session['lifter'])    
+    
+    form = RmCalculatorForm(request.POST or None)
+
+    return render (request, 'hamask/rm_calculator.html', {'form': form})
+            
+def get_rm_calculator_data(request):
+    data = Tools.get_rm_chart_json(int(request.GET.get('weight', None)), int(request.GET.get('reps', None)))
+    
+    return JsonResponse(data, safe=False)

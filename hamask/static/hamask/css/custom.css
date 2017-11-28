@@ -186,6 +186,10 @@ div.modal {
     top: 60px;
 }
 
+div.min-height-dropdown{
+    min-height: 125px
+}
+
 td.notes {
     cursor: pointer;
 }
