@@ -65,6 +65,14 @@
               <ul class="navbar-nav navbar-right">
                 <li class="nav-item dropdown">
                     <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <i class="fa fa-wrench"></i>&nbsp;Tools<span class="caret"></span>
+                    </a>
+                    <div class="dropdown-menu">
+                        <a class="dropdown-item" href="{% url 'hamask:rm_calculator' %}"><i class="fa fa-calculator"></i>&nbsp;RM Calculator</a>
+                    </div>
+                </li>
+                <li class="nav-item dropdown">
+                    <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         <i class="fa fa-user"></i>&nbsp;{{ user }}<span class="caret"></span>
                     </a>
                     <div class="dropdown-menu">

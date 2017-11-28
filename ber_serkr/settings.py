@@ -77,20 +77,13 @@ WSGI_APPLICATION = 'ber_serkr.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'ber_serkr_dev',
-        'USER': 'postgres',
-        'PASSWORD': 'b3r-s3rkr',
+        'NAME': 'ber-serkr-dev',
+        'USER': 'postgresdev',
+        'PASSWORD': 'berserkrdev',
+        'HOST': '192.168.1.148',
+        'PORT': '5432',
     }
 }
-# In the flexible environment, you connect to CloudSQL using a unix socket.
-# Locally, you can use the CloudSQL proxy to proxy a localhost connection
-# to the instance
-DATABASES['default']['HOST'] = '/cloudsql/ber-serkr:us-east1:ber-serkr-dev'
-if os.getenv('GAE_INSTANCE'):
-    pass
-else:
-    DATABASES['default']['HOST'] = '127.0.0.1'
-# [END dbconfig]
 
 
 # Password validation

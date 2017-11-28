@@ -1,0 +1,115 @@
+{% extends 'hamask/base.html' %}
+
+{% block content %}
+<nav class="col-md-3 col-lg-2 sidebar">
+    <ul class="nav nav-pills flex-column">
+        <li class="nav-item"><a class="nav-link active" href="{% url 'hamask:rm_calculator' %}">RM Calculator</a></li>
+    </ul>
+</nav>
+
+<div class="col-md-9 ml-md-auto col-lg-10 ml-lg-auto">
+
+<div class="row page-header">
+<div class="col-sm-12">    
+    <div class="d-flex justify-content-between">
+    <div class="p2">
+        <h2>RM Calculator</h2>
+    </div>
+    <div class="p-2">
+    </div>
+    </div>
+</div>
+</div>
+
+<!-- RM Calculator -->
+<form method="post">
+    {% csrf_token %}
+
+    <!-- Fields -->
+    {{ form.non_field_errors }}
+    <div class="row">
+        {% include 'hamask/form.html' with field=form.weight div_class='col-sm-12 col-md-4 col-lg-2' %}
+        {% include 'hamask/form.html' with field=form.reps div_class='col-sm-12 col-md-4 col-lg-2' %}
+    </div>
+
+    <!-- Chart -->
+    <div class="row">
+    <div class="col-sm-12 col-md-8 col-lg-6">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Rep Max</th>
+                    <th>Weight</th>
+                </tr>
+            </thead>
+
+            <tr>
+                <td>1RM</td>
+                <td class="td_rm 1rm">-</td>
+            </tr>
+            <tr>
+                <td>2RM</td>
+                <td class="td_rm 2rm">-</td>
+            </tr>
+            <tr>
+                <td>3RM</td>
+                <td class="td_rm 3rm">-</td>
+            </tr>
+            <tr>
+                <td>4RM</td>
+                <td class="td_rm 4rm">-</td>
+            </tr>
+            <tr>
+                <td>5RM</td>
+                <td class="td_rm 5rm">-</td>
+            </tr>
+            <tr>
+                <td>6RM</td>
+                <td class="td_rm 6rm">-</td>
+            </tr>
+            <tr>
+                <td>7RM</td>
+                <td class="td_rm 7rm">-</td>
+            </tr>
+            <tr>
+                <td>8RM</td>
+                <td class="td_rm 8rm">-</td>
+            </tr>
+            <tr>
+                <td>9RM</td>
+                <td class="td_rm 9rm">-</td>
+            </tr>
+            <tr>
+                <td>10RM</td>
+                <td class="td_rm 10rm">-</td>
+            </tr>
+        </table>
+    </div>
+    </div>
+</form>
+</div>
+
+<!-- Custom JS -->
+<script type="text/javascript">
+  $('#id_weight').change(function(){
+    update_rm_table();
+  });
+  $('#id_reps').change(function(){
+    update_rm_table();
+  });
+
+  update_rm_table();
+
+  function update_rm_table(){
+    var weight = $('#id_weight').val();
+    var reps = $('#id_reps').val();
+
+    if (weight > 0 && reps > 0 && reps <= 10){
+        get_rm_calculator_data(weight, reps);
+    }
+    else{
+        $('.td_rm').html('-');
+    }
+  }
+</script>
+{% endblock %}

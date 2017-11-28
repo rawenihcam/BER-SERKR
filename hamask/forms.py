@@ -13,10 +13,10 @@ class LoginForm (forms.Form):
 class ProgramForm (ModelForm):
     class Meta:
         model = Program
-        fields = ['name', 'auto_update_stats', 'rounding', 'repeatable']
-        """labels = {
-            'rep_scheme': _('Prefered rep scheme'),
-        }"""
+        fields = ['name', 'auto_update_stats', 'rounding', 'repeatable', 'is_public']
+        labels = {
+            'is_public': _('Public'),
+        }
         help_texts = {
             'start_date': _('Start date will be used to plan your workouts.'),
             'rep_scheme': _('Will help you build your program, can be changed for each exercise later.'),
@@ -29,7 +29,7 @@ class WorkoutForm (ModelForm):
         fields = ['name', 'day_of_week']
         
 class WorkoutExerciseForm (ModelForm):
-    loading = forms.IntegerField(required=True, min_value=0)
+    loading = forms.FloatField(required=True, min_value=0)
     notes_formt = forms.CharField(required=False)
     
     class Meta:
@@ -70,6 +70,16 @@ class WorkoutExerciseForm (ModelForm):
             self.instance.rpe = None
         
         return super(WorkoutExerciseForm, self).save(commit=commit)
+        
+class ProgramImportForm (forms.Form):
+    program = forms.ChoiceField (label='Program')
+        
+    def __init__(self, *args, **kwargs):
+       # Calling Django's init
+       super(ProgramImportForm, self).__init__(*args, **kwargs)
+       
+       # Custom fields
+       self.fields['program'].choices = Program.get_public_programs().values_list('id', 'name')
     
 class WorkoutLogForm (ModelForm):
     class Meta:
@@ -173,3 +183,7 @@ class StatForm (ModelForm):
     class Meta:
         model = Lifter_Stats
         fields = ['exercise', 'entry_date', 'weight', 'reps']
+        
+class RmCalculatorForm (forms.Form):
+    weight = forms.FloatField (label='Weight', required=True, min_value=0)
+    reps = forms.IntegerField (label='Reps', required=True, min_value=0, max_value=10)

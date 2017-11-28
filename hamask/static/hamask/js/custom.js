@@ -221,6 +221,29 @@ function custom_exercise_delete(p_id) {
     });
 }
 
+/* Rm_Calculator */
+function get_rm_calculator_data(p_weight, p_reps) {
+    $.ajax({
+        url: '/ajax/get_rm_calculator_data/',
+        data: {
+          'weight': p_weight,
+          'reps': p_reps
+        },
+        dataType: 'json',
+        success: function (data) {
+            if (typeof data !== "undefined" && data != ''){
+                var datao = JSON.parse(data);
+                for (rm in datao){
+                    $('.td_rm.'+rm).html(datao[rm]);
+                }
+            }
+            else{
+                $('.td_rm').html('-');
+            }
+        }
+    });
+}
+
 /*** GLOBAL ****/
 /* Formsets */
 function formset_add_more(p_selector, p_type) {
