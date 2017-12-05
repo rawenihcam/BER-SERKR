@@ -13,9 +13,10 @@ class LoginForm (forms.Form):
 class ProgramForm (ModelForm):
     class Meta:
         model = Program
-        fields = ['name', 'auto_update_stats', 'rounding', 'repeatable', 'is_public']
+        fields = ['name', 'auto_update_stats', 'rounding', 'repeatable', 'is_public', 'training_max_percentage']
         labels = {
             'is_public': _('Public'),
+            'training_max_percentage': _('Training max'),
         }
         help_texts = {
             'start_date': _('Start date will be used to plan your workouts.'),
