@@ -30,7 +30,8 @@
         
         <div class="col-sm-12 col-md-4 col-lg-3">
         {% if not program.start_date %}
-            <button type="submit" name="start" value="start" class="btn btn-warning btn-form" {% if not program.is_ready %} disabled {% endif %}>
+            <button type="submit" name="start" value="start" class="btn btn-warning btn-form" 
+				{% if not program.is_ready %} disabled data-toggle="tooltip" title="Must have 1 block. Blocks must have 1 workout. Must enter maxes in Stats if using %." {% endif %}>
                 <i class="fa fa-play"></i>&nbsp;Start Program
             </button>
         {% elif not program.end_date %}
@@ -47,6 +48,10 @@
     <br/>
     <div class="row">
         {% include 'hamask/form.html' with field=form.rounding div_class='col-sm-12 col-md-4 col-lg-3' %}
+        {% include 'hamask/form.html' with field=form.training_max_percentage div_class='col-sm-12 col-md-4 col-lg-3' %}
+        <span class="form">%</span>
+	</div></br>
+	<div class="row">
         {% include 'hamask/form.html' with field=form.auto_update_stats div_class='col-sm-12 col-md-3 col-lg-2' %}
         {% include 'hamask/form.html' with field=form.repeatable div_class='col-sm-12 col-md-3 col-lg-2' %}
         {% include 'hamask/form.html' with field=form.is_public div_class='col-sm-12 col-md-3 col-lg-2' %}

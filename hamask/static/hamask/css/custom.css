@@ -266,6 +266,10 @@ span.right {
     float: right;
 }
 
+span.form {
+    margin-top: 35px;
+}
+
 /* Misc */
 .w-1 {
     width: 8.333333333%!important;

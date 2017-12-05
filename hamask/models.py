@@ -372,6 +372,7 @@ class Program (models.Model):
         ('LAST_5', 'Last digit is 5'),
     )
     rounding = models.CharField (max_length=30, choices=rounding_choices, default='NO')
+    training_max_percentage = models.PositiveIntegerField (blank=True, null=True)
     
     def __str__(self):
         return self.name
@@ -886,7 +887,7 @@ class Workout_Exercise (models.Model):
                     max = lifter.get_max(self.exercise)
                     
                     if max:
-                        weight = max.weight * (self.percentage / 100)
+                        weight = max.weight * (program.training_max_percentage / 100) * (self.percentage / 100) if program.training_max_percentage else max.weight * (self.percentage / 100)
                         rounding = program.rounding
                         
                         if rounding == '0.5':
