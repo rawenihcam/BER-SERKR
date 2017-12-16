@@ -1,7 +1,10 @@
 from django.template.defaulttags import register
 from django.db.models import *
+from django.utils import timezone
 from math import exp
 import json
+
+from .models import *
 
 # Custom classes
 class Notification():
@@ -78,3 +81,18 @@ class Custom():
             data += ']}'
             
         return data
+
+class Fuck():
+    def insert_program_instance():
+        programs = Program.objects.filter(start_date__isnull=False)
+
+        for program in programs:
+            instance = Program_Instance(program=program,start_date=program.start_date,end_date=program.end_date)
+            instance.save()
+
+    def program_creation_date():
+        programs = Program.objects.all()
+
+        for program in programs:
+            program.creation_date = program.start_date if program.start_date != null else timezone.now()
+            program.save()

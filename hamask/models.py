@@ -26,12 +26,15 @@ class Lifter (models.Model):
         
     def get_programs(self):
         programs = Program.objects.filter(lifter__exact=self.id
-                    ).order_by('-end_date', '-start_date')
+                    ).order_by('-creation_date')
         return programs
         
     def get_started_programs(self):
-        programs = self.get_programs().filter(start_date__isnull=False
-                    ).filter(end_date__isnull=True)
+        running_programs = Program_Instance.objects.filter(program__lifter__exact=self.id
+                                ).filter(start_date__isnull=False
+                                ).filter(end_date__isnull=True
+                                ).values('program')
+        programs = self.get_programs().filter(id__in=running_programs)
         return programs
 
     def get_next_workouts(self):
@@ -359,8 +362,7 @@ class Program (models.Model):
     )
     rep_scheme = models.CharField (max_length=30, choices=rep_scheme_choices, blank=True, null=True)
     name = models.CharField (max_length=60)
-    start_date = models.DateField (blank=True, null=True)
-    end_date = models.DateField (blank=True, null=True)
+    creation_date = models.DateField(default=timezone.now, editable=False)
     auto_update_stats = models.BooleanField (default=True)
     repeatable = models.BooleanField (default=False)
     is_public = models.BooleanField (default=False)
@@ -377,30 +379,43 @@ class Program (models.Model):
     def __str__(self):
         return self.name
         
+    def start_date(self):
+        return self.get_current_instance().start_date if self.get_current_instance() else None    
+
+    def end_date(self):
+        return self.get_current_instance().end_date if self.get_current_instance() else None
+    
     def start(self):
-        self.start_date = timezone.now()
-        self.save()
+        current_instance = self.get_current_instance()
+        if current_instance:
+            current_instance.end()
+
+        Program_Instance.start(self)
         
     def end(self):
-        self.end_date = timezone.now()
-        self.save()
+        current_instance = self.get_current_instance()
+        if current_instance:
+            current_instance.end()
         
+    def restart(self):
+        self.start()
+        
+    def get_current_instance(self):
+        instance = Program_Instance.objects.filter(program__exact=self.id
+                    ).order_by('-start_date').first()
+
+        return instance
+    
     def copy_program(self, lifter=None):
         if not lifter:
             lifter = self.lifter
         
         program = Program(lifter=lifter
                             ,rep_scheme=self.rep_scheme
-                            ,name=self.name
+                            ,name=self.name + ' (Copy)'
                             ,auto_update_stats=self.auto_update_stats
                             ,repeatable=self.repeatable
                             ,rounding=self.rounding)
-        if self.end_date:
-            self.name += ' (' + str(self.end_date) + ')'
-            self.save()
-        else:
-            program.name += ' (Copy)'
-
         program.save()
 
         for group in self.get_workout_groups():
@@ -435,11 +450,12 @@ class Program (models.Model):
         
     def get_last_workout_log(self):
         logs = Workout_Log.objects.filter(workout__workout_group__program__exact=self.id
+                ).filter(program_instance__exact=self.get_current_instance()
                 ).order_by('-workout_date', '-id').first()
         return logs
         
     def get_next_workout(self):
-        if self.start_date and not self.end_date:
+        if self.start_date() and not self.end_date():
             try:
                 # Get last workout done
                 log = self.get_last_workout_log()
@@ -474,7 +490,7 @@ class Program (models.Model):
         return workout
         
     def get_next_workouts(self):
-        if self.start_date and not self.end_date:
+        if self.start_date() and not self.end_date():
             group_order = 0
             order = 0
             
@@ -600,7 +616,20 @@ class Program (models.Model):
     def get_public_programs():
         programs = Program.objects.filter(is_public__exact=True).order_by('name')
         return programs
-    
+
+class Program_Instance (models.Model):
+    program = models.ForeignKey (Program, on_delete=models.CASCADE)	
+    start_date = models.DateField ()
+    end_date = models.DateField (blank=True, null=True)
+
+    def end(self):
+        self.end_date = timezone.now()
+        self.save()
+
+    def start(program):
+        instance = Program_Instance(program=program, start_date=timezone.now())
+        instance.save()
+
 class Workout_Group (models.Model):
     program = models.ForeignKey (Program, on_delete=models.CASCADE)
     name = models.CharField (max_length=60)
@@ -945,6 +974,7 @@ class Workout_Exercise (models.Model):
     
 class Workout_Log (models.Model):
     workout = models.ForeignKey (Workout, on_delete=models.SET_NULL, blank=True, null=True)
+    program_instance = models.ForeignKey (Program_Instance, on_delete=models.SET_NULL, blank=True, null=True)
     lifter = models.ForeignKey (Lifter, on_delete=models.CASCADE, blank=True, null=True)
     workout_date = models.DateField (default=datetime.date.today)
     status_choices = (
