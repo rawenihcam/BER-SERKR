@@ -527,13 +527,13 @@ def work_intensity(request, pk=None):
             data += Custom.get_chartist_data('Intensity', query) + ','
                 
             data = data[:-1] + ', '
-            print(data)
+
             # Volume
             query = lifter.get_exercise_volume_chart(exercise)
             data += Custom.get_chartist_data('Volume', query) + ','
                 
             data = data[:-1] + ']'
-            print(data)
+            
         return render (request, 'hamask/work_intensity.html', {'form': form, 'data': data})
             
 def program_intensity(request, pk=None):            
