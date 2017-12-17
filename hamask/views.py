@@ -133,9 +133,9 @@ def program_update(request, pk, template_name='hamask/program.html'):
                 messages.success(request, Notification.success_message, extra_tags=Notification.success_class)
                 return HttpResponseRedirect (reverse ('hamask:program_update', kwargs={'pk':program.id}))
             elif 'restart' in request.POST:
-                new_program = program.copy_program()
+                program.restart()
                 messages.success(request, Notification.success_message, extra_tags=Notification.success_class)
-                return HttpResponseRedirect (reverse ('hamask:program_update', kwargs={'pk':new_program.id}))
+                return HttpResponseRedirect (reverse ('hamask:program_update', kwargs={'pk':program.id}))
             elif 'copy' in request.POST:
                 new_program = program.copy_program()
                 messages.success(request, Notification.success_message, extra_tags=Notification.success_class)
