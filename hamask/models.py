@@ -3,7 +3,7 @@ import datetime
 from math import floor
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
-from django.db.models import Max, Avg, Q
+from django.db.models import Max, Avg, Q, Sum, Count
 from django.utils import timezone
 
 from .control import IncompleteProgram
@@ -82,8 +82,83 @@ class Lifter (models.Model):
                 ).order_by('-entry_date', '-weight')[:1]
             
         maxes = s.union (b, d, all=True)
-        
+
         return maxes
+        
+    def get_pl_total(self):
+        return self.get_pl_total_at_date(timezone.now())
+        
+    def get_pl_total_at_date(self, date):
+        s = Lifter_Stats.objects.filter(lifter__exact=self.id
+                ).filter(reps__exact=1
+                ).filter(exercise__name__exact='Squat'
+                ).filter(entry_date__lte=date
+                ).order_by('-entry_date', '-weight'
+                ).first()
+        b = Lifter_Stats.objects.filter(lifter__exact=self.id
+                ).filter(reps__exact=1
+                ).filter(exercise__name__exact='Bench Press'
+                ).filter(entry_date__lte=date
+                ).order_by('-entry_date', '-weight'
+                ).first()
+        d = Lifter_Stats.objects.filter(lifter__exact=self.id
+                ).filter(reps__exact=1
+                ).filter(exercise__name__exact='Deadlift'                
+                ).filter(entry_date__lte=date
+                ).order_by('-entry_date', '-weight'
+                ).first()
+                
+        return getattr(s, 'weight', 0) + getattr(b, 'weight', 0) + getattr(d, 'weight', 0)
+        
+    def get_pl_total_chart(self):
+        chart = []
+        squat = Exercise.objects.get(name__exact='Squat')
+        bench = Exercise.objects.get(name__exact='Bench Press')
+        deadlift = Exercise.objects.get(name__exact='Deadlift')
+        
+        maxes = Lifter_Stats.objects.raw('''select 1 id, s.entry_date, sum(s.squat) squat, sum(s.bench) bench, sum(s.deadlift) deadlift
+                                              from (select ls.entry_date entry_date, max(ls.weight) squat, 0.0 bench, 0.0 deadlift
+                                                     from hamask_lifter_stats ls,
+                                                          hamask_exercise e                                             
+                                                    where ls.lifter_id = %(p_lifter)s
+                                                      and ls.reps = 1
+                                                      and e.id = ls.exercise_id
+                                                      and e.name = 'Squat'
+                                                    group by ls.entry_date
+                                                    union all
+                                                    select ls.entry_date entry_date, 0.0 squat, max(ls.weight) bench, 0.0 deadlift
+                                                     from hamask_lifter_stats ls,
+                                                          hamask_exercise e                                             
+                                                    where ls.lifter_id = %(p_lifter)s
+                                                      and ls.reps = 1
+                                                      and e.id = ls.exercise_id
+                                                      and e.name = 'Bench Press'
+                                                    group by ls.entry_date
+                                                    union all
+                                                    select ls.entry_date entry_date, 0.0 squat, 0.0 bench, max(ls.weight) deadlift
+                                                     from hamask_lifter_stats ls,
+                                                          hamask_exercise e                                             
+                                                    where ls.lifter_id = %(p_lifter)s
+                                                      and ls.reps = 1
+                                                      and e.id = ls.exercise_id
+                                                      and e.name = 'Deadlift'
+                                                    group by ls.entry_date) s
+                                             group by s.entry_date
+                                             order by entry_date'''
+                                            , {'p_lifter': self.id}) 
+
+        for max in maxes:
+            if max.squat == 0:
+                max.squat = getattr(self.get_max_at_date(max.entry_date, squat), "weight", None)
+            if max.bench == 0:
+                max.bench = getattr(self.get_max_at_date(max.entry_date, bench), "weight", None)
+            if max.deadlift == 0:
+                max.deadlift = getattr(self.get_max_at_date(max.entry_date, deadlift), "weight", None)
+
+            if max.squat and max.bench and max.deadlift:
+                chart.append({'x': max.entry_date, 'y': max.squat + max.bench + max.deadlift})
+                    
+        return chart
         
     def get_maxes_chart(self, exercise):
         maxes = Lifter_Stats.objects.raw('''select ls.id, ls.entry_date x, ls.weight y
@@ -94,7 +169,6 @@ class Lifter (models.Model):
                                             order by ls.entry_date, ls.weight'''
                                             , [self.id, exercise.id])          
                     
-                    
         return maxes
         
     def get_max(self, exercise):
@@ -103,6 +177,15 @@ class Lifter (models.Model):
                     ).filter(exercise__exact=exercise.id
                     ).order_by('-entry_date', '-weight').first()
                 
+        return max
+        
+    def get_max_at_date(self, date, exercise):
+        max = Lifter_Stats.objects.filter(lifter__exact=self.id
+                    ).filter(reps__exact=1
+                    ).filter(exercise__exact=exercise
+                    ).filter(entry_date__lte=date
+                    ).order_by('-entry_date', '-weight').first()
+
         return max
         
     def get_prs(self):
@@ -283,6 +366,89 @@ class Lifter (models.Model):
         
         return weight
         
+    def get_bodyweight_at_date(self, date):
+        weight = Lifter_Weight.objects.filter(lifter__exact=self.id
+                    ).filter(entry_date__lte=date
+                    ).order_by('-entry_date', '-id'
+                    ).first()
+        
+        return weight
+        
+    def get_bodyweight_chart(self):
+        chart = Lifter_Weight.objects.raw('''select 1 id, lw.entry_date x, avg(lw.weight) y
+                                               from hamask_lifter_weight lw 
+                                              where lw.lifter_id = %s
+                                              group by lw.entry_date
+                                              order by lw.entry_date'''
+                                            , [self.id])          
+                    
+        return chart
+        
+    def get_wilks_coefficient(self, bodyweight):
+        a, b, c, d, e, f = None, None, None, None, None, None
+        x = bodyweight
+        
+        if self.sex == 'MALE':
+            a = -216.0475144
+            b = 16.2606339
+            c = -0.002388645
+            d = -0.00113732
+            e = 7.01863e-06
+            f = -1.291e-08
+        else:
+            a = 594.31747775582
+            b = -27.23842536447
+            c = 0.82112226871
+            d = -0.00930733913
+            e = 4.731582e-05
+            f = -9.054e-08
+
+        return 500 / (a + (b*x) + (c*x**2) + (d*x**3) + (e*x**4) + (f*x**5))
+    
+    def get_current_wilks(self):
+        wilks = None
+        weight = self.get_weight_kilo(self.get_current_bodyweight().weight)
+        if weight:
+            total = self.get_weight_kilo(self.get_pl_total())
+        if total:
+            wilks = round(total * self.get_wilks_coefficient(weight), 2)          
+        
+        return wilks
+        
+    def get_wilks(self, total, bodyweight):
+        wilks = self.get_weight_kilo(total) * self.get_wilks_coefficient(self.get_weight_kilo(bodyweight))
+        
+        return wilks
+    
+    def get_wilks_chart(self):
+        chart = []
+        entries = Lifter_Stats.objects.raw('''select 1 id, lw.entry_date entry_date, avg(lw.weight) bodyweight
+                                              from hamask_lifter_weight lw 
+                                             where lw.lifter_id = %(p_lifter)s
+                                             group by lw.entry_date
+                                             union all
+                                             select 2 id, ls.entry_date entry_date, null bodyweight 
+                                             from hamask_lifter_stats ls,
+                                                  hamask_exercise e                                             
+                                            where ls.lifter_id = %(p_lifter)s
+                                              and ls.reps = 1
+                                              and e.id = ls.exercise_id
+                                              and e.name in ('Squat', 'Bench Press', 'Deadlift')
+                                            group by ls.entry_date
+                                            order by entry_date'''
+                                            , {'p_lifter': self.id})
+
+        for entry in entries:
+            if not entry.bodyweight:
+                entry.bodyweight = getattr(self.get_bodyweight_at_date(entry.entry_date), 'weight', None)
+            total = self.get_pl_total_at_date(entry.entry_date)
+                
+            if entry.bodyweight and total:
+                wilks = self.get_wilks(total, entry.bodyweight)
+                chart.append({'x': entry.entry_date, 'y': round(wilks, 2)})
+                    
+        return chart
+        
     def get_weight_unit(self):
         unit = ''
         if self.measurement_system == 'METRC':
@@ -291,6 +457,9 @@ class Lifter (models.Model):
             unit = 'lbs'
             
         return unit;
+
+    def get_weight_kilo(self, weight):
+        return weight if self.measurement_system == 'METRC' else weight / 2.2
     
 class Lifter_Weight (models.Model):
     lifter = models.ForeignKey (Lifter, on_delete=models.CASCADE)
@@ -309,7 +478,7 @@ class Lifter_Weight (models.Model):
     
 class Exercise (models.Model):
     lifter = models.ForeignKey (Lifter, on_delete=models.CASCADE, blank=True, null=True, editable=False)
-    name = models.CharField (max_length=60)
+    name = models.CharField (max_length=60, unique=True)
     category_choices = (
         ('MAIN', 'Main Lift'),
         ('MAIN_VARTN', 'Main Lift Variation'),
@@ -648,12 +817,17 @@ class Workout_Group (models.Model):
         super(Workout_Group, self).delete(*args, **kwargs)
         
     def copy_group(self, program):
+        name = ""
+        
         # Create new group
         if not program:
             program = self.program
+        else:
+            name = self.name
             
         order = program.get_next_workout_group_order()
-        group = Workout_Group(program=program, name='Block ' + str(order + 1), order=order)
+        name = 'Block ' + str(order + 1) if not name else name
+        group = Workout_Group(program=program, name=name, order=order)
         group.save()
         
         # Copy workouts
@@ -737,13 +911,18 @@ class Workout (models.Model):
         super(Workout, self).delete(*args, **kwargs)
         
     def copy_workout(self, group):
+        name = ""
+        
         # Create new workout
         if not group:
             group = self.workout_group
+        else:
+            name = self.name
         
         order = group.get_next_workout_order()
+        name = 'Day ' + str(order + 1) if not name else name
         workout = Workout(workout_group=group
-                            , name='Day ' + str(order + 1)
+                            , name=name
                             , order=order
                             , day_of_week=self.day_of_week)
         workout.save()
@@ -787,7 +966,11 @@ class Workout (models.Model):
     
     def log(self, status):
         # Create new log
-        log = Workout_Log(workout=self, workout_date=timezone.now(), status=status)  
+        program_instance = self.workout_group.program.get_current_instance()
+        log = Workout_Log(workout=self
+                , program_instance=program_instance
+                , workout_date=timezone.now()
+                , status=status)  
         log.save()
         
         # Log exercises

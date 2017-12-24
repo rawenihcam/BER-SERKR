@@ -45,6 +45,7 @@ class WorkoutExerciseForm (ModelForm):
         # Custom fields
         self.fields['exercise'].choices = Exercise.get_exercise_select(lifter_id)
         self.fields['notes_formt'].initial = self.instance.notes_formt()
+        self.fields['notes'].disabled = True
         
         # Manage loading
         if self.instance.rep_scheme == 'MAX_PERCENTAGE':

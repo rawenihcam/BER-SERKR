@@ -37,12 +37,13 @@ class Tools():
         return json.dumps(data)
 
 class Custom():
-    # Custom functions    
+    # To use dictionaries in templates    
     @register.filter
     def get_item(dictionary, key):
         return dictionary.get(key)
         
-    # Chartist
+
+class Chartist():
     
     # "x" (date) and "y" (number) field required. Return JS object ready for eval()
     def get_chartist_data(name, query):
@@ -54,6 +55,25 @@ class Custom():
                 value.y = 'null'
 
             data += '{x: new Date("' + str(value.x).replace('-', '/') + '"), y:' + str(value.y) + '},'
+            exists = True
+        
+        if exists:
+            data = data[:-1] + ']}'
+        else:
+            data += ']}'
+            
+        return data
+    
+    # "x" (date) and "y" (number) field required. Return JS object ready for eval()
+    def get_chartist_data_from_dict(name, dicts):
+        data = '{name: "' + name +'", data: ['
+        exists = False
+        
+        for value in dicts:
+            if not value['y']:
+                value['y'] = 'null'
+
+            data += '{x: new Date("' + str(value['x']).replace('-', '/') + '"), y:' + str(value['y']) + '},'
             exists = True
         
         if exists:
@@ -81,18 +101,3 @@ class Custom():
             data += ']}'
             
         return data
-
-class Fuck():
-    def insert_program_instance():
-        programs = Program.objects.filter(start_date__isnull=False)
-
-        for program in programs:
-            instance = Program_Instance(program=program,start_date=program.start_date,end_date=program.end_date)
-            instance.save()
-
-    def program_creation_date():
-        programs = Program.objects.all()
-
-        for program in programs:
-            program.creation_date = program.start_date if program.start_date != null else timezone.now()
-            program.save()
