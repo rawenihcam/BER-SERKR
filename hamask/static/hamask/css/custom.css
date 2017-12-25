@@ -379,6 +379,18 @@ span.form {
        background-color: #453d3f;
        border-color: #453d3f;
     }
+    .ct-legend .ct-series-5:before {
+       background-color: #59922b;
+       border-color: #59922b;
+    }
+    .ct-legend .ct-series-6:before {
+       background-color: #0544d3;
+       border-color: #0544d3;
+    }
+    .ct-legend .ct-series-7:before {
+       background-color: #6b0392;
+       border-color: #6b0392;
+    }
 
     .crazyPink li.ct-series-0:before {
       background-color: #C2185B;

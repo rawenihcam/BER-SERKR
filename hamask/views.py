@@ -286,10 +286,11 @@ def delete_exercise(request):
     return JsonResponse(data)
     
 def update_workout_notes(request):
+    print('fuck')
+    print(request.GET.get('workout_exercise_id', None))
     exercise = Workout_Exercise.objects.get(pk=request.GET.get('workout_exercise_id', None))
     exercise.notes = request.GET.get('notes', None)
     exercise.save()    
-    
     return JsonResponse({'notes_formt': exercise.notes_formt()})
 
 def logs(request):
@@ -433,9 +434,11 @@ def next_workouts(request):
 def stats(request):            
     lifter = Lifter.objects.get(pk=request.session['lifter'])
     maxes = lifter.get_pl_maxes()
+    total = lifter.get_pl_total()
+    wilks = lifter.get_current_wilks()
     prs = lifter.get_last_prs()
     stats = lifter.get_stats()
-    return render (request, 'hamask/stats.html', {'maxes': maxes, 'prs': prs, 'stats': stats,})
+    return render (request, 'hamask/stats.html', {'maxes': maxes, 'prs': prs, 'stats': stats, 'wilks': wilks, 'total': total,})
     
 def stat_create(request, template_name='hamask/stat.html'):
     lifter_id = request.session['lifter']
@@ -490,11 +493,24 @@ def max_progression(request):
     exercises = Exercise.get_exercises('MAIN', lifter)
     data = '['
     
+    # Main lifts
     for exercise in exercises:
         query = lifter.get_maxes_chart(exercise)
-        data += Custom.get_chartist_data(exercise.name, query) + ','
-        
-    data = data[:-1] + ']'
+        data += Chartist.get_chartist_data(exercise.name, query) + ',' 
+
+    # PL Total
+    query = lifter.get_pl_total_chart()
+    data += Chartist.get_chartist_data_from_dict('Total', query) + ','
+
+    # Bodyweight
+    query = lifter.get_bodyweight_chart()
+    data += Chartist.get_chartist_data('Bodyweight', query) + ','
+
+    # Wilks
+    query = lifter.get_wilks_chart()
+    data += Chartist.get_chartist_data_from_dict('Wilks', query)
+    data = data + ']'
+    
     return render (request, 'hamask/max_progression.html', {'data': data})
             
 def work_intensity(request, pk=None):            
@@ -524,15 +540,13 @@ def work_intensity(request, pk=None):
             data = '['
             
             query = lifter.get_exercise_intensity_chart(exercise)
-            data += Custom.get_chartist_data('Intensity', query) + ','
-                
-            data = data[:-1] + ', '
+            data += Chartist.get_chartist_data('Intensity', query) + ','
 
             # Volume
             query = lifter.get_exercise_volume_chart(exercise)
-            data += Custom.get_chartist_data('Volume', query) + ','
+            data += Chartist.get_chartist_data('Volume', query)
                 
-            data = data[:-1] + ']'
+            data = data + ']'
             
         return render (request, 'hamask/work_intensity.html', {'form': form, 'data': data})
             
@@ -567,15 +581,13 @@ def program_intensity(request, pk=None):
             data = '['
             
             query = program.get_intensity_chart()
-            data += Custom.get_chartist_data_number('Intensity', query) + ','
-                
-            data = data[:-1] + ', '
+            data += Chartist.get_chartist_data_number('Intensity', query) + ','
 
             # Volume
             query = program.get_volume_chart()
-            data += Custom.get_chartist_data_number('Volume', query) + ','
+            data += Chartist.get_chartist_data_number('Volume', query)
                 
-            data = data[:-1] + ']'
+            data = data + ']'
 
         return render (request, 'hamask/program_intensity.html', {'form': form, 'data': data})
             

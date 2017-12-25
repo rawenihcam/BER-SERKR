@@ -31,7 +31,7 @@
 <div class="row">
     <!-- PRs -->
     <div class="col-sm-12 col-md-6">
-        <h5>Your last PRs</h5>
+        <h5>Last PRs</h5>
         {% if prs %}
             <table class="table table-striped">
                 <thead>
@@ -63,7 +63,7 @@
     
     <!-- Maxes -->
     <div class="col-sm-12 col-md-6">
-        <h5>Your maxes</h5>
+        <h5>Maxes</h5>
         {% if maxes %}
             <table class="table table-striped">
                 <thead>
@@ -82,6 +82,20 @@
                       <td>{{ max.entry_date }}</td>
                     </tr>
                 {% endfor %}
+                {% if total %}    
+                    <tr>
+                        <td>Total</td>
+                        <td>{{ total }}</td>
+                        <td></td>
+                    </tr>
+                {% endif %}
+                {% if wilks %}    
+                    <tr>
+                        <td>Wilks</td>
+                        <td>{{ wilks }}</td>
+                        <td></td>
+                    </tr>
+                {% endif %}
                 </tbody>
             </table>
         {% else %}
