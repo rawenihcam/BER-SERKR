@@ -406,12 +406,12 @@ class Lifter (models.Model):
         return 500 / (a + (b*x) + (c*x**2) + (d*x**3) + (e*x**4) + (f*x**5))
     
     def get_current_wilks(self):
-        wilks = None
-        weight = self.get_weight_kilo(self.get_current_bodyweight().weight)
-        if weight:
+        total, wilks = None, None
+        bodyweight = self.get_weight_kilo(getattr(self.get_current_bodyweight(), 'weight', None))
+        if bodyweight:
             total = self.get_weight_kilo(self.get_pl_total())
         if total:
-            wilks = round(total * self.get_wilks_coefficient(weight), 2)          
+            wilks = round(total * self.get_wilks_coefficient(bodyweight), 2)          
         
         return wilks
         
@@ -459,7 +459,10 @@ class Lifter (models.Model):
         return unit;
 
     def get_weight_kilo(self, weight):
-        return weight if self.measurement_system == 'METRC' else weight / 2.2
+        if weight:
+            return weight if self.measurement_system == 'METRC' else weight / 2.2
+        else:
+            return None
     
 class Lifter_Weight (models.Model):
     lifter = models.ForeignKey (Lifter, on_delete=models.CASCADE)
