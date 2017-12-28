@@ -56,7 +56,8 @@
                 <td>{% include 'hamask/formset.html' with field=formset.weight div_class='tabular weight' %}</td>
                 <td>{% include 'hamask/formset.html' with field=formset.rpe div_class='tabular rpe' %}</td>                
                 <td class="center">{% include 'hamask/formset.html' with field=formset.is_amrap div_class='tabular' %}</td>                
-                <td id="td_notes_{{ formset.id.value }}" class="notes" data-id="{{ formset.id.value }}" data-notes="{% if formset.notes.value %}{{ formset.notes.value }}{% endif %}">
+                <td id="td_notes_{{ formset.id.value }}" {% if formset.id.value %}class="notes"{% endif %} 
+                    data-id="{{ formset.id.value }}" data-notes="{% if formset.notes.value %}{{ formset.notes.value }}{% endif %}">
                     {% if formset.id.value %}
                         <span id="notes_formt_{{ formset.id.value }}">{{ formset.notes_formt.value }}</span>&nbsp;<i class="fa fa-pencil fa-small"></i>
                     {% endif %}

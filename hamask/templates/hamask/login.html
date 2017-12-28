@@ -19,6 +19,19 @@
     </head>
     <body class="signin">
         <div class="container">
+        <div class="row">
+            <div class="col-sm-12">
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert {{ message.extra_tags }} alert-dismissable fade show" role="alert">
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            </div></div>
         <form action="/login/" method="post" class="form-signin">        
             <div class="row">
             <div class="col-sm-12">

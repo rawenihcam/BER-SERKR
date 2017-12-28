@@ -130,7 +130,9 @@
                                             <td>{{ exercise.sets }}</td>
                                             <td>{{ exercise.reps }}</td>
                                             <td>{{ exercise.loading }}</td>
-                                            <td class="notes" data-notes="{{ exercise.notes }}">{% if exercise.notes %}<i class="fa fa-comment"></i>{% endif %}</td>
+                                            <td {% if exercise.notes %}class="notes" data-notes="{{ exercise.notes }}"{% endif %}>
+                                                {% if exercise.notes %}<i class="fa fa-comment"></i>{% endif %}
+                                            </td>
                                             <td>&nbsp;</td>
                                             </tr>
                                         {% endfor %}
