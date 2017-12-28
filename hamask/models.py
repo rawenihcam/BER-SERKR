@@ -26,7 +26,7 @@ class Lifter (models.Model):
         
     def get_programs(self):
         programs = Program.objects.filter(lifter__exact=self.id
-                    ).order_by('-creation_date')
+                    ).order_by('name')
         return programs
         
     def get_started_programs(self):
@@ -623,11 +623,17 @@ class Program (models.Model):
                 ).order_by('-workout_date', '-id').first()
         return logs
         
+    def get_last_workout_log_by_id(self):
+        logs = Workout_Log.objects.filter(workout__workout_group__program__exact=self.id
+                ).filter(program_instance__exact=self.get_current_instance()
+                ).order_by('-id').first()
+        return logs
+        
     def get_next_workout(self):
         if self.start_date() and not self.end_date():
             try:
                 # Get last workout done
-                log = self.get_last_workout_log()
+                log = self.get_last_workout_log_by_id()
                 if not log:
                     raise ObjectDoesNotExist
                 
