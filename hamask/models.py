@@ -25,8 +25,24 @@ class Lifter (models.Model):
         return self.first_name + ' ' + self.last_name
         
     def get_programs(self):
-        programs = Program.objects.filter(lifter__exact=self.id
-                    ).order_by('name')
+        programs = Program.objects.raw('''
+                        select s.id
+                          from (select p.id, 1 qmark, rank() over (order by pi.start_date desc) row_order 
+                                  from hamask_program p,
+                                       (select pi.program_id, 
+                                               pi.start_date,
+                                               rank() over (partition by pi.program_id order by pi.start_date desc) row_order
+                                          from hamask_program_instance pi) pi
+                                 where p.id = pi.program_id
+                                   and pi.row_order = 1
+                                   and p.lifter_id = %(p_lifter)s
+                                union all
+                                select p.id, 2 qmark, rank() over (order by p.name) row_order
+                                  from hamask_program p
+                                 where not exists(select 1 from hamask_program_instance pi where pi.program_id = p.id)
+                                   and p.lifter_id = %(p_lifter)s) s
+                         order by s.qmark, s.row_order'''
+                        , {'p_lifter': self.id})
         return programs
         
     def get_started_programs(self):
@@ -34,7 +50,7 @@ class Lifter (models.Model):
                                 ).filter(start_date__isnull=False
                                 ).filter(end_date__isnull=True
                                 ).values('program')
-        programs = self.get_programs().filter(id__in=running_programs)
+        programs = Program.objects.filter(id__in=running_programs)
         return programs
 
     def get_next_workouts(self):
@@ -1019,7 +1035,7 @@ class Workout_Exercise (models.Model):
     sets = models.PositiveIntegerField (blank=True, null=True)
     reps = models.PositiveIntegerField (blank=True, null=True)
     weight = models.FloatField (blank=True, null=True)
-    percentage = models.PositiveIntegerField (blank=True, null=True)
+    percentage = models.FloatField (blank=True, null=True)
     rpe = models.FloatField (blank=True, null=True)
     time = models.PositiveIntegerField (blank=True, null=True)
     is_amrap = models.BooleanField (default=False)
@@ -1215,7 +1231,7 @@ class Workout_Exercise_Log (models.Model):
     sets = models.PositiveIntegerField (blank=True, null=True)
     reps = models.PositiveIntegerField (blank=True, null=True)
     weight = models.FloatField (blank=True, null=True)
-    percentage = models.PositiveIntegerField (blank=True, null=True)
+    percentage = models.FloatField (blank=True, null=True)
     rpe = models.FloatField (blank=True, null=True)
     time = models.PositiveIntegerField (blank=True, null=True)
     is_amrap = models.BooleanField (default=False)

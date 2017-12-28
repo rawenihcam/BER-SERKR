@@ -60,7 +60,9 @@
                       <td>{{ log.weight_formt }}</td>
                       <td>{% if log.rpe %}{{ log.rpe }}{% endif %}</td>
                       <td>{{ log.volume }}</td>
-                      <td class="notes center" data-notes="{{ log.notes }}">{% if log.notes %}<i class="fa fa-comment"></i>{% endif %}</td>
+                      <td {% if log.notes %}class="notes center" data-notes="{{ log.notes }}"{% endif %}>
+                        {% if log.notes %}<i class="fa fa-comment"></i>{% endif %}
+                      </td>
                     </tr>
                 {% endfor %}
                 </tbody>

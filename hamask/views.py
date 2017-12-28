@@ -27,6 +27,8 @@ def index(request):
                 if user is not None:
                     login (request, user)
                     request.session['lifter'] = Lifter.objects.get(email__exact=email).id
+                else:
+                    messages.error(request, 'Invalid email/password combination.', extra_tags=Notification.error_class)
                 
         # Log workout
         elif 'log' in request.POST:
