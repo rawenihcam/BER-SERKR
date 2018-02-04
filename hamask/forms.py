@@ -116,6 +116,17 @@ class LogByExerciseForm (forms.Form):
         # Custom fields
         self.fields['exercise'].choices = Exercise.get_exercise_select(lifter_id)
 
+class StatsByExerciseForm (forms.Form):
+    exercise = forms.ChoiceField (label='Exercise')
+        
+    def __init__(self, *args, **kwargs):
+        # Calling Django's init
+        lifter_id = kwargs.pop('lifter')
+        super(StatsByExerciseForm, self).__init__(*args, **kwargs)
+
+        # Custom fields
+        self.fields['exercise'].choices = Exercise.get_exercise_select(lifter_id)
+
 class WorkIntensityForm (forms.Form):
     exercise = forms.ChoiceField (label='Exercise')
 
@@ -137,7 +148,7 @@ class ProgramIntensityForm (forms.Form):
 
         super(ProgramIntensityForm, self).__init__(*args, **kwargs)
         
-        self.fields['program'].choices = lifter.get_programs().values_list('id', 'name')
+        self.fields['program'].choices = lifter.get_all_programs().values_list('id', 'name')
         self.fields['program'].choices.insert(0, (0,'---------' ) )
         self.fields['program'].initial = program_id         
        
@@ -147,6 +158,7 @@ class ProfileForm (ModelForm):
         super(ProfileForm, self).__init__(*args, **kwargs)
         
         self.fields['email'].disabled = True
+        self.fields['measurement_system'].disabled = True
     
     class Meta:
         model = Lifter

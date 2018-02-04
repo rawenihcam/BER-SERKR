@@ -433,14 +433,41 @@ def next_workouts(request):
                                                             , 'workouts': workouts
                                                             , 'exercises': exercises,})
                                                    
-def stats(request):            
+def stats(request, exercise='0'):            
     lifter = Lifter.objects.get(pk=request.session['lifter'])
+    lifter_name = lifter.first_name + ' ' + lifter.last_name
     maxes = lifter.get_pl_maxes()
     total = lifter.get_pl_total()
+    bodyweight = lifter.get_current_bodyweight().weight
     wilks = lifter.get_current_wilks()
     prs = lifter.get_last_prs()
-    stats = lifter.get_stats()
-    return render (request, 'hamask/stats.html', {'maxes': maxes, 'prs': prs, 'stats': stats, 'wilks': wilks, 'total': total,})
+    stats = None
+    form = StatsByExerciseForm(request.POST or None, lifter = lifter.id)
+            
+    if request.POST:       
+        form = StatsByExerciseForm(request.POST, lifter = lifter.id)
+        
+        if form.is_valid():
+            exercise = form.cleaned_data['exercise']
+            return HttpResponseRedirect (reverse ('hamask:stats', kwargs={'exercise':exercise}))
+        else:
+            return HttpResponseRedirect (reverse ('hamask:stats'))
+    else:
+        if exercise != '0':
+            form = StatsByExerciseForm(initial={'exercise': exercise}, lifter = lifter.id)
+            stats = lifter.get_exercise_prs(exercise_id=exercise)
+        else:
+            form = StatsByExerciseForm(lifter = lifter.id)
+            stats = None
+            
+        return render (request, 'hamask/stats.html', {'lifter_name': lifter_name
+                                                        , 'maxes': maxes
+                                                        , 'prs': prs
+                                                        , 'stats': stats
+                                                        , 'wilks': wilks
+                                                        , 'total': total
+                                                        , 'bodyweight': bodyweight
+                                                        , 'form': form})
     
 def stat_create(request, template_name='hamask/stat.html'):
     lifter_id = request.session['lifter']
@@ -488,6 +515,28 @@ def stat_update(request, pk, template_name='hamask/stat.html'):
                 return HttpResponseRedirect (reverse ('hamask:stats'))
         else:
             return render (request, template_name, {'form': form, 'id': lifter_stat.id,})
+            
+def all_stats(request, exercise='0'):            
+    lifter = Lifter.objects.get(pk=request.session['lifter'])
+    form = StatsByExerciseForm(request.POST or None, lifter = lifter.id)
+    
+    if request.POST:       
+        form = StatsByExerciseForm(request.POST, lifter = lifter.id)
+        
+        if form.is_valid():
+            exercise = form.cleaned_data['exercise']
+            return HttpResponseRedirect (reverse ('hamask:all_stats', kwargs={'exercise':exercise}))
+        else:
+            return HttpResponseRedirect (reverse ('hamask:all_stats'))
+    else:
+        if exercise != '0':
+            form = StatsByExerciseForm(initial={'exercise': exercise}, lifter = lifter.id)
+            stats = lifter.get_exercise_stats(exercise_id=exercise)
+        else:
+            form = StatsByExerciseForm(lifter = lifter.id)
+            stats = lifter.get_stats()
+    
+        return render (request, 'hamask/all_stats.html', {'form': form, 'stats': stats,})
             
 def max_progression(request):            
     lifter = Lifter.objects.get(pk=request.session['lifter'])    

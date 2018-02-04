@@ -3,7 +3,8 @@
 {% block content %}
 <nav class="col-md-3 col-lg-2 sidebar">
     <ul class="nav nav-pills flex-column">
-        <li class="nav-item"><a class="nav-link" href="{% url 'hamask:stats' %}">Stats</a></li>        
+        <li class="nav-item"><a class="nav-link" href="{% url 'hamask:stats' %}">Stats</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'hamask:all_stats' %}">All Stats</a></li>          
     </ul>
     <ul class="nav nav-pills flex-column">
         <li class="nav-item"><a class="nav-link" href="{% url 'hamask:max_progression' %}">Max Progression</a></li>
