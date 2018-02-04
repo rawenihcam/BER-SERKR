@@ -45,6 +45,10 @@ class Lifter (models.Model):
                         , {'p_lifter': self.id})
         return programs
         
+    def get_all_programs(self):
+        programs = Program.objects.filter(lifter__exact=self)
+        return programs
+        
     def get_started_programs(self):
         running_programs = Program_Instance.objects.filter(program__lifter__exact=self.id
                                 ).filter(start_date__isnull=False
@@ -243,8 +247,20 @@ class Lifter (models.Model):
                                                                and ls2.exercise_id = ls.exercise_id 
                                                                and ls2.reps = ls.reps) 
                                             order by ls.entry_date desc'''
-                                            , [self.id])[:5]
+                                            , [self.id])[:6]
         
+        return prs
+        
+    def get_exercise_prs(self, exercise_id):
+        prs = Lifter_Stats.objects.raw('''select s.id
+                                            from (select ls.id, ls.reps, rank() over (partition by ls.reps order by ls.weight desc) row_order
+                                                    from hamask_lifter_stats ls 
+                                                   where ls.lifter_id = %(p_lifter)s
+                                                     and ls.exercise_id = %(p_exercise)s) s
+                                           where s.row_order = 1
+                                           order by s.reps'''
+                                            , {'p_lifter': self.id, 'p_exercise': exercise_id})
+                    
         return prs
         
     def get_exercise_volume_chart(self, exercise):
@@ -371,6 +387,13 @@ class Lifter (models.Model):
                     
         return stats
         
+    def get_exercise_stats(self, exercise_id):
+        stats = Lifter_Stats.objects.filter(lifter__exact=self.id
+                    ).filter(exercise__exact=exercise_id
+                    ).order_by('-entry_date', '-id')
+                    
+        return stats
+        
     def get_all_bodyweights(self):
         weights = Lifter_Weight.objects.filter(lifter__exact=self.id
                     ).order_by('-entry_date','-id')[:50]
@@ -486,7 +509,7 @@ class Lifter_Weight (models.Model):
     weight = models.FloatField ()
     
     def __str__(self):
-        return self.weight + self.lifter.get_weight_unit()
+        return str(self.weight) + self.lifter.get_weight_unit()
     
     @property
     def weight_formt(self):
@@ -727,7 +750,7 @@ class Program (models.Model):
     def get_intensity_chart(self):
         intensity = Lifter_Stats.objects.raw('''select w.id,
                                                        row_number() over (order by ((wg.order + 1) * 10000) + w.order) x,
-                                                       round(avg(we.percentage), 2) y
+                                                       round(cast(avg(we.percentage) as decimal), 2) y
                                              from hamask_workout_group wg,
                                                   hamask_workout w,
                                                   hamask_workout_exercise we
@@ -741,8 +764,8 @@ class Program (models.Model):
                     
         return intensity
     
-    def get_volume_chart(self): #TODOOOOOOO
-        intensity = Lifter_Stats.objects.raw('''select s.id, s.x, round((cast(s.y as decimal) / max_volume.volume) * 100, 2) y
+    def get_volume_chart(self):
+        intensity = Lifter_Stats.objects.raw('''select s.id, s.x, round(cast((s.y / max_volume.volume) * 100 as decimal), 2) y
                                                   from (select w.id,
                                                                row_number() over (order by ((wg.order + 1) * 10000) + w.order) x,
                                                                sum(we.sets * we.reps * we.percentage) y

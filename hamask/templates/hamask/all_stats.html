@@ -1,0 +1,73 @@
+{% extends 'hamask/base.html' %}
+
+{% block content %}
+<form id="form" method="post">
+{% csrf_token %}
+<nav class="col-md-3 col-lg-2 sidebar">
+    <ul class="nav nav-pills flex-column">
+        <li class="nav-item"><a class="nav-link" href="{% url 'hamask:stats' %}">Stats</a></li> 
+        <li class="nav-item"><a class="nav-link active" href="#">All Stats</a></li>       
+    </ul>
+    <ul class="nav nav-pills flex-column">
+        <li class="nav-item"><a class="nav-link" href="{% url 'hamask:max_progression' %}">Max Progression</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'hamask:work_intensity' %}">Work Intensity/Volume</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'hamask:program_intensity' %}">Program Intensity/Volume</a></li>
+    </ul>
+</nav>
+
+<div class="col-md-9 ml-md-auto col-lg-10 ml-lg-auto">
+
+<div class="row page-header">
+<div class="col-sm-12">    
+    <div class="d-flex justify-content-between">
+    <div class="p2">
+        <h2>Stats</h2>
+    </div>
+    <div class="p-2">
+        <a href="{% url 'hamask:stat_create' %}" class="head btn btn-success"><i class="fa fa-plus"></i>&nbsp;Add</a>
+    </div>
+    </div>
+</div>
+</div>
+
+<div class="row">
+    <div class="col-sm-12">
+        {% include 'hamask/form.html' with field=form.exercise div_class='col-sm-12 col-md-4 col-lg-3' %}
+</div></div>
+
+{% if stats %}
+<div class="row">
+    <div class="col-sm-12">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Exercise</th>
+                    <th>Weight</th>
+                    <th>Reps</th>
+                </tr>
+            </thead>
+            
+            <tbody>
+            {% for stat in stats %}
+                <tr>
+                  <td><a href="{% url 'hamask:stat_update' stat.id %}">{{ stat.entry_date }}</a></td>
+                  <td>{{ stat.exercise }}</td>
+                  <td>{{ stat.weight }}</td>
+                  <td>{{ stat.reps }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+</form>
+
+<!-- Custom JS -->
+<script type="text/javascript">
+    $('#id_exercise').on('input', function() { 
+        $("#form").submit();
+    });
+</script>
+{% endblock %}
