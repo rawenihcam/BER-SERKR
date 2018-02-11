@@ -202,3 +202,11 @@ class StatForm (ModelForm):
 class RmCalculatorForm (forms.Form):
     weight = forms.FloatField (label='Weight', required=True, min_value=0)
     reps = forms.IntegerField (label='Reps', required=True, min_value=0, max_value=10)
+    
+class MeetPlannerForm (ModelForm):
+    class Meta:
+        model = Meet_Planner
+        fields = ['bodyweight'
+                    , 'squat_1', 'squat_2', 'squat_3'
+                    , 'bench_1', 'bench_2', 'bench_3'
+                    , 'deadlift_1', 'deadlift_2', 'deadlift_3']

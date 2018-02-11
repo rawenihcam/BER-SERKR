@@ -44,5 +44,6 @@ urlpatterns = [
 	url(r'^custom_exercises/', views.custom_exercises, name='custom_exercises'),
 	url(r'^ajax/delete_custom_exercise/', views.delete_custom_exercise, name='delete_custom_exercise'),
 	url(r'^rm_calculator/', views.rm_calculator, name='rm_calculator'),
-	url(r'^ajax/get_rm_calculator_data/', views.get_rm_calculator_data, name='get_rm_calculator_data')
+	url(r'^ajax/get_rm_calculator_data/', views.get_rm_calculator_data, name='get_rm_calculator_data'),
+	url(r'^meet_planner/', views.meet_planner, name='meet_planner')
 ]
