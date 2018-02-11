@@ -48,8 +48,7 @@
     <br/>
     <div class="row">
         {% include 'hamask/form.html' with field=form.rounding div_class='col-sm-12 col-md-4 col-lg-3' %}
-        {% include 'hamask/form.html' with field=form.training_max_percentage div_class='col-sm-12 col-md-4 col-lg-3' %}
-        <span class="form">%</span>
+        {% include 'hamask/form_addon_after.html' with field=form.training_max_percentage div_class='col-sm-12 col-md-4 col-lg-3' addon='%' %}
 	</div></br>
 	<div class="row">
         {% include 'hamask/form.html' with field=form.auto_update_stats div_class='col-sm-12 col-md-3 col-lg-2' %}

@@ -3,7 +3,8 @@
 {% block content %}
 <nav class="col-md-3 col-lg-2 sidebar">
     <ul class="nav nav-pills flex-column">
-        <li class="nav-item"><a class="nav-link active" href="{% url 'hamask:rm_calculator' %}">RM Calculator</a></li>
+        <li class="nav-item"><a class="nav-link active" href="#">RM Calculator</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'hamask:meet_planner' %}">Meet Planner</a></li>
     </ul>
 </nav>
 
@@ -16,6 +17,7 @@
         <h2>RM Calculator</h2>
     </div>
     <div class="p-2">
+        <a href="{% url 'hamask:index' %}" class="btn btn-secondary"><i class="fa fa-arrow-left"></i>&nbsp;Back</a> 
     </div>
     </div>
 </div>

@@ -270,6 +270,10 @@ span.form {
     margin-top: 35px;
 }
 
+span.input-group-addon {
+    width: 25%;
+}
+
 /* Misc */
 .w-1 {
     width: 8.333333333%!important;

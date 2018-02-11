@@ -445,8 +445,6 @@ def stats(request, exercise='0'):
     form = StatsByExerciseForm(request.POST or None, lifter = lifter.id)
             
     if request.POST:       
-        form = StatsByExerciseForm(request.POST, lifter = lifter.id)
-        
         if form.is_valid():
             exercise = form.cleaned_data['exercise']
             return HttpResponseRedirect (reverse ('hamask:stats', kwargs={'exercise':exercise}))
@@ -521,8 +519,6 @@ def all_stats(request, exercise='0'):
     form = StatsByExerciseForm(request.POST or None, lifter = lifter.id)
     
     if request.POST:       
-        form = StatsByExerciseForm(request.POST, lifter = lifter.id)
-        
         if form.is_valid():
             exercise = form.cleaned_data['exercise']
             return HttpResponseRedirect (reverse ('hamask:all_stats', kwargs={'exercise':exercise}))
@@ -760,3 +756,26 @@ def get_rm_calculator_data(request):
     data = Tools.get_rm_chart_json(int(request.GET.get('weight', None)), int(request.GET.get('reps', None)))
     
     return JsonResponse(data, safe=False)
+
+def meet_planner(request):            
+    lifter = Lifter.objects.get(pk=request.session['lifter'])    
+    meet_planner = Meet_Planner.objects.filter(lifter__exact=lifter).first()
+    form = MeetPlannerForm(request.POST or None, instance=meet_planner)
+    
+    if request.POST:       
+        if 'reset' in request.POST:
+            meet_planner.delete()
+            meet_planner = Meet_Planner.initialize_meet_planner(lifter)
+        elif 'save' in request.POST and form.is_valid():
+            form.save()
+        
+        messages.success(request, Notification.success_message, extra_tags=Notification.success_class)
+        return HttpResponseRedirect (reverse ('hamask:meet_planner'))
+    else:
+        if not meet_planner:
+            meet_planner = Meet_Planner.initialize_meet_planner(lifter)
+            form = MeetPlannerForm(request.POST or None, instance=meet_planner)
+        
+        converted_data = meet_planner.get_converted_data_with_unit()
+        
+        return render (request, 'hamask/meet_planner.html', {'form': form, 'meet_planner': meet_planner, 'converted_data': converted_data})

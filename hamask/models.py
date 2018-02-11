@@ -496,10 +496,25 @@ class Lifter (models.Model):
             unit = 'lbs'
             
         return unit;
+        
+    def get_converted_weight_unit(self):
+        unit = ''
+        if self.measurement_system == 'METRC':
+            unit = 'lbs'
+        elif self.measurement_system == 'IMPER':
+            unit = 'kg'
+            
+        return unit;
 
     def get_weight_kilo(self, weight):
         if weight:
             return weight if self.measurement_system == 'METRC' else weight / 2.2
+        else:
+            return None
+            
+    def convert_weight(self, weight):
+        if weight:
+            return weight * 2.2 if self.measurement_system == 'METRC' else weight / 2.2
         else:
             return None
     
@@ -1371,8 +1386,96 @@ class Lifter_Stats (models.Model):
     workout_exercise_log = models.ForeignKey (Workout_Exercise_Log, on_delete=models.SET_NULL, blank=True, null=True)
     entry_date = models.DateField (default=datetime.date.today)
     reps = models.PositiveIntegerField (blank=True, null=True)
-    weight = models.PositiveIntegerField (blank=True, null=True)
+    weight = models.FloatField (blank=True, null=True)
     time = models.PositiveIntegerField (blank=True, null=True)
     
     def __str__(self):
         return str(self.weight)
+        
+class Meet_Planner (models.Model):
+    lifter = models.ForeignKey (Lifter, on_delete=models.CASCADE)
+    bodyweight = models.FloatField (blank=True, null=True)
+    squat_1 = models.FloatField (blank=True, null=True)
+    squat_2 = models.FloatField (blank=True, null=True)
+    squat_3 = models.FloatField (blank=True, null=True)
+    bench_1 = models.FloatField (blank=True, null=True)
+    bench_2 = models.FloatField (blank=True, null=True)
+    bench_3 = models.FloatField (blank=True, null=True)
+    deadlift_1 = models.FloatField (blank=True, null=True)
+    deadlift_2 = models.FloatField (blank=True, null=True)
+    deadlift_3 = models.FloatField (blank=True, null=True)
+    
+    attempt_1_factor = 0.91
+    attempt_2_factor = 0.97
+    attempt_3_factor = 1.03
+    
+    def total(self):
+        return getattr(self, 'squat_3', 0) + getattr(self, 'bench_3', 0) + getattr(self, 'deadlift_3', 0)
+        
+    def wilks(self):
+        wilks = None
+        total = self.total()
+        
+        if total and self.bodyweight:
+            wilks = round(self.lifter.get_weight_kilo(total) * self.lifter.get_wilks_coefficient(self.lifter.get_weight_kilo(self.bodyweight)), 2) 
+        
+        return wilks
+        
+    def get_converted_data(self):
+        data = {}        
+        
+        data['bodyweight'] = round(self.lifter.convert_weight(self.bodyweight))
+        data['squat_1'] = round(self.lifter.convert_weight(self.squat_1))
+        data['squat_2'] = round(self.lifter.convert_weight(self.squat_2))
+        data['squat_3'] = round(self.lifter.convert_weight(self.squat_3))
+        data['bench_1'] = round(self.lifter.convert_weight(self.bench_1))
+        data['bench_2'] = round(self.lifter.convert_weight(self.bench_2))
+        data['bench_3'] = round(self.lifter.convert_weight(self.bench_3))
+        data['deadlift_1'] = round(self.lifter.convert_weight(self.deadlift_1))
+        data['deadlift_2'] = round(self.lifter.convert_weight(self.deadlift_2))
+        data['deadlift_3'] = round(self.lifter.convert_weight(self.deadlift_3))
+        data['total'] = round(self.lifter.convert_weight(self.total()))
+        
+        return data
+        
+    def get_converted_data_with_unit(self):
+        data = self.get_converted_data()        
+        
+        for k in data:
+            data[k] = str(data[k]) + ' ' + self.lifter.get_converted_weight_unit()
+        
+        return data
+        
+    @staticmethod
+    def clear_meet_planner(lifter):
+        meet_planner = Meet_Planner.objects.filter(lifter__exact=lifter)
+        
+        if meet_planner:
+            meet_planner.delete()
+            
+    @staticmethod
+    def initialize_meet_planner(lifter):
+        meet_planner = Meet_Planner(lifter=lifter, bodyweight=lifter.get_current_bodyweight().weight)
+                        
+        squat_max = lifter.get_max(Exercise.objects.get(name__exact='Squat'))
+        bench_max = lifter.get_max(Exercise.objects.get(name__exact='Bench Press'))
+        deadlift_max = lifter.get_max(Exercise.objects.get(name__exact='Deadlift'))
+        
+        if squat_max:
+            meet_planner.squat_1 = round(squat_max.weight * Meet_Planner.attempt_1_factor)
+            meet_planner.squat_2 = round(squat_max.weight * Meet_Planner.attempt_2_factor)
+            meet_planner.squat_3 = round(squat_max.weight * Meet_Planner.attempt_3_factor)
+        
+        if bench_max:
+            meet_planner.bench_1 = round(bench_max.weight * Meet_Planner.attempt_1_factor)
+            meet_planner.bench_2 = round(bench_max.weight * Meet_Planner.attempt_2_factor)
+            meet_planner.bench_3 = round(bench_max.weight * Meet_Planner.attempt_3_factor)
+        
+        if deadlift_max:
+            meet_planner.deadlift_1 = round(deadlift_max.weight * Meet_Planner.attempt_1_factor)
+            meet_planner.deadlift_2 = round(deadlift_max.weight * Meet_Planner.attempt_2_factor)
+            meet_planner.deadlift_3 = round(deadlift_max.weight * Meet_Planner.attempt_3_factor)
+            
+        meet_planner.save()
+        return meet_planner
+    
