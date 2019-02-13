@@ -1,5 +1,6 @@
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist
 from django.forms import modelformset_factory
@@ -74,12 +75,14 @@ def index(request):
 def logout_view(request):
     logout(request)
     return HttpResponseRedirect (reverse ('hamask:index'))
-            
+
+@login_required            
 def programs(request):
     lifter = Lifter.objects.get(pk=request.session['lifter'])
     programs = lifter.get_programs()
     return render (request, 'hamask/programs.html', {'programs': programs})
 
+@login_required
 def program_create(request, template_name='hamask/program.html'):
     form = ProgramForm(request.POST or None)
         
@@ -94,6 +97,7 @@ def program_create(request, template_name='hamask/program.html'):
     else:
         return render (request, template_name, {'form': form})
 
+@login_required
 def program_update(request, pk, template_name='hamask/program.html'):
     program = get_object_or_404(Program, pk=pk)
     if program.lifter.id != request.session['lifter']:
@@ -195,6 +199,7 @@ def update_group(request):
     
     return JsonResponse(data)
 
+@login_required
 def program_import(request):            
     lifter = Lifter.objects.get(pk=request.session['lifter'])    
     
@@ -210,6 +215,7 @@ def program_import(request):
     else:
         return render (request, 'hamask/program_import.html', {'form': form})
     
+@login_required
 def workout_update(request, pk, template_name='hamask/workout.html'):
     workout = get_object_or_404(Workout, pk=pk)
     lifter_id = request.session['lifter']
@@ -288,13 +294,12 @@ def delete_exercise(request):
     return JsonResponse(data)
     
 def update_workout_notes(request):
-    print('fuck')
-    print(request.GET.get('workout_exercise_id', None))
     exercise = Workout_Exercise.objects.get(pk=request.GET.get('workout_exercise_id', None))
     exercise.notes = request.GET.get('notes', None)
     exercise.save()    
     return JsonResponse({'notes_formt': exercise.notes_formt()})
 
+@login_required
 def logs(request):
     lifter = Lifter.objects.get(pk=request.session['lifter'])
     
@@ -307,7 +312,8 @@ def logs(request):
     else:    
         logs = lifter.get_last_workouts()
         return render (request, 'hamask/logs.html', {'logs': logs})
-    
+
+@login_required    
 def log_update(request, pk, template_name='hamask/log.html'):
     lifter_id = request.session['lifter']
     log = get_object_or_404(Workout_Log, pk=pk)
@@ -386,6 +392,7 @@ def update_log_notes(request):
     
     return JsonResponse({'notes_formt': exercise_log.notes_formt()})
     
+@login_required
 def logs_by_exercise(request, exercise='0'):
     lifter = Lifter.objects.get(pk=request.session['lifter'])
     form = LogByExerciseForm(request.POST or None, lifter = lifter.id)
@@ -417,6 +424,7 @@ def logs_by_exercise(request, exercise='0'):
             
         return render (request, 'hamask/logs_by_exercise.html', {'form': form, 'logs': logs})
         
+@login_required
 def next_workouts(request):
     lifter = Lifter.objects.get(pk=request.session['lifter'])
     programs = lifter.get_started_programs()
@@ -433,12 +441,13 @@ def next_workouts(request):
                                                             , 'workouts': workouts
                                                             , 'exercises': exercises,})
                                                    
+@login_required
 def stats(request, exercise='0'):            
     lifter = Lifter.objects.get(pk=request.session['lifter'])
     lifter_name = lifter.first_name + ' ' + lifter.last_name
     maxes = lifter.get_pl_maxes()
     total = lifter.get_pl_total()
-    bodyweight = lifter.get_current_bodyweight().weight
+    bodyweight = getattr(lifter.get_current_bodyweight(), "weight", None)
     wilks = lifter.get_current_wilks()
     prs = lifter.get_last_prs()
     stats = None
@@ -467,6 +476,7 @@ def stats(request, exercise='0'):
                                                         , 'bodyweight': bodyweight
                                                         , 'form': form})
     
+@login_required
 def stat_create(request, template_name='hamask/stat.html'):
     lifter_id = request.session['lifter']
     form = StatForm(request.POST or None
@@ -486,6 +496,7 @@ def stat_create(request, template_name='hamask/stat.html'):
     else:
         return render (request, template_name, {'form': form})
 
+@login_required
 def stat_update(request, pk, template_name='hamask/stat.html'):
     lifter_id = request.session['lifter']
     lifter_stat = get_object_or_404(Lifter_Stats, pk=pk)
@@ -514,6 +525,7 @@ def stat_update(request, pk, template_name='hamask/stat.html'):
         else:
             return render (request, template_name, {'form': form, 'id': lifter_stat.id,})
             
+@login_required
 def all_stats(request, exercise='0'):            
     lifter = Lifter.objects.get(pk=request.session['lifter'])
     form = StatsByExerciseForm(request.POST or None, lifter = lifter.id)
@@ -534,6 +546,7 @@ def all_stats(request, exercise='0'):
     
         return render (request, 'hamask/all_stats.html', {'form': form, 'stats': stats,})
             
+@login_required
 def max_progression(request):            
     lifter = Lifter.objects.get(pk=request.session['lifter'])    
     
@@ -560,6 +573,7 @@ def max_progression(request):
     
     return render (request, 'hamask/max_progression.html', {'data': data})
             
+@login_required
 def work_intensity(request, pk=None):            
     lifter = Lifter.objects.get(pk=request.session['lifter'])
     exercise = None
@@ -597,6 +611,7 @@ def work_intensity(request, pk=None):
             
         return render (request, 'hamask/work_intensity.html', {'form': form, 'data': data})
             
+@login_required
 def program_intensity(request, pk=None):            
     lifter = Lifter.objects.get(pk=request.session['lifter'])
     program = None
@@ -638,6 +653,7 @@ def program_intensity(request, pk=None):
 
         return render (request, 'hamask/program_intensity.html', {'form': form, 'data': data})
             
+@login_required
 def profile(request):
     lifter = Lifter.objects.get(pk=request.session['lifter'])
     
@@ -674,6 +690,7 @@ def profile(request):
     else:
         return render (request, 'hamask/profile.html', {'form': form, 'password_form': password_form})
         
+@login_required
 def bodyweight(request):
     lifter = Lifter.objects.get(pk=request.session['lifter'])
     logs = lifter.get_all_bodyweights()
@@ -690,6 +707,7 @@ def bodyweight(request):
     else:
         return render (request, 'hamask/bodyweight.html', {'form': form, 'logs': logs})
         
+@login_required
 def bodyweight_update(request, pk, template_name='hamask/bodyweight.html'):
     lifter = Lifter.objects.get(pk=request.session['lifter'])
     bodyweight = get_object_or_404(Lifter_Weight, pk=pk)    
@@ -713,6 +731,7 @@ def bodyweight_update(request, pk, template_name='hamask/bodyweight.html'):
         else:
             return render (request, template_name, {'form': form, 'logs': logs, 'id': bodyweight.id})
     
+@login_required
 def custom_exercises(request, template_name='hamask/custom_exercises.html'):
     lifter = get_object_or_404(Lifter, pk=request.session['lifter'])
     
@@ -745,6 +764,7 @@ def delete_custom_exercise(request):
     
     return JsonResponse(data)
 
+@login_required
 def rm_calculator(request):            
     lifter = Lifter.objects.get(pk=request.session['lifter'])    
     
@@ -757,6 +777,7 @@ def get_rm_calculator_data(request):
     
     return JsonResponse(data, safe=False)
 
+@login_required
 def meet_planner(request):            
     lifter = Lifter.objects.get(pk=request.session['lifter'])    
     meet_planner = Meet_Planner.objects.filter(lifter__exact=lifter).first()

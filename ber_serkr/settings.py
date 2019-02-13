@@ -125,3 +125,6 @@ USE_TZ = True
 
 STATIC_ROOT = 'static/'
 STATIC_URL =  '/static/' #'http://storage.googleapis.com/ber-serkr/static/'
+
+# Misc config
+LOGIN_URL = '/index/'

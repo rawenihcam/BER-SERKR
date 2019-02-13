@@ -1424,7 +1424,8 @@ class Meet_Planner (models.Model):
     def get_converted_data(self):
         data = {}        
         
-        data['bodyweight'] = round(self.lifter.convert_weight(self.bodyweight))
+        if self.bodyweight:
+            data['bodyweight'] = round(self.lifter.convert_weight(self.bodyweight))
         data['squat_1'] = round(self.lifter.convert_weight(self.squat_1))
         data['squat_2'] = round(self.lifter.convert_weight(self.squat_2))
         data['squat_3'] = round(self.lifter.convert_weight(self.squat_3))
@@ -1455,7 +1456,7 @@ class Meet_Planner (models.Model):
             
     @staticmethod
     def initialize_meet_planner(lifter):
-        meet_planner = Meet_Planner(lifter=lifter, bodyweight=lifter.get_current_bodyweight().weight)
+        meet_planner = Meet_Planner(lifter=lifter, bodyweight=getattr(lifter.get_current_bodyweight(), "weight", None))
                         
         squat_max = lifter.get_max(Exercise.objects.get(name__exact='Squat'))
         bench_max = lifter.get_max(Exercise.objects.get(name__exact='Bench Press'))
