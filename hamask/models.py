@@ -1186,7 +1186,7 @@ class Workout_Exercise (models.Model):
                 self._loading_weight_formt = str(self.loading_weight
                     ) + self.workout.workout_group.program.lifter.get_weight_unit()
             elif self.rep_scheme == 'MAX_PERCENTAGE':
-                self._loading_weight_formt = 'No max defined'
+                self._loading_weight_formt = 'No max'
             else:
                 self._loading_weight_formt = ''
         

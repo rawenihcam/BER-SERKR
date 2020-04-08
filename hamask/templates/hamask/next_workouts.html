@@ -54,6 +54,7 @@
                                             <th class="w-1 invisible"></th>
                                             <th class="w-1 invisible"></th>
                                             <th class="w-1 invisible"></th>
+                                            <th class="w-1 invisible"></th>
                                         </tr>
                                     </thead>
                     
@@ -65,6 +66,9 @@
                                             <td>{{ exercise.reps }}</td>
                                             <td>{{ exercise.loading }}</td>
                                             <td>{{ exercise.loading_weight_formt }}</td>
+                                            <td {% if exercise.notes %}class="notes" data-notes="{{ exercise.notes }}"{% endif %}>
+                                                {% if exercise.notes %}<i class="fa fa-comment"></i>{% endif %}
+                                            </td>
                                             </tr>
                                         {% endfor %}
                                     </tbody>
@@ -112,4 +116,16 @@
     </div>
 </div>
 </div>
+
+<!-- Modal -->
+{% include 'hamask/notes_modal.html' with readonly=True %}
+
+<!-- Scripts -->
+<script>
+    $('td.notes').click(function() { 
+        $('#modal-notes').text(this.getAttribute("data-notes"));
+        
+        $('#exampleModal').modal()
+    });
+</script>
 {% endblock %}

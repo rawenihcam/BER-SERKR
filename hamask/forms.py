@@ -57,7 +57,6 @@ class WorkoutExerciseForm (ModelForm):
 
     def save(self, commit=True):
         # Manage loading
-        print(self.instance)
         if self.cleaned_data['rep_scheme'] == 'MAX_PERCENTAGE':
             self.instance.percentage = self.cleaned_data['loading']
             self.instance.rpe = None
@@ -87,6 +86,12 @@ class WorkoutLogForm (ModelForm):
     class Meta:
         model = Workout_Log
         fields = ['workout_date']
+
+    def save(self, commit=True):
+        if self.instance.status == 'SKIPD':
+            self.instance.status = 'COMPL'
+
+        return super(WorkoutLogForm, self).save(commit=commit)
         
 class WorkoutExerciseLogForm (ModelForm):    
     notes_formt = forms.CharField(required=False)
